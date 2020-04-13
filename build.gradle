@@ -47,6 +47,9 @@ dependencies {
     // JLayerPlayer, used for playback
     compile 'com.googlecode.soundlibs:jlayer:1.0.1.4'
 
+    // for TarsosDSP sound stretching functionality
+    compile fileTree(dir: 'lib', include: ['*.jar'])
+
 	testCompile 'junit:junit:4.13'
 	testCompile 'org.dstadler:commons-test:1.0.0.18'
 }
