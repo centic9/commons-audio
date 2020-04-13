@@ -1,0 +1,155 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'de.thetaphi:forbiddenapis:2.7'
+	}
+}
+
+plugins {
+	// https://github.com/researchgate/gradle-release
+	id 'net.researchgate.release' version '2.8.1'
+    id 'io.codearte.nexus-staging' version '0.21.2'
+}
+
+apply plugin: 'java'
+apply plugin: 'de.thetaphi.forbiddenapis'
+apply plugin: 'jacoco'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'io.codearte.nexus-staging'
+
+sourceCompatibility = 1.8
+group = 'org.dstadler'
+archivesBaseName = 'commons-audio'
+
+repositories {
+	mavenCentral()
+}
+
+forbiddenApis {
+	suppressAnnotations = ['org.dstadler.commons.util.SuppressForbidden']
+	bundledSignatures = [ 'jdk-reflection', 'commons-io-unsafe-2.6', 'jdk-internal', 'jdk-deprecated', 'jdk-non-portable' ]
+	signaturesFiles += files('config/forbidden-apis/forbidden.signatures.txt')
+}
+
+dependencies {
+	compile 'org.dstadler:commons-dost:1.0.0.30'
+
+	testCompile 'junit:junit:4.13'
+	testCompile 'org.dstadler:commons-test:1.0.0.18'
+}
+
+wrapper {
+    gradleVersion = '5.6.4'
+}
+
+task adjustWrapperPropertiesFile {
+    doLast {
+        ant.replaceregexp(match: '^#.*', replace: '', flags: 'g', byline: true) {
+            fileset(dir: project.projectDir, includes: 'gradle/wrapper/gradle-wrapper.properties')
+        }
+        new File(project.projectDir, 'gradle/wrapper/gradle-wrapper.properties').with {
+            it.text = it.readLines().findAll { it }.sort().join('\n')
+        }
+        ant.fixcrlf(file: 'gradle/wrapper/gradle-wrapper.properties', eol: 'lf')
+    }
+}
+wrapper.finalizedBy adjustWrapperPropertiesFile
+
+test {
+	maxHeapSize = "12m"
+	systemProperties = System.properties
+
+	// enable to show standard out and standard error of the test JVM(s) on the console
+	// testLogging.showStandardStreams = true
+
+	// http://forums.gradle.org/gradle/topics/jacoco_related_failure_in_multiproject_build
+	systemProperties['user.dir'] = workingDir
+
+    // avoid failures because Gradle provides it's own version of JNA in the system properties
+    systemProperties['jna.boot.library.path'] = null
+}
+
+jacoco {
+	toolVersion = '0.8.5'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+	}
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+//provide defaults so we do not need to specify them always
+if (!project.hasProperty('ossrhUsername')) {
+    ext.ossrhUsername = ''
+}
+if (!project.hasProperty('ossrhPassword')) {
+    ext.ossrhPassword = ''
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'Common Autio Utilities'
+        packaging 'jar'
+        // optionally artifactId can be defined here
+        description 'Common utilities I find useful when developing audio-related projects.'
+        url 'https://github.com/centic9/commons-audio'
+
+        scm {
+          connection 'scm:git@github.com:centic9/commons-audio.git'
+          developerConnection 'scm:git@github.com:centic9/commons-audio.git'
+          url 'https://github.com/centic9/commons-audio'
+        }
+
+        licenses {
+          license {
+            name 'BSD 2-Clause License'
+            url 'http://www.opensource.org/licenses/bsd-license.php'
+          }
+        }
+
+        developers {
+          developer {
+            id 'centic9	'
+            name 'Dominik Stadler'
+          }
+        }
+      }
+    }
+  }
+}
+
+afterReleaseBuild.dependsOn uploadArchives
