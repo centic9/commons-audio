@@ -30,12 +30,16 @@ repositories {
 
 forbiddenApis {
 	suppressAnnotations = ['org.dstadler.commons.util.SuppressForbidden']
-	bundledSignatures = [ 'jdk-reflection', 'commons-io-unsafe-2.6', 'jdk-internal', 'jdk-deprecated', 'jdk-non-portable' ]
+	bundledSignatures = [ 'jdk-reflection', 'commons-io-unsafe-2.6', 'jdk-internal' ]
+}
+forbiddenApisMain {
+	// 'jdk-unsafe', 'jdk-system-out'
+	bundledSignatures += [ 'jdk-deprecated', 'jdk-internal', 'jdk-non-portable' ]
 	signaturesFiles += files('config/forbidden-apis/forbidden.signatures.txt')
 }
 
 dependencies {
-	compile 'org.dstadler:commons-dost:1.0.0.30'
+    compile 'org.dstadler:commons-dost:1.0.0.30'
     compile 'com.fasterxml.jackson.core:jackson-core:2.10.3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
@@ -50,8 +54,8 @@ dependencies {
     // for TarsosDSP sound stretching functionality
     compile fileTree(dir: 'lib', include: ['*.jar'])
 
-	testCompile 'junit:junit:4.13'
-	testCompile 'org.dstadler:commons-test:1.0.0.18'
+    testCompile 'junit:junit:4.13'
+    testCompile 'org.dstadler:commons-test:1.0.0.18'
 }
 
 wrapper {
