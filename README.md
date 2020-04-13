@@ -8,7 +8,10 @@ audio, playing sound, downloading audio from certain websites, ...
 ## Contents
 
 Here an (incomplete) list of bits and pieces in this lib:
-* TODO
+* A simple AudioPlayer interface and implementations via JLayer, MP3-SPI and TarsosDSP libraries
+* Interfaces for buffering audio data in a flexible SeekableRingBuffer
+* Downloading ranges of audio-streams from local files or HTTP
+* Accessing information about sessions of the Austrian radio station FM4 
 
 ## Use it
 
