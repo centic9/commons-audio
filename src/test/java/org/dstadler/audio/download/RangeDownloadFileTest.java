@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 public class RangeDownloadFileTest {
     private static final File SAMPLE_FILE = new File("src/test/resources/test.bin");
 
-    private static final long EXPECTED_LENGTH = 587349;
+    private static final long EXPECTED_LENGTH = SAMPLE_FILE.length();
 
     @Test
     public void testLength() throws IOException {
@@ -52,7 +52,8 @@ public class RangeDownloadFileTest {
         try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
             TestHelpers.ToStringTest(download);
 
-            assertTrue("Had: " + download.toString(), download.toString().contains(Long.toString(EXPECTED_LENGTH)));
+            assertTrue("Expected " + EXPECTED_LENGTH + ", but had: " + download.toString(),
+                    download.toString().contains(Long.toString(EXPECTED_LENGTH)));
         }
     }
 
