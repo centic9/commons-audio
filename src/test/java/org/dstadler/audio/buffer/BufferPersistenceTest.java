@@ -44,9 +44,12 @@ public class BufferPersistenceTest {
 
             assertEquals(0, back.fill());
             compare(buffer, back);
-        } finally {
+
             assertTrue(file.exists());
             assertTrue(file.delete());
+        } finally {
+            // make sure to clean up even on exception
+            assertTrue(!file.exists() || file.delete());
         }
     }
 
@@ -83,9 +86,12 @@ public class BufferPersistenceTest {
             assertEquals(1, back.fill());
             assertEquals(1, back.size());
             compare(buffer, back);
-        } finally {
+
             assertTrue(file.exists());
             assertTrue(file.delete());
+        } finally {
+            // make sure to clean up even on exception
+            assertTrue(!file.exists() || file.delete());
         }
     }
 
@@ -144,56 +150,11 @@ public class BufferPersistenceTest {
                 assertEquals(4999, back.fill());
                 assertEquals(4999, back.size());
             }
-        } finally {
-            assertTrue(file.exists());
-            assertTrue(file.delete());
-        }
-    }
 
-    @Test
-    public void testMain() throws IOException {
-        File file = File.createTempFile("BufferPersistence", ".bson");
-        assertTrue(file.delete());
-        try {
-            assertFalse(BufferPersistence.hasBufferOnDisk(file));
-
-            BlockingSeekableRingBuffer buffer = new BlockingSeekableRingBuffer(10);
-            buffer.add(new Chunk(new byte[] {1,2,3,4,5}, "meta data", 12345L));
-            assertEquals(1, buffer.fill());
-
-            Stream stream = new Stream();
-            stream.setUrl("url1");
-            stream.setStreamType(Stream.StreamType.download);
-
-            BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false));
-
-            assertTrue(BufferPersistence.hasBufferOnDisk(file));
-
-            BufferPersistence.main(new String[] { file.getAbsolutePath() });
-        } finally {
-            assertTrue(file.exists());
-            assertTrue(file.delete());
-        }
-    }
-
-    @Test
-    public void testMainEmptyBuffer() throws IOException {
-        File file = File.createTempFile("BufferPersistence", ".bson");
-        assertTrue(file.delete());
-        try {
-            assertFalse(BufferPersistence.hasBufferOnDisk(file));
-
-            BufferPersistence.writeBufferToDisk(file, new BufferPersistenceDTO(null, 0, 0, 0, null, false));
-
-            assertTrue(BufferPersistence.hasBufferOnDisk(file));
-
-            BufferPersistence.main(new String[] { file.getAbsolutePath() });
-
-            // file needs to exist if test is successful
             assertTrue(file.exists());
             assertTrue(file.delete());
         } finally {
-            // if test fails, we should not mask the failure with a failure here
+            // make sure to clean up even on exception
             assertTrue(!file.exists() || file.delete());
         }
     }

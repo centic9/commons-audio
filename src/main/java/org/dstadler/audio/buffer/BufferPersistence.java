@@ -76,47 +76,4 @@ public class BufferPersistence {
     public static boolean hasBufferOnDisk(File file) {
         return file != null && file.exists() && file.isFile() && file.canRead();
     }
-
-    public static void main(String[] args) throws IOException {
-        if(args.length != 1) {
-            System.out.println("Usage: BufferPersistence <buffer-file>");
-            System.exit(1);
-            return;
-        }
-
-        File bufferFile = new File(args[0]);
-        if(!hasBufferOnDisk(bufferFile)) {
-            System.out.println("Buffer-file not found at " + args[0]);
-            System.exit(2);
-            return;
-        }
-
-        BufferPersistenceDTO buffer = readBufferFromDisk(bufferFile);
-
-        System.out.println("Having nextAdd: " + buffer.getNextAdd());
-        System.out.println("Having nextGet: " + buffer.getNextGet());
-        System.out.println("Having fill: " + buffer.getFill());
-        System.out.println("Having stream: " + buffer.getStream());
-
-        Chunk[] chunks = buffer.getBuffer();
-        if(chunks == null) {
-            System.out.println("Having null-buffer");
-        } else {
-            System.out.println("Having buffer-size: " + chunks.length);
-            long previousTs = chunks[0].getTimestamp();
-            String previousMetaData = "";
-            for (Chunk chunk : chunks) {
-                if (!previousMetaData.equals(chunk.getMetaData())) {
-                    System.out.println();
-                    System.out.print(chunk.getMetaData());
-                    previousMetaData = chunk.getMetaData();
-                }
-                if (previousTs != chunk.getTimestamp()) {
-                    System.out.print((chunk.getTimestamp() - previousTs) + "-");
-                    previousTs = chunk.getTimestamp();
-                }
-            }
-            System.out.println();
-        }
-    }
 }

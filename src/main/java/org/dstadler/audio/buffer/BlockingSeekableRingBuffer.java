@@ -3,6 +3,7 @@ package org.dstadler.audio.buffer;
 import com.google.common.base.Preconditions;
 import org.dstadler.audio.stream.Stream;
 import org.dstadler.audio.util.RuntimeInterruptedException;
+import org.dstadler.commons.util.SuppressForbidden;
 
 import java.io.IOException;
 
@@ -75,6 +76,7 @@ public class BlockingSeekableRingBuffer implements SeekableRingBuffer<Chunk>, Pe
         this.fill = fill;
     }
 
+    @SuppressForbidden(reason = "Uses Object.notify() on purpose here")
     @Override
     public synchronized void add(Chunk chunk) {
         Preconditions.checkNotNull(chunk);
@@ -96,6 +98,7 @@ public class BlockingSeekableRingBuffer implements SeekableRingBuffer<Chunk>, Pe
         notify();
     }
 
+    @SuppressForbidden(reason = "Uses Object.wait() on purpose here")
     @Override
     public synchronized Chunk next() {
         // wait until data is available
