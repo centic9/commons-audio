@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/centic9/commons-audio.svg)](https://travis-ci.org/centic9/commons-audio) [![Gradle Status](https://gradleupdate.appspot.com/centic9/commons-audio/status.svg?branch=master)](https://gradleupdate.appspot.com/centic9/commons-audio/status)
-[![Release](https://img.shields.io/github/release/centic9/commons-audio.svg)](https://github.com/centic9/commons-audio/releases)
+[![Release](https://img.shields.io/github/v/release/centic9/commons-audio.svg)](https://github.com/centic9/commons-audio/releases)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dstadler/commons-audio/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/org.dstadler/commons-audio) [![Maven Central](https://img.shields.io/maven-central/v/org.dstadler/commons-audio.svg)](https://maven-badges.herokuapp.com/maven-central/org.dstadler/commons-audio)
 
 This is a small library of code-pieces that I find useful when developing tools and applications around handling of
