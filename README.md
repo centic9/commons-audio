@@ -11,7 +11,10 @@ Here an (incomplete) list of bits and pieces in this lib:
 * A simple AudioPlayer interface and implementations via JLayer, MP3-SPI and TarsosDSP libraries
 * Interfaces for buffering audio data in a flexible SeekableRingBuffer
 * Downloading ranges of audio-streams from local files or HTTP
-* Accessing information about sessions of the Austrian radio station FM4 
+* Accessing information about sessions of the Austrian radio station FM4
+* An implementation of the SeekableRingBuffer which also provides persisting to disk
+* A system for playing sound at different tempo via the TarsosDSP libraries for stretching/condensing audio on-the-fly
+* A basic Stream class for holding information about streams that are played  
 
 ## Use it
 

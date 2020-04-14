@@ -54,6 +54,9 @@ dependencies {
     // for TarsosDSP sound stretching functionality
     compile fileTree(dir: 'lib', include: ['*.jar'])
 
+    // binary serialization of data during shutdown
+    compile 'de.undercouch:bson4jackson:2.9.2'
+
     testCompile 'junit:junit:4.13'
     testCompile 'org.dstadler:commons-test:1.0.0.18'
 }
