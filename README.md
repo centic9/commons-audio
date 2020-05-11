@@ -35,7 +35,7 @@ Here an (incomplete) list of bits and pieces in this lib:
 
 ### Release it
 
-    ./gradlew release && ./gradlew closeAndReleaseRepository
+    ./gradlew --console=plain release && ./gradlew closeAndReleaseRepository
     
 * This should automatically release the new version on MavenCentral
 * Afterwards go to https://github.com/centic9/commons-audio/releases and add release-notes
@@ -43,4 +43,4 @@ Here an (incomplete) list of bits and pieces in this lib:
 #### Licensing
 * commons-audio is licensed under the [BSD 2-Clause License].
 
-[BSD 2-Clause License]: http://www.opensource.org/licenses/bsd-license.php
+[BSD 2-Clause License]: https://www.opensource.org/licenses/bsd-license.php
