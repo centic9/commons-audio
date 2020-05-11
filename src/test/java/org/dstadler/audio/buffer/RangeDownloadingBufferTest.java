@@ -1,0 +1,345 @@
+package org.dstadler.audio.buffer;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.dstadler.audio.stream.Stream;
+import org.dstadler.commons.testing.MockRESTServer;
+import org.dstadler.commons.testing.TestHelpers;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+
+import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+@RunWith(Parameterized.class)
+public class RangeDownloadingBufferTest {
+    private static final String SAMPLE_URL = "https://www.dstadler.org/DominikStadler2013.png";
+    private static final String SAMPLE_FILE = new File("src/test/resources/Buttons.xcf").getAbsolutePath();
+    private static final String SAMPLE_FILE_URL = "file://" + new File("src/test/resources/Buttons.xcf").getAbsolutePath();
+
+    private RangeDownloadingBuffer buffer;
+
+    @Parameterized.Parameters(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { SAMPLE_URL, 52, 841640, 841590 },
+                { SAMPLE_FILE, 36, 587348, 587314 },
+                { SAMPLE_FILE_URL, 36, 587348, 587314 }
+        });
+    }
+
+    @Parameterized.Parameter
+    public String sample;
+    @Parameterized.Parameter(1)
+    public int expectedChunks;
+    @Parameterized.Parameter(2)
+    public int fileSize;
+    @Parameterized.Parameter(3)
+    public int fileSize2;
+
+    @Before
+    public void setUp() {
+        try {
+            buffer = new RangeDownloadingBuffer(sample, "", null, 10, CHUNK_SIZE, percentage -> Pair.of("", 100L));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @After
+    public void tearDown() {
+        if(buffer != null) {
+            TestHelpers.ToStringTest(buffer);
+
+            buffer.close();
+        }
+    }
+
+    @Test
+    public void testBuffered() {
+        assertEquals(expectedChunks, buffer.fill());
+        assertEquals(expectedChunks, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertTrue(buffer.full());
+
+        assertEquals(0, buffer.bufferedForward());
+        assertEquals(0, buffer.bufferedBackward());
+
+        assertNotNull(buffer.peek());
+        assertEquals(10, buffer.bufferedForward());
+        assertEquals(0, buffer.bufferedBackward());
+
+        assertNotNull(buffer.next());
+        assertEquals(9, buffer.bufferedForward());
+        assertEquals(1, buffer.bufferedBackward());
+
+        assertNotNull(buffer.next());
+        assertEquals(8, buffer.bufferedForward());
+        assertEquals(2, buffer.bufferedBackward());
+
+        assertNotNull(buffer.next());
+        assertNotNull(buffer.next());
+        assertNotNull(buffer.next());
+        assertNotNull(buffer.next());
+        assertNotNull(buffer.next());
+        assertNotNull(buffer.next());
+        assertNotNull(buffer.next());
+        assertEquals(1, buffer.bufferedForward());
+        assertEquals(9, buffer.bufferedBackward());
+
+        assertNotNull(buffer.next());
+        assertEquals(0, buffer.bufferedForward());
+        assertEquals(10, buffer.bufferedBackward());
+
+        assertNotNull(buffer.next());
+        assertEquals(9, buffer.bufferedForward());
+        assertEquals("internal buffer only stores 19 elements, thus one is already removed by adding 10 more",
+                10, buffer.bufferedBackward());
+    }
+
+    @Test
+    public void testInitialSize() {
+        TestHelpers.ToStringTest(buffer);
+
+        assertFalse(buffer.empty());
+        assertTrue(buffer.full());
+        assertEquals(expectedChunks, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertEquals(expectedChunks, buffer.fill());
+    }
+
+    @Test
+    public void testFillupBuffer() throws Exception {
+        assertEquals(10, buffer.fillupBuffer(-1, -1));
+
+        assertFalse(buffer.empty());
+        assertTrue(buffer.full());
+        assertEquals(expectedChunks, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertEquals(expectedChunks, buffer.fill());
+
+        assertEquals(0, buffer.fillupBuffer(-1, -1));
+
+        assertFalse(buffer.empty());
+        assertTrue(buffer.full());
+        assertEquals(expectedChunks, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertEquals(expectedChunks, buffer.fill());
+    }
+
+    @Test
+    public void testFillupBufferMin() throws Exception {
+        assertEquals(0, buffer.fillupBuffer(1000, 10));
+
+        assertFalse(buffer.empty());
+        assertTrue(buffer.full());
+        assertEquals(expectedChunks, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertEquals(expectedChunks, buffer.fill());
+
+        assertEquals(8, buffer.fillupBuffer(2, 8));
+
+        assertFalse(buffer.empty());
+        assertTrue(buffer.full());
+        assertEquals(expectedChunks, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertEquals(expectedChunks, buffer.fill());
+    }
+
+    @Test
+    public void testFillupBufferWithBufferData() throws Exception {
+        for(int i = 0;i < 20;i++) {
+            assertNotNull(buffer.next());
+        }
+
+        buffer.seek(-19);
+
+        assertEquals(0, buffer.fillupBuffer(-1, -1));
+
+        assertFalse(buffer.empty());
+        assertTrue(buffer.full());
+        assertEquals(expectedChunks-1, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertEquals(expectedChunks, buffer.fill());
+    }
+
+    @Test
+    public void testPeek() {
+        Chunk peek = buffer.peek();
+        assertNotNull(peek);
+        assertEquals(CHUNK_SIZE, peek.getData().length);
+
+        Chunk chunk = buffer.next();
+        assertNotNull(chunk);
+        assertEquals(CHUNK_SIZE, chunk.getData().length);
+        assertEquals("", chunk.getMetaData());
+        assertEquals(100L, chunk.getTimestamp());
+
+        assertArrayEquals(peek.getData(), chunk.getData());
+    }
+
+    @Test
+    public void testReadChunkAndSeek() {
+        Chunk chunk = buffer.next();
+        assertNotNull(chunk);
+        assertEquals(CHUNK_SIZE, chunk.getData().length);
+
+        assertEquals(expectedChunks-1, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertEquals(expectedChunks, buffer.fill());
+
+        assertEquals(expectedChunks-2, buffer.seek(expectedChunks-2));
+
+        assertEquals(1, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertEquals(expectedChunks, buffer.fill());
+    }
+
+    @Test
+    public void testSeekOutside() {
+        assertEquals(expectedChunks, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertEquals(expectedChunks, buffer.fill());
+
+        assertEquals(expectedChunks, buffer.seek(5000));
+    }
+
+    @Test
+    public void testSeekBackwards() throws IOException {
+        // initialize with a chunk-size of 1 to have exact chunk-counts in the tests below
+        buffer = new RangeDownloadingBuffer(sample, "", null, 10, 1, percentage -> Pair.of("", 0L));
+
+        Chunk chunk = buffer.next();
+        assertNotNull(chunk);
+        assertEquals(1, chunk.getData().length);
+
+        assertEquals(fileSize, buffer.size());
+        assertEquals(fileSize+1, buffer.capacity());
+        assertEquals(fileSize+1, buffer.fill());
+
+        assertEquals(expectedChunks-2, buffer.seek(expectedChunks-2));
+
+        assertEquals(fileSize2, buffer.size());
+        assertEquals(fileSize+1, buffer.capacity());
+        assertEquals(fileSize+1, buffer.fill());
+
+        assertEquals(-1*(expectedChunks-2), buffer.seek(-1*(expectedChunks-2)));
+
+        assertEquals(fileSize, buffer.size());
+        assertEquals(fileSize+1, buffer.capacity());
+        assertEquals(fileSize+1, buffer.fill());
+
+        assertEquals(-1, buffer.seek(-expectedChunks-2));
+
+        assertEquals(fileSize+1, buffer.size());
+        assertEquals(fileSize+1, buffer.capacity());
+        assertEquals(fileSize+1, buffer.fill());
+
+        assertEquals(0, buffer.seek(0));
+
+        assertEquals(fileSize+1, buffer.size());
+        assertEquals(fileSize+1, buffer.capacity());
+        assertEquals(fileSize+1, buffer.fill());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void addFails() {
+        buffer.add(null);
+    }
+
+    @Test
+    public void testPersistence() throws IOException {
+        buffer.next();
+
+        assertFalse(buffer.empty());
+        assertTrue(buffer.full());
+        assertEquals(expectedChunks-1, buffer.size());
+        assertEquals(expectedChunks, buffer.capacity());
+        assertEquals(expectedChunks, buffer.fill());
+
+        Stream stream = new Stream();
+        stream.setUrl(sample);
+        stream.setStreamType(Stream.StreamType.live);
+        stream.setStartTimestamp(100L);
+
+        // get the persistence
+        final BufferPersistenceDTO dto = buffer.toPersistence(stream, false);
+        assertNotNull(dto);
+        assertEquals(sample, dto.getStream().getUrl());
+
+        // then convert the DTO back into a buffer and then compare
+        RangeDownloadingBuffer back = RangeDownloadingBuffer.fromPersistence(dto, 10, CHUNK_SIZE);
+        assertEquals(toStringReplace(buffer), toStringReplace(back));
+
+        // and finally ensure the state is the same
+        assertFalse(back.empty());
+        assertTrue(back.full());
+        assertEquals(expectedChunks-1, back.size());
+        assertEquals(expectedChunks, back.capacity());
+        assertEquals(expectedChunks, back.fill());
+    }
+
+    private String toStringReplace(RangeDownloadingBuffer buffer) {
+        return buffer.toString()
+                .replaceAll("nextGet=\\d+", "")
+                .replaceAll("nextAdd=\\d+", "")
+                .replaceAll("nextDownloadPos=\\d+", "")
+                .replaceAll("percentage=[\\d.,]+", "")
+                .replaceAll("(?:empty|full)=(?:false|true)", "")
+                .replaceAll("size=\\d+", "");
+    }
+
+    @Test
+    public void testWithUser() throws IOException {
+        buffer = new RangeDownloadingBuffer(sample, "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L));
+    }
+
+    @Test(expected = IOException.class)
+    public void testWithUserAndAuthResponse() throws IOException {
+        try (MockRESTServer server = new MockRESTServer("404", "text/html", "")) {
+            buffer = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
+                    "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L));
+        }
+    }
+
+    @Test
+    public void testToString() {
+        TestHelpers.ToStringTest(buffer);
+        assertNotNull(buffer.next());
+        TestHelpers.ToStringTest(buffer);
+    }
+
+    @Ignore("Just used for testing download speed")
+    @Test
+    public void testSlowStartBenchmark() throws IOException, InterruptedException {
+        long start = System.currentTimeMillis();
+        System.out.println("Starting download: " + (System.currentTimeMillis() - start));
+        RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("https://loopstream01.apa.at/?channel=fm4&id=2020-03-22_0959_tl_54_7DaysSun6_95352.mp3",
+                "", null, 500, CHUNK_SIZE, percentage -> Pair.of("", 0L));
+        System.out.println("After startup: " + (System.currentTimeMillis() - start));
+
+        for(int i = 0;i < 20;i++) {
+            buffer.next();
+
+            System.out.println("After next: " + (System.currentTimeMillis() - start));
+
+            Thread.sleep(1000);
+        }
+
+        buffer.fillupBuffer(15, expectedChunks-2);
+
+        System.out.println("After fillup: " + (System.currentTimeMillis() - start));
+    }
+}

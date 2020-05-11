@@ -109,7 +109,8 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         int toDownload = bufferedChunks - buffer.size();
 
         // nothing to download because enough is buffered already?
-        if(toDownload == 0) {
+        // this can be negative if we seek backwards
+        if(toDownload <= 0) {
             return 0;
         }
 
@@ -129,8 +130,8 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         }
 
         Preconditions.checkState(toDownload > 0,
-                "Invalid value for toDownload, having %s chunks and buffer %s",
-                bufferedChunks, buffer.size());
+                "Invalid value for toDownload: %s, having %s chunks and buffer %s",
+                toDownload, bufferedChunks, buffer.size());
 
         if(log.isLoggable(Level.FINE)) {
             log.fine("Downloading " + toDownload + " chunks at " + nextDownloadPos + " from " + download);
