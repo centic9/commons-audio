@@ -25,18 +25,27 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class RangeDownloadingBufferTest {
-    private static final String SAMPLE_URL = "https://www.dstadler.org/DominikStadler2013.png";
-    private static final String SAMPLE_FILE = new File("src/test/resources/Buttons.xcf").getAbsolutePath();
-    private static final String SAMPLE_FILE_URL = "file://" + new File("src/test/resources/Buttons.xcf").getAbsolutePath();
+    // just a sample file which shoud usually be available
+    private static final String SAMPLE_URL = "https://file-examples.com/wp-content/uploads/2017/10/file_example_JPG_500kB.jpg";
+
+    private static final String SAMPLE_FILE = new File("src/test/resources/test.bin").getAbsolutePath();
+    private static final String SAMPLE_FILE_URL = "file://" + new File("src/test/resources/test.bin").getAbsolutePath();
+
+    private static final String SAMPLE_FILE2 = new File("src/test/resources/test2.bin").getAbsolutePath();
+    private static final String SAMPLE_FILE2_URL = "file://" + new File("src/test/resources/test2.bin").getAbsolutePath();
 
     private RangeDownloadingBuffer buffer;
 
     @Parameterized.Parameters(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { SAMPLE_URL, 52, 841640, 841590 },
-                { SAMPLE_FILE, 36, 587348, 587314 },
-                { SAMPLE_FILE_URL, 36, 587348, 587314 }
+                { SAMPLE_URL, 34, 555180, 555148 },
+
+                { SAMPLE_FILE, 36, 587241, 587207 },
+                { SAMPLE_FILE_URL, 36, 587241, 587207 },
+
+                { SAMPLE_FILE2, 30, 485375, 485347 },
+                { SAMPLE_FILE2_URL, 30, 485375, 485347 },
         });
     }
 
@@ -104,7 +113,7 @@ public class RangeDownloadingBufferTest {
         assertEquals(10, buffer.bufferedBackward());
 
         assertNotNull(buffer.next());
-        assertEquals(9, buffer.bufferedForward());
+        assertEquals("Having: " + buffer, 9, buffer.bufferedForward());
         assertEquals("internal buffer only stores 19 elements, thus one is already removed by adding 10 more",
                 10, buffer.bufferedBackward());
     }
@@ -161,7 +170,7 @@ public class RangeDownloadingBufferTest {
     @Test
     public void testFillupBufferWithBufferData() throws Exception {
         for(int i = 0;i < 20;i++) {
-            assertNotNull(buffer.next());
+            assertNotNull("Having: " + buffer, buffer.next());
         }
 
         buffer.seek(-19);
@@ -263,8 +272,8 @@ public class RangeDownloadingBufferTest {
     public void testPersistence() throws IOException {
         buffer.next();
 
-        assertFalse(buffer.empty());
-        assertTrue(buffer.full());
+        assertFalse("Had: " + buffer, buffer.empty());
+        assertTrue("Had: " + buffer, buffer.full());
         assertEquals(expectedChunks-1, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
         assertEquals(expectedChunks, buffer.fill());

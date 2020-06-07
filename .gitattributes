@@ -1,4 +1,3 @@
 * text eol=lf
 *.jar binary
 *.bin binary
-*.xcf binary
