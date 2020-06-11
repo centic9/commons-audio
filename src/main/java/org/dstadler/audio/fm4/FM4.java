@@ -23,8 +23,14 @@ public class FM4 {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public List<FM4Stream> fetchStreams() throws IOException {
-        // fetch stream
-        String json = HttpClientWrapper.retrieveData(FM4_STREAM_URL);
+        final String json;
+        try {
+            // fetch stream
+            json = HttpClientWrapper.retrieveData(FM4_STREAM_URL);
+        } catch (IOException e) {
+            throw new IOException("While reading from: " + FM4_STREAM_URL, e);
+        }
+
         JsonNode jsonNode = objectMapper.readTree(json);
 
         /*{

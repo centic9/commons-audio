@@ -19,13 +19,13 @@ public class FM4Stream {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private String programKey;
-    private String title;
-    private String subtitle;
-    private String href;
-    private String time;
-    private long start;
-    private long duration;
+    private final String programKey;
+    private final String title;
+    private final String subtitle;
+    private final String href;
+    private final String time;
+    private final long start;
+    private final long duration;
 
     public FM4Stream(JsonNode node) {
         programKey = node.get("programKey").asText();
