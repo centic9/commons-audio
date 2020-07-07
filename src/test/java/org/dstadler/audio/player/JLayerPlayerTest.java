@@ -1,5 +1,7 @@
 package org.dstadler.audio.player;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.junit.Assume;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -18,6 +20,12 @@ public class JLayerPlayerTest {
                 player.setOptions("");
                 player.setOptions(null);
                 player.setOptions("1.0");
+            } catch (IOException e) {
+                if(ExceptionUtils.getStackTrace(e).contains("Cannot create AudioDevice")) {
+                    Assume.assumeNoException("No audio-device available", e);
+                }
+
+                throw e;
             }
         }
     }
@@ -27,6 +35,12 @@ public class JLayerPlayerTest {
         try (InputStream stream = new FileInputStream(SAMPLE_FILE)) {
             try (JLayerPlayer player = new JLayerPlayer(stream)) {
                 player.play();
+            } catch (IOException e) {
+                if(ExceptionUtils.getStackTrace(e).contains("Cannot create AudioDevice")) {
+                    Assume.assumeNoException("No audio-device available", e);
+                }
+
+                throw e;
             }
         }
     }
@@ -38,6 +52,12 @@ public class JLayerPlayerTest {
                 player.close();
                 //noinspection RedundantExplicitClose
                 player.close();
+            } catch (IOException e) {
+                if(ExceptionUtils.getStackTrace(e).contains("Cannot create AudioDevice")) {
+                    Assume.assumeNoException("No audio-device available", e);
+                }
+
+                throw e;
             }
         }
     }
@@ -47,6 +67,12 @@ public class JLayerPlayerTest {
         // JLayer does not fail on invalid data...
         try (JLayerPlayer player = new JLayerPlayer(new ByteArrayInputStream("test".getBytes()))) {
             player.play();
+        } catch (IOException e) {
+            if(ExceptionUtils.getStackTrace(e).contains("Cannot create AudioDevice")) {
+                Assume.assumeNoException("No audio-device available", e);
+            }
+
+            throw e;
         }
     }
 }
