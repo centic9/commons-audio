@@ -28,7 +28,7 @@ public class TarsosDSPPlayerTest {
             try (TarsosDSPPlayer player = new TarsosDSPPlayer(stream)) {
                 player.setOptions("2.0");
                 player.play();
-            } catch (IOException e) {
+            } catch (IllegalArgumentException e) {
                 if(ExceptionUtils.getStackTrace(e).contains("No line matching interface SourceDataLine supporting format")) {
                     Assume.assumeNoException("No audio-device available", e);
                 }

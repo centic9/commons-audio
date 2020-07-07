@@ -30,7 +30,7 @@ public class MP3SPIPlayerTest {
             try (MP3SPIPlayer player = new MP3SPIPlayer(stream)) {
                 player.play();
             }
-        } catch (IOException e) {
+        } catch (IllegalArgumentException e) {
             if(ExceptionUtils.getStackTrace(e).contains("No line matching interface SourceDataLine supporting format")) {
                 Assume.assumeNoException("No audio-device available", e);
             }
