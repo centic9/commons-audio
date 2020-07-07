@@ -139,4 +139,10 @@ public class StreamTest {
         meta = fun.apply(0.9);
         assertEquals(280L, meta.getValue().longValue());
     }
+
+    @Test
+    public void testEmpty() {
+        assertNotNull(Stream.EMPTY);
+        assertEquals("", Stream.EMPTY.getName());
+    }
 }

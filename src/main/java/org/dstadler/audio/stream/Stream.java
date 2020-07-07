@@ -22,6 +22,11 @@ public class Stream {
         live, download
     }
 
+    public static final Stream EMPTY = new Stream();
+    static {
+        EMPTY.setName("");
+    }
+
     private String name;
     private String url;
     private String imageUrl;
