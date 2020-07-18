@@ -27,7 +27,8 @@ public interface RangeDownload extends AutoCloseable {
      * @param size The number of bytes to read from the file.
      * @return An array of up to "size" bytes, less if the end of the download was reached.
      * @throws IOException If requesting data via HTTP fails
-     * @throws IllegalArgumentException If start is larger or equals to the length of the download
+     * @throws IllegalArgumentException If start is larger or equals to the length
+     *          of the download or if size is below one
      * @throws IllegalStateException If the object is closed already
      */
     byte[] readRange(long start, int size) throws IOException;

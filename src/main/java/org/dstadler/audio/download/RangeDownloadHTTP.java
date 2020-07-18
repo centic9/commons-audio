@@ -110,8 +110,17 @@ public class RangeDownloadHTTP implements RangeDownload {
 
         final HttpUriRequest httpGet = new HttpGet(url);
 
+        Preconditions.checkArgument(start >= 0,
+                "Had an invalid download-start %s for size %s and length: %s",
+                start, size, length);
+
+        long end = start + size - 1;
+        Preconditions.checkArgument(size >= 1,
+                "Had an invalid download-range %s-%s for start %s and size %s, length: %s",
+                start, end, start, size, length);
+
         // Range: bytes=0-1023
-        httpGet.setHeader("Range", "bytes=" + start + "-" + (start + size - 1));
+        httpGet.setHeader("Range", "bytes=" + start + "-" + end);
 
         try (CloseableHttpResponse response = httpClient.getHttpClient().execute(httpGet)) {
             HttpEntity entity = HttpClientWrapper.checkAndFetch(response, url);

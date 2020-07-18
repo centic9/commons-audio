@@ -60,9 +60,7 @@ public class RangeDownloadFileTest {
     @Test(expected = IllegalArgumentException.class)
     public void readWithStartBeyondLength() throws IOException {
         try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
-            byte[] bytes = download.readRange(99999999L, 200);
-            assertEquals(200, bytes.length);
-            assertEquals("PNG", new String(Arrays.copyOfRange(bytes, 1, 4)));
+            download.readRange(99999999L, 200);
         }
     }
 
@@ -71,6 +69,27 @@ public class RangeDownloadFileTest {
         try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
             byte[] bytes = download.readRange(download.getLength() - 100, 200);
             assertEquals(100, bytes.length);
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void readWithInvalidSizeAt0() throws IOException {
+        try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
+            download.readRange(0, 0);
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void readWithInvalidSizeAt100() throws IOException {
+        try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
+            download.readRange(100, 0);
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void readWithInvalidSizeAtMinus100() throws IOException {
+        try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
+            download.readRange(-100, 10);
         }
     }
 }

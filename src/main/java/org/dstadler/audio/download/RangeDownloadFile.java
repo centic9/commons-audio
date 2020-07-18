@@ -46,6 +46,14 @@ public class RangeDownloadFile implements RangeDownload {
             size = (int)(length - start);
         }
 
+        Preconditions.checkArgument(start >= 0,
+                "Had an invalid download-start %s for size %s and length: %s",
+                start, size, length);
+
+        Preconditions.checkArgument(size >= 1,
+                "Had an invalid download-size %s for start %s and length: %s",
+                size, start, length);
+
         byte[] bytes = new byte[size];
         try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             raf.seek(start);
