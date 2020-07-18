@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public class RangeDownloadingBufferTest {
     // just a sample file which shoud usually be available
-    private static final String SAMPLE_URL = "https://file-examples.com/wp-content/uploads/2017/10/file_example_JPG_500kB.jpg";
+    private static final String SAMPLE_URL = "https://file-examples-com.github.io/uploads/2017/10/file_example_JPG_500kB.jpg";
 
     private static final String SAMPLE_FILE = new File("src/test/resources/test.bin").getAbsolutePath();
     private static final String SAMPLE_FILE_URL = "file://" + new File("src/test/resources/test.bin").getAbsolutePath();
