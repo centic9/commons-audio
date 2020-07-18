@@ -56,39 +56,44 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
 
     /**
      * @return true if there are no elements in the buffer, false if next() is
-     *      able to read an element.
+     *      able to read an element without blocking or throwing an exception..
      */
     boolean empty();
 
     /**
-     * @return true if all slots in the buffer are filled, false if next() would
-     *      not be able to read an element and would either block or throw an
-     *      exception
+     * @return true if all slots in the buffer are filled.
      */
     boolean full();
 
     /**
+     * Capacity describes how many elements the buffer can contain
+     * at maximum.
+     *
      * @return The size provided during construction of the buffer
      */
     int capacity();
 
     /**
+     * Returns how many elements are available for reading from the
+     * current position in the buffer up to the element added last.
+     *
      * @return The current number of elements between tail and head
      */
     int size();
 
     /**
-     * Indicates how many positions are actually filled with data, after the
-     * writing position wrapped around, this will always return the same value
-     * as capacity().
+     * Indicates how many positions are actually filled with data.
+     * After the writing position wrapped around, this will always
+     * return the same value as capacity().
      *
      * @return The number of elements that are currently stored in the buffer,
-     *  the same as capactity() after the write-position wrapped around once.
+     *  the same as capacity() after the write-position wrapped around once.
      */
     int fill();
 
     /**
-     * Sets the buffer to empty
+     * Sets the buffer to empty, i.e. size() and fill() will return 0
+     * afterwards and next() without add() would block or throw an Exception.
      */
     void reset();
 
