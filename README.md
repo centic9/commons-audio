@@ -20,27 +20,35 @@ Here an (incomplete) list of bits and pieces in this lib:
 
 ## Usage
 
-This is the core of some of my audio applications, it allows to buffer audio-data in the application
-and have one thread fetch the audio data from somewhere, e.g. from file or from a HTTP download or a
+The SeekableRingBuffer and it's implementations are at the core of some of my audio applications, 
+they allow to have a full-featured ring-buffer for audio-data in the application and for example 
+have one thread fetch the audio data from somewhere, e.g. from file or from a HTTP download or a
 live stream of some radio-station. Another thread can read from the stream and handle sending the audio
-to the local player.
+to the local player. 
+
+This way fetching the audio-data and playing it are nicely decoupled with flexible 
+buffering which not only allows playing the live audio (with only a small lag), but also allows to 
+skip forward and backwards in the buffered audio.
 
 Reading will wait if the buffer is full, i.e. if reading is faster than writing (which it usually should be).
 
-Writing will wait for new data if the buffer is empty, i.e. if writing is faster, which indicats some problem
+For live-streams, naturally reading will be as fast as playing, but previously read data will still be available
+for skipping backwards.
+
+Writing will wait for new data if the buffer is empty, i.e. if writing is faster, which may indicate some problem
 with the stream or a slow internet connection.
 
 Via this buffering and the support for playing audio at different speed you can build some very powerful
 applications, e.g. playing a radio-station, but allowing the user to skip forward/backward, e.g. to skip
-across ads or if the content is not interesting, e.g. news broadcasts which repeat the same story very often.
+across ads or if the content is not interesting.
 
 You can play the audio a bit slower if the play-position is near the "head" of the buffer or playing a bit 
 faster if the play position is at the "tail", thus ensuring that over time there is always some buffer
 available for skipping back and forward a few minutes.
 
-## Use it
+## Using it
 
-### Gradle
+### Add it to your project as Gradle dependency
 
     compile 'org.dstadler:commons-audio:1.+'
 
