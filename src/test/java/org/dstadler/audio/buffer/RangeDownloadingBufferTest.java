@@ -21,6 +21,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
@@ -197,6 +198,17 @@ public class RangeDownloadingBufferTest {
         assertEquals(100L, chunk.getTimestamp());
 
         assertArrayEquals(peek.getData(), chunk.getData());
+    }
+
+    @Test
+    public void testReadAtEnd() {
+        assertEquals(expectedChunks, buffer.seek(999999));
+
+        assertNull(buffer.peek());
+        assertNull(buffer.peek());
+
+        assertNull(buffer.next());
+        assertNull(buffer.next());
     }
 
     @Test

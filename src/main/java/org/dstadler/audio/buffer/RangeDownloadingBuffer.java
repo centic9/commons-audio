@@ -165,7 +165,9 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
     @Override
     public Chunk next() {
-        if(buffer.empty()) {
+        // buffer.empty() indicates that we should fetch more data
+        // empty() indicates that we cannot fetch more data any more
+        if(buffer.empty() && !empty()) {
             try {
                 log.info("Filling up buffer for next()");
                 fillupBuffer(-1, 10);
@@ -184,7 +186,9 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
     @Override
     public Chunk peek() {
-        if(buffer.empty()) {
+        // buffer.empty() indicates that we should fetch more data
+        // empty() indicates that we cannot fetch more data any more
+        if(buffer.empty() && !empty()) {
             try {
                 log.info("Filling up buffer for peek()");
                 fillupBuffer(-1, 10);
@@ -209,7 +213,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
         // do not seek outside over the end of the file
         if(nrOfChunks > 0 &&
-                nextDownloadPos + (nrOfChunks-buffer.size())*chunkSize > download.getLength()) {
+                nextDownloadPos + ((long)nrOfChunks-buffer.size())*chunkSize > download.getLength()) {
             nrOfChunks = (int) Math.ceil((((double)(download.getLength()-nextDownloadPos))/chunkSize));
             seekInternal(download.getLength());
             return nrOfChunks;
@@ -235,7 +239,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         }
 
         // otherwise we need to reposition, clear the buffer and read data
-        seekInternal(nextDownloadPos + ((nrOfChunks - buffer.size()) * chunkSize));
+        seekInternal(nextDownloadPos + (((long)nrOfChunks - buffer.size()) * chunkSize));
 
         return nrOfChunks;
     }
