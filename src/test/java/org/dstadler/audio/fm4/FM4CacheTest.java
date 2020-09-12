@@ -1,5 +1,7 @@
 package org.dstadler.audio.fm4;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -14,6 +16,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class FM4CacheTest {
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     @Test
     public void testCache() {
         try (FM4Cache cache = new FM4Cache(new FM4())) {
@@ -33,6 +37,73 @@ public class FM4CacheTest {
         // cache itself is not static, so size should be zero again now
         try (FM4Cache cache = new FM4Cache(new FM4())) {
             assertEquals(0, cache.size());
+        }
+    }
+
+    @Test
+    public void testGetNextNotFound() {
+        try (FM4Cache cache = new FM4Cache(new FM4() {
+            @Override
+            public List<FM4Stream> fetchStreams() throws IOException {
+                // only load two shows to make testing quick
+                List<FM4Stream> fm4Streams = super.fetchStreams();
+                return fm4Streams.subList(0, Math.min(2, fm4Streams.size()));
+            }
+        })) {
+            cache.refresh();
+
+            assertNull(cache.getNext(null));
+
+            ObjectNode node = objectMapper.createObjectNode();
+            node.put("programKey", "ABC");
+            node.put("title", "");
+            node.put("subtitle", "");
+            node.put("href", "");
+            node.put("startISO", "");
+            node.put("start", Long.MAX_VALUE);
+            node.put("end", 1L);
+
+            assertNull(cache.getNext(new FM4Stream(node)));
+        }
+    }
+
+    @Test
+    public void testGetNextFound() {
+        try (FM4Cache cache = new FM4Cache(new FM4() {
+            @Override
+            public List<FM4Stream> fetchStreams() throws IOException {
+                // only load two shows to make testing quick
+                List<FM4Stream> fm4Streams = super.fetchStreams();
+                return fm4Streams.subList(0, Math.min(2, fm4Streams.size()));
+            }
+        })) {
+            cache.refresh();
+
+            Collection<FM4Stream> fm4Streams = cache.allStreams();
+
+            Assume.assumeTrue("Expecting some streams, but had: " + cache.allStreams(),
+                    cache.allStreams().size() >= 2);
+
+            Iterator<FM4Stream> it = fm4Streams.iterator();
+
+            FM4Stream stream1 = it.next();
+            FM4Stream stream2 = it.next();
+
+            if(stream1.getStart() > stream2.getStart()) {
+                FM4Stream next = cache.getNext(stream2);
+                assertNotNull(next);
+                assertEquals(stream1.getProgramKey(), next.getProgramKey());
+
+                assertNull("Stream 1 should be the last one, had: " + fm4Streams,
+                        cache.getNext(stream1));
+            } else {
+                FM4Stream next = cache.getNext(stream1);
+                assertNotNull(next);
+                assertEquals(stream2.getProgramKey(), next.getProgramKey());
+
+                assertNull("Stream 2 should be the last one, had: " + fm4Streams,
+                        cache.getNext(stream2));
+            }
         }
     }
 
@@ -76,15 +147,35 @@ public class FM4CacheTest {
             FM4Stream stream1 = it.next();
             FM4Stream stream2 = it.next();
 
+            String url1 = stream1.getStreams().get(0);
+            String url2 = stream2.getStreams().get(0);
             if(stream1.getStart() > stream2.getStart()) {
-                FM4Stream next = cache.getNextByStreamURL(stream2.getStreams().get(0));
+                FM4Stream next = cache.getNextByStreamURL(url2);
                 assertNotNull(next);
                 assertEquals(stream1.getProgramKey(), next.getProgramKey());
+
+                assertNull("Stream 1 should be the last one, had: " + fm4Streams,
+                        cache.getNextByStreamURL(url1));
             } else {
-                FM4Stream next = cache.getNextByStreamURL(stream1.getStreams().get(0));
+                FM4Stream next = cache.getNextByStreamURL(url1);
                 assertNotNull(next);
                 assertEquals(stream2.getProgramKey(), next.getProgramKey());
+
+                assertNull("Stream 2 should be the last one, had: " + fm4Streams,
+                        cache.getNextByStreamURL(url2));
             }
+        }
+    }
+
+    @Test
+    public void testIOException() {
+        try (FM4Cache cache = new FM4Cache(new FM4() {
+            @Override
+            public List<FM4Stream> fetchStreams() throws IOException {
+                throw new IOException("Test-exception");
+            }
+        })) {
+            cache.refresh();
         }
     }
 }
