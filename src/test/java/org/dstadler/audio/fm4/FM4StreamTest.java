@@ -21,7 +21,7 @@ public class FM4StreamTest {
         }
     }
 
-    private FM4 fm4 = new FM4();
+    private final FM4 fm4 = new FM4();
 
     @Test
     public void testFM4Stream() throws IOException, ParseException {

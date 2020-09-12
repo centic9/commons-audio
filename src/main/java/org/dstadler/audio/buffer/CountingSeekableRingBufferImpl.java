@@ -19,11 +19,11 @@ public class CountingSeekableRingBufferImpl implements CountingSeekableRingBuffe
 
     protected static final double DEFAULT_CHUNKS_PER_SECOND = 1.5;
 
-    private AtomicLong bytesWrittenOverall = new AtomicLong();
-    private AtomicLong chunksWrittenOverall = new AtomicLong();
+    private final AtomicLong bytesWrittenOverall = new AtomicLong();
+    private final AtomicLong chunksWrittenOverall = new AtomicLong();
 
-    private AtomicLong bytesReadOverall = new AtomicLong();
-    private AtomicLong chunksReadOverall = new AtomicLong();
+    private final AtomicLong bytesReadOverall = new AtomicLong();
+    private final AtomicLong chunksReadOverall = new AtomicLong();
 
     // record timestamps of the last 300 chunks so we can compute how many we do per second
     private static final int MOVING_WINDOW = 300;
