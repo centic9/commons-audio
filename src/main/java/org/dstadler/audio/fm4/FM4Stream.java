@@ -106,7 +106,24 @@ public class FM4Stream {
         return streams;
     }
 
-    /*
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FM4Stream fm4Stream = (FM4Stream) o;
+
+        if (start != fm4Stream.start) return false;
+        return programKey.equals(fm4Stream.programKey);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = programKey.hashCode();
+        result = 31 * result + (int) (start ^ (start >>> 32));
+        return result;
+    }
+/*
          {
             "isOnDemand" : true,
             "programKey" : "4GP",
