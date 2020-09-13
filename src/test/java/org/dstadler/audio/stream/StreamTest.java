@@ -27,6 +27,7 @@ public class StreamTest {
         assertNull(stream.getStreamType());
         assertNull(stream.getUser());
         assertNull(stream.getPassword());
+        assertNull(stream.getData());
         assertEquals(0, stream.getStartTimestamp());
         assertEquals(0, stream.getDuration());
         TestHelpers.ToStringTest(stream);
@@ -93,20 +94,28 @@ public class StreamTest {
         assertEquals("", stream.getUser());
         assertNull(stream.getPassword());
 
-        stream.setUser("someuser");
-        try {
-			assertNull(stream.getPassword());
-
-			TestHelpers.ToStringTest(stream);
-		} catch (FileNotFoundException e) {
-			Assume.assumeNoException("Credentials file not available, cannot test for password",
-					e);
-		}
-
         stream.setStartTimestamp(1L);
         stream.setDuration(2L);
         assertEquals(1L, stream.getStartTimestamp());
         assertEquals(2L, stream.getDuration());
+
+        stream.setData("123");
+        assertEquals("123", stream.getData());
+    }
+
+    @Test
+    public void testCredentials() throws IOException {
+        Stream stream = new Stream();
+
+        stream.setUser("someuser");
+        try {
+            assertNull(stream.getPassword());
+
+            TestHelpers.ToStringTest(stream);
+        } catch (FileNotFoundException e) {
+            Assume.assumeNoException("Credentials file not available, cannot test for password",
+                    e);
+        }
     }
 
     @Test

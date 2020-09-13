@@ -36,6 +36,7 @@ public class Stream {
     private String user;
     private long startTimestamp;
     private long duration;
+    private String data;
 
     public String getName() {
         return name;
@@ -122,6 +123,20 @@ public class Stream {
         this.duration = duration;
     }
 
+    public String getData() {
+        return data;
+    }
+
+    /**
+     * Allows to attach some arbitrary data to a stream, e.g.
+     * to determine which radio-show was playing.
+     *
+     * @param data some application-specific data as string.
+     */
+    public void setData(String data) {
+        this.data = data;
+    }
+
     /**
      * Verifies if the Stream is valid and throws an exception if not.
      *
@@ -157,6 +172,7 @@ public class Stream {
                 ", tempoStrategy=" + tempoStrategy +
                 ", tempo=" + tempo +
                 ", streamType=" + streamType +
-                ", user=" + user;
+                ", user=" + user +
+                ", data=" + data;
     }
 }
