@@ -99,19 +99,9 @@ public class FM4Cache implements AutoCloseable {
      */
     public FM4Stream getNext(FM4Stream stream) {
         // get a Map of all FM4Streams sorted by start-time
-        SortedMap<Long, FM4Stream> streams = new TreeMap<>();
-        long foundTime = 0;
-        for (List<FM4Stream> fm4Streams : fm4Cache.asMap().values()) {
-            for (FM4Stream fm4Stream : fm4Streams) {
-                streams.put(fm4Stream.getStart(), fm4Stream);
+        SortedMap<Long, FM4Stream> streams = getStreamsSortedByTime();
 
-                // check if this stream contains the URL
-                if(fm4Stream.equals(stream)) {
-                    log.info("Found stream " + stream.getShortSummary());
-                    foundTime = fm4Stream.getStart();
-                }
-            }
-        }
+        long foundTime = getTimeOfStream(stream);
 
         // no matching URL found
         if(foundTime == 0) {
@@ -128,6 +118,63 @@ public class FM4Cache implements AutoCloseable {
 
         // we found a stream
         return streamsAfter.values().iterator().next();
+    }
+
+    /**
+     * Look for the given URL in all cached FM4Stream instances
+     * and return the "next" one depending on broadcast-timestamp
+     *
+     * @param stream The FM4Stream to look for.
+     * @return If the url is found, the time-wise next stream is
+     *      returned, null is returned if the url is not found or
+     *      there is no "next" stream, e.g. if the url is from a
+     *      show which is currently broadcast.
+     */
+    public FM4Stream getPrevious(FM4Stream stream) {
+        // get a Map of all FM4Streams sorted by start-time
+        SortedMap<Long, FM4Stream> streams = getStreamsSortedByTime();
+
+        long foundTime = getTimeOfStream(stream);
+
+        // no matching URL found
+        if(foundTime == 0) {
+            return null;
+        }
+
+        // use foundTime - 1 to not include the current show itself in the result
+        SortedMap<Long, FM4Stream> streamsAfter = streams.headMap(foundTime - 1);
+
+        // if this was the last stream the list will be empty
+        if(streamsAfter.isEmpty()) {
+            return null;
+        }
+
+        // we found a stream
+        return streamsAfter.values().iterator().next();
+    }
+
+    private SortedMap<Long, FM4Stream> getStreamsSortedByTime() {
+        SortedMap<Long, FM4Stream> streams = new TreeMap<>();
+        for (List<FM4Stream> fm4Streams : fm4Cache.asMap().values()) {
+            for (FM4Stream fm4Stream : fm4Streams) {
+                streams.put(fm4Stream.getStart(), fm4Stream);
+            }
+        }
+        return streams;
+    }
+
+    private long getTimeOfStream(FM4Stream stream) {
+        long foundTime = 0;
+        for (List<FM4Stream> fm4Streams : fm4Cache.asMap().values()) {
+            for (FM4Stream fm4Stream : fm4Streams) {
+                // check if this stream contains the URL
+                if(fm4Stream.equals(stream)) {
+                    log.info("Found current stream: '" + stream.getShortSummary() + "' with start: " + fm4Stream.getStart());
+                    foundTime = fm4Stream.getStart();
+                }
+            }
+        }
+        return foundTime;
     }
 
     /**
@@ -151,7 +198,7 @@ public class FM4Cache implements AutoCloseable {
                 // check if this stream contains the URL
                 for (String streamUrl : fm4Stream.getStreams()) {
                     if(streamUrl.equals(url)) {
-                        log.info("Found url " + url + ": " + fm4Stream.getShortSummary());
+                        log.info("Found url " + url + " for stream '" + fm4Stream.getShortSummary() + "' with start: " + fm4Stream.getStart());
                         foundTime = fm4Stream.getStart();
                     }
                 }

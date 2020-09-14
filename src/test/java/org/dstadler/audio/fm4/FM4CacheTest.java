@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -88,6 +89,7 @@ public class FM4CacheTest {
 
             FM4Stream stream1 = it.next();
             FM4Stream stream2 = it.next();
+            assertNotEquals(stream1.getStart(), stream2.getStart());
 
             if(stream1.getStart() > stream2.getStart()) {
                 FM4Stream next = cache.getNext(stream2);
@@ -103,6 +105,74 @@ public class FM4CacheTest {
 
                 assertNull("Stream 2 should be the last one, had: " + fm4Streams,
                         cache.getNext(stream2));
+            }
+        }
+    }
+
+    @Test
+    public void testGetPreviousNotFound() {
+        try (FM4Cache cache = new FM4Cache(new FM4() {
+            @Override
+            public List<FM4Stream> fetchStreams() throws IOException {
+                // only load two shows to make testing quick
+                List<FM4Stream> fm4Streams = super.fetchStreams();
+                return fm4Streams.subList(0, Math.min(2, fm4Streams.size()));
+            }
+        })) {
+            cache.refresh();
+
+            assertNull(cache.getNext(null));
+
+            ObjectNode node = objectMapper.createObjectNode();
+            node.put("programKey", "ABC");
+            node.put("title", "");
+            node.put("subtitle", "");
+            node.put("href", "");
+            node.put("startISO", "");
+            node.put("start", Long.MAX_VALUE);
+            node.put("end", 1L);
+
+            assertNull(cache.getPrevious(new FM4Stream(node)));
+        }
+    }
+
+    @Test
+    public void testGetPreviousFound() {
+        try (FM4Cache cache = new FM4Cache(new FM4() {
+            @Override
+            public List<FM4Stream> fetchStreams() throws IOException {
+                // only load two shows to make testing quick
+                List<FM4Stream> fm4Streams = super.fetchStreams();
+                return fm4Streams.subList(0, Math.min(2, fm4Streams.size()));
+            }
+        })) {
+            cache.refresh();
+
+            Collection<FM4Stream> fm4Streams = cache.allStreams();
+
+            Assume.assumeTrue("Expecting some streams, but had: " + cache.allStreams(),
+                    cache.allStreams().size() >= 2);
+
+            Iterator<FM4Stream> it = fm4Streams.iterator();
+
+            FM4Stream stream1 = it.next();
+            FM4Stream stream2 = it.next();
+            assertNotEquals(stream1.getStart(), stream2.getStart());
+
+            if(stream1.getStart() < stream2.getStart()) {
+                FM4Stream previous = cache.getPrevious(stream2);
+                assertNotNull(previous);
+                assertEquals(stream1.getProgramKey(), previous.getProgramKey());
+
+                assertNull("Stream 1 should be the first one, had: " + fm4Streams,
+                        cache.getPrevious(stream1));
+            } else {
+                FM4Stream previous = cache.getPrevious(stream1);
+                assertNotNull(previous);
+                assertEquals(stream2.getProgramKey(), previous.getProgramKey());
+
+                assertNull("Stream 2 should be the first one, had: " + fm4Streams,
+                        cache.getPrevious(stream2));
             }
         }
     }
@@ -146,6 +216,7 @@ public class FM4CacheTest {
 
             FM4Stream stream1 = it.next();
             FM4Stream stream2 = it.next();
+            assertNotEquals(stream1.getStart(), stream2.getStart());
 
             String url1 = stream1.getStreams().get(0);
             String url2 = stream2.getStreams().get(0);
