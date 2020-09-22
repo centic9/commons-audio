@@ -123,7 +123,20 @@ public class FM4Stream {
         result = 31 * result + (int) (start ^ (start >>> 32));
         return result;
     }
-/*
+
+    @Override
+    public String toString() {
+        return "FM4Stream{" +
+                "programKey='" + programKey + '\'' +
+                ", title='" + title + '\'' +
+                ", href='" + href + '\'' +
+                ", time='" + time + '\'' +
+                ", start=" + start +
+                ", duration=" + duration +
+                '}';
+    }
+
+    /*
          {
             "isOnDemand" : true,
             "programKey" : "4GP",

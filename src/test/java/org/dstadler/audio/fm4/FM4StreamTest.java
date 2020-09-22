@@ -53,6 +53,8 @@ public class FM4StreamTest {
                 fm4Stream.getStart() > 0);
         assertTrue("Start should be after 2019, but had: " + fm4Stream.getStart(),
                 fm4Stream.getStart() > MIN_START_TIME);
+
+        assertNotNull(fm4Stream.toString());
     }
 
     @Test
@@ -94,5 +96,8 @@ public class FM4StreamTest {
         TestHelpers.EqualsTest(fm4, equal, notEquals);
 
         TestHelpers.HashCodeTest(fm4, equal);
+
+        assertNotNull(fm4.toString());
+        assertNotNull(notEquals.toString());
     }
 }
