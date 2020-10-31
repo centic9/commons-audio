@@ -68,9 +68,13 @@ available for skipping back and forward a few minutes.
     ./gradlew --console=plain release && ./gradlew closeAndReleaseRepository
     
 * This should automatically release the new version on MavenCentral
-* Afterwards go to https://github.com/centic9/commons-audio/releases and add release-notes
+* Afterwards go to the [Github releases page](https://github.com/centic9/commons-audio/releases) and add release-notes
 
-#### Licensing
+## Support this project
+
+If you find this library useful and would like to support it, you can [Sponsor the author](https://github.com/sponsors/centic9)
+
+## Licensing
 
 * commons-audio is licensed under the [BSD 2-Clause License].
 
