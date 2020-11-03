@@ -101,6 +101,9 @@ public class StreamTest {
 
         stream.setData("123");
         assertEquals("123", stream.getData());
+
+        stream.setStreamType(Stream.StreamType.favourite);
+        assertEquals(Stream.StreamType.favourite, stream.getStreamType());
     }
 
     @Test

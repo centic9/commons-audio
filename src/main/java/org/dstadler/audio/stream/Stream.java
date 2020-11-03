@@ -19,7 +19,14 @@ import java.util.function.Function;
  */
 public class Stream {
     public enum StreamType {
-        live, download
+        // live-stream
+        live,
+
+        // audio-file that can be downloaded
+        download,
+
+        // a "virtual" stream which plays favourite songs
+        favourite
     }
 
     public static final Stream EMPTY = new Stream();
