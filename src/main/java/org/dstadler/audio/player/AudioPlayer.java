@@ -1,5 +1,6 @@
 package org.dstadler.audio.player;
 
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 
 /**
@@ -10,7 +11,7 @@ public interface AudioPlayer extends AutoCloseable {
 
     void setOptions(String options);
 
-    void play() throws IOException;
+    void play() throws IOException, UnsupportedAudioFileException;
 
     @Override
     void close() throws IOException;

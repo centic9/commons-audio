@@ -4,6 +4,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Assume;
 import org.junit.Test;
 
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +24,7 @@ public class TarsosDSPPlayerTest {
     }
 
     @Test
-    public void testPlay() throws IOException {
+    public void testPlay() throws IOException, UnsupportedAudioFileException {
         try (InputStream stream = new FileInputStream(SAMPLE_FILE)) {
             try (TarsosDSPPlayer player = new TarsosDSPPlayer(stream)) {
                 player.setOptions("2.0");

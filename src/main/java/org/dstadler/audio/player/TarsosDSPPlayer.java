@@ -41,7 +41,7 @@ public class TarsosDSPPlayer implements AudioPlayer {
     }
 
     @Override
-    public void play() throws IOException {
+    public void play() throws IOException, UnsupportedAudioFileException {
         try {
             // first create the AudioInputStream for the incoming audio data (usually MP3!)
             ain = AudioSystem.getAudioInputStream(stream);
@@ -73,7 +73,7 @@ public class TarsosDSPPlayer implements AudioPlayer {
             // finally run the audio pipeline directly, no need for a separate thread
             // here because the player runs in its own thread already anyway
             dispatcher.run();
-        } catch (UnsupportedAudioFileException | LineUnavailableException e) {
+        } catch (LineUnavailableException e) {
             throw new IOException(e);
         }
     }
