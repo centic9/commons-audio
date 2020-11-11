@@ -42,7 +42,8 @@ public class RangeDownloadFile implements RangeDownload {
 
         if(start + size > length) {
             log.info("Reducing number of bytes to read for " + file + " at position " + start +
-                    " from " + size + " bytes to " + (length - start) + " bytes because of length of stream " + length);
+                    " from " + size + " bytes to " + (length - start) +
+                    " bytes because it would exceed the length of the stream of " + length + " bytes");
             size = (int)(length - start);
         }
 
