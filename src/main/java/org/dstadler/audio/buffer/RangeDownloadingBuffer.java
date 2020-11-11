@@ -331,6 +331,12 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
     public synchronized BufferPersistenceDTO toPersistence(Stream stream, boolean playing) {
         long startPosition = nextDownloadPos - buffer.size() * chunkSize;
 
+        if(startPosition < 0) {
+            log.warning("Found invalid startPosition: " + startPosition + " with next download at " + nextDownloadPos +
+                    " and buffer-size of " + (buffer.size() * chunkSize) + ", resetting to 0");
+            startPosition = 0;
+        }
+
         log.fine("Persisting stream: " + stream + " at " + nextDownloadPos + "/" + startPosition);
 
         return new BufferPersistenceDTO(startPosition, stream, playing);
