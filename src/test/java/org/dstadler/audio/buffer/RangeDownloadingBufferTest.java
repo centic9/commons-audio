@@ -219,6 +219,23 @@ public class RangeDownloadingBufferTest {
 
         assertNull(buffer.next());
         assertNull(buffer.next());
+
+        assertTrue(buffer.empty());
+    }
+
+    @Test
+    public void testEmpty() throws IOException {
+        // go nearly to the end of the buffer
+        assertEquals(expectedChunks - 2, buffer.seek(buffer.size() - 2));
+
+        // make sure we have the data in the buffer
+        assertEquals(2, buffer.fillupBuffer(-1, 9999999));
+
+        // make sure we can read more data
+        assertNotNull(buffer.peek());
+
+        // we should not report empty() now
+        assertFalse(buffer.empty());
     }
 
     @Test

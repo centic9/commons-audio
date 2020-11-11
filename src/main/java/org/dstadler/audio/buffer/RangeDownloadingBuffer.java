@@ -178,7 +178,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         }
 
         // if we cannot read any more data we seem to have exhausted this stream
-        if(buffer.empty() && empty()) {
+        if(empty()) {
             close();
         }
 
@@ -200,7 +200,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         }
 
         // if we cannot read any more data we seem to have exhausted this stream
-        if(buffer.empty() && empty()) {
+        if(empty()) {
             close();
         }
 
@@ -253,7 +253,9 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
     @Override
     public synchronized boolean empty() {
-        return nextDownloadPos >= download.getLength();
+        // only report the buffer as empty if we have downloaded everything
+        // and there is no data left in the buffer to read
+        return nextDownloadPos >= download.getLength() && buffer.empty();
     }
 
     @Override
