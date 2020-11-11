@@ -169,8 +169,9 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         // empty() indicates that we cannot fetch more data any more
         if(buffer.empty() && !empty()) {
             try {
-                log.info("Filling up buffer for next()");
-                fillupBuffer(-1, 10);
+                log.info("Filling up buffer for next() with download-position at " + nextDownloadPos + " and length " + download.getLength());
+                int chunks = fillupBuffer(-1, 10);
+                log.info("Downloaded " + chunks + ", having download-position now at " + nextDownloadPos + " and length " + download.getLength());
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to fill-up buffer", e);
             }
@@ -190,8 +191,9 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         // empty() indicates that we cannot fetch more data any more
         if(buffer.empty() && !empty()) {
             try {
-                log.info("Filling up buffer for peek()");
-                fillupBuffer(-1, 10);
+                log.info("Filling up buffer for peek() with download-position at " + nextDownloadPos + " and length " + download.getLength());
+                int chunks = fillupBuffer(-1, 10);
+                log.info("Downloaded " + chunks + ", having download-position now at " + nextDownloadPos + " and length " + download.getLength());
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to fill-up buffer", e);
             }
