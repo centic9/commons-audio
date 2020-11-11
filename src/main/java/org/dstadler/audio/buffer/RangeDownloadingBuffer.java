@@ -95,6 +95,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
                         "min: " + min + ", max: " + max + " from position " + nextDownloadPos + ": " + e);
 
                 try {
+                    //noinspection BusyWait
                     Thread.sleep(5000);
                 } catch (InterruptedException ex) {
                     log.log(Level.WARNING, "Sleeping was interrupted", ex);
@@ -137,7 +138,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
             log.fine("Downloading " + toDownload + " chunks at " + nextDownloadPos + " from " + download);
         }
 
-        byte[] bytes = download.readRange(nextDownloadPos, chunkSize * toDownload);
+        byte[] bytes = download.readRange(nextDownloadPos, (int) Math.min(chunkSize * toDownload, download.getLength() - nextDownloadPos));
 
         int count = 0;
         for (; count < toDownload && count * chunkSize < bytes.length; count++) {
