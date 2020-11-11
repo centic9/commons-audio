@@ -104,7 +104,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
     }
 
     // only synchronize the actual reading and adding to the buffer and adjusting nextDownloadPos
-    // to not hold the lock while sleeping during retries below
+    // to not hold the lock while sleeping during retries
     synchronized int downloadChunksSync(int min, int max) throws IOException {
         int toDownload = bufferedChunks - buffer.size();
 
@@ -329,6 +329,9 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
     @Override
     public synchronized BufferPersistenceDTO toPersistence(Stream stream, boolean playing) {
+        // set persisted position where we should start reading based on the
+        // current download-position minus the data that is stored in the buffer and thus
+        // also needs to be downloaded again
         long startPosition = nextDownloadPos - buffer.size() * chunkSize;
 
         if(startPosition < 0) {

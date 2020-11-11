@@ -174,7 +174,11 @@ public class RangeDownloadingBufferTest {
             assertNotNull("Having: " + buffer, buffer.next());
         }
 
+        assertEquals(fileSize/CHUNK_SIZE + 1 - 20, buffer.size());
+
         buffer.seek(-19);
+
+        assertEquals(fileSize/CHUNK_SIZE, buffer.size());
 
         assertEquals(0, buffer.fillupBuffer(-1, -1));
 
@@ -183,6 +187,12 @@ public class RangeDownloadingBufferTest {
         assertEquals(expectedChunks-1, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
         assertEquals(expectedChunks, buffer.fill());
+
+        buffer.seek(19);
+
+        assertEquals(fileSize/CHUNK_SIZE + 1 - 20, buffer.size());
+
+        assertEquals(10, buffer.fillupBuffer(-1, -1));
     }
 
     @Test
