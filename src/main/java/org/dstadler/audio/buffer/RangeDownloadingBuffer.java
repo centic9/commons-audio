@@ -170,9 +170,11 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         // empty() indicates that we cannot fetch more data any more
         if(buffer.empty() && !empty()) {
             try {
-                log.info("Filling up buffer for next() with download-position at " + nextDownloadPos + " and length " + download.getLength());
+                log.info("Filling up buffer for next() with download-position at " + nextDownloadPos +
+                        " and length " + download.getLength() + ", buffer: " + buffer);
                 int chunks = fillupBuffer(-1, 10);
-                log.info("Downloaded " + chunks + ", having download-position now at " + nextDownloadPos + " and length " + download.getLength());
+                log.info("Downloaded " + chunks + " chunks, now at download-position " + nextDownloadPos +
+                        " and length " + download.getLength() + ", buffer: " + buffer);
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to fill-up buffer", e);
             }
@@ -192,9 +194,11 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         // empty() indicates that we cannot fetch more data any more
         if(buffer.empty() && !empty()) {
             try {
-                log.info("Filling up buffer for peek() with download-position at " + nextDownloadPos + " and length " + download.getLength());
+                log.info("Filling up buffer for peek() with download-position at " + nextDownloadPos +
+                        " and length " + download.getLength() + ", buffer: " + buffer);
                 int chunks = fillupBuffer(-1, 10);
-                log.info("Downloaded " + chunks + ", having download-position now at " + nextDownloadPos + " and length " + download.getLength());
+                log.info("Downloaded " + chunks + " chunks, now at download-position " + nextDownloadPos +
+                        " and length " + download.getLength() + ", buffer: " + buffer);
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to fill-up buffer", e);
             }
