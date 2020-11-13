@@ -91,10 +91,10 @@ public class BufferPersistenceDTO {
     @Override
     public String toString() {
         return "BufferPersistenceDTO{" +
-                "chunks=" + (buffer == null ? "<null>" : buffer.length) +
-                ", nextGet=" + nextGet +
-                ", nextAdd=" + nextAdd +
-                ", fill=" + fill +
+                (buffer == null ? "" : "chunks=" + buffer.length) +
+                (nextGet == 0 ? "" : ", nextGet=" + nextGet) +
+                (nextAdd == 0 ? "" : ", nextAdd=" + nextAdd) +
+                (fill == 0 ? "" : ", fill=" + fill) +
                 ", nextDownloadPosition=" + nextDownloadPosition +
                 ", stream=" + stream +
                 ", playing=" + playing +

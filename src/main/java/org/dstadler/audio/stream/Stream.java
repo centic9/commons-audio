@@ -175,11 +175,11 @@ public class Stream {
     public String toString() {
         return "Stream: name='" + name + '\'' +
                 ", url='" + url + '\'' +
-                ", imageUrl='" + imageUrl + '\'' +
+                // make toString a bit shorter: ", imageUrl='" + imageUrl + '\'' +
                 ", tempoStrategy=" + tempoStrategy +
-                ", tempo=" + tempo +
+                (tempo == 1.0f ? "" : ", tempo=" + tempo) +
                 ", streamType=" + streamType +
-                ", user=" + user +
-                ", data=" + data;
+                (user == null ? "" : ", user=" + user) +
+                (data == null ? "": ", data=" + data);
     }
 }
