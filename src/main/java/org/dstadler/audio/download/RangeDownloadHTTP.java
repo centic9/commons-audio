@@ -87,7 +87,7 @@ public class RangeDownloadHTTP implements RangeDownload {
             httpClient.getHttpClient().getConnectionManager().closeIdleConnections(0, TimeUnit.SECONDS);
         }
 
-        log.info("Prepared download of " + url + ", length: " + length);
+        log.info(String.format("Prepared download of %s, length: %,d", url, length));
     }
 
     @Override
@@ -103,8 +103,8 @@ public class RangeDownloadHTTP implements RangeDownload {
                 length, start, size);
 
         if(start + size > length) {
-            log.info("Reducing number of bytes to read for " + url + " at position " + start +
-                    " from " + size + " bytes to " + (length - start) + " bytes because of length of stream " + length);
+            log.info(String.format("Reducing number of bytes to read for %s at position %,d from %,d bytes to %,d bytes because of length of stream %,d",
+                    url, start, size, length - start, length));
             size = (int)(length - start);
         }
 
