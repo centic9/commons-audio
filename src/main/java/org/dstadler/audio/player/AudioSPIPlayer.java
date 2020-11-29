@@ -61,6 +61,11 @@ public class AudioSPIPlayer implements AudioPlayer {
             int numbytes = 0;                               // how many bytes
 
             for (; ; ) {  // We'll exit the loop when we reach the end of stream
+                // bail out if the player was closed
+                if (ain == null) {
+                    break;
+                }
+
                 // First, read some bytes from the input stream.
                 int bytesread = ain.read(buffer, numbytes, buffer.length - numbytes);
 
