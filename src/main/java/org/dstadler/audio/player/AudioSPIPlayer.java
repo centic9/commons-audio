@@ -44,11 +44,11 @@ public class AudioSPIPlayer implements AudioPlayer {
             ain = AudioUtils.convertToSupportedAudio(ain);
 
             // Get information about the format of the stream
-            AudioFormat format = ain.getFormat( );
-            DataLine.Info info = new DataLine.Info(SourceDataLine.class,format);
+            AudioFormat format = ain.getFormat();
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
 
             // If not done before, open the line through which we'll play the streaming audio
-            if(line == null) {
+            if (line == null) {
                 line = (SourceDataLine) AudioSystem.getLine(info);
                 line.open(format);
             }
@@ -56,13 +56,13 @@ public class AudioSPIPlayer implements AudioPlayer {
             // Allocate a buffer for reading from the input stream and writing
             // to the line.  Make it large enough to hold 4k audio frames.
             // Note that the SourceDataLine also has its own internal buffer.
-            int framesize = format.getFrameSize( );
-            byte[  ] buffer = new byte[4 * 1024 * framesize]; // the buffer
+            int framesize = format.getFrameSize();
+            byte[] buffer = new byte[4 * 1024 * framesize]; // the buffer
             int numbytes = 0;                               // how many bytes
 
-            for(;;) {  // We'll exit the loop when we reach the end of stream
+            for (; ; ) {  // We'll exit the loop when we reach the end of stream
                 // First, read some bytes from the input stream.
-                int bytesread = ain.read(buffer, numbytes,buffer.length-numbytes);
+                int bytesread = ain.read(buffer, numbytes, buffer.length - numbytes);
 
                 if (bytesread == -1) {
                     break;
@@ -73,16 +73,16 @@ public class AudioSPIPlayer implements AudioPlayer {
                 // Now that we've got some audio data to write to the line,
                 // start the line, so it will play that data as we write it.
                 if (!started) {
-                    line.start( );
+                    line.start();
                     started = true;
                 }
 
                 // We must write bytes to the line in an integer multiple of
                 // the framesize.  So figure out how many bytes we'll write.
-                int bytestowrite = (numbytes/framesize)*framesize;
+                int bytestowrite = (numbytes / framesize) * framesize;
 
                 // bail out if the player was closed
-                if(ain == null) {
+                if (ain == null) {
                     break;
                 }
 
@@ -94,12 +94,14 @@ public class AudioSPIPlayer implements AudioPlayer {
                 // then copy the remaining bytes to the start of the buffer.
                 int remaining = numbytes - bytestowrite;
                 if (remaining > 0)
-                    System.arraycopy(buffer,bytestowrite,buffer,0,remaining);
+                    System.arraycopy(buffer, bytestowrite, buffer, 0, remaining);
                 numbytes = remaining;
             }
 
-            // Now block until all buffered sound finishes playing.
-            line.drain( );
+            // block until all buffered sound finishes playing
+            if (line != null) {
+                line.drain();
+            }
         } catch (LineUnavailableException e) {
             throw new IOException(e);
         }
