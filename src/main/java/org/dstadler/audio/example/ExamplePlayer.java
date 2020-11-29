@@ -5,6 +5,7 @@ import org.dstadler.audio.buffer.RangeDownloadingBuffer;
 import org.dstadler.audio.player.AudioPlayer;
 import org.dstadler.audio.player.AudioSPIPlayer;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
+import org.dstadler.commons.util.SuppressForbidden;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class ExamplePlayer {
 
     private static volatile boolean shouldStop = false;
 
+    @SuppressForbidden(reason = "Uses System.exit()")
     public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length != 1) {
             System.err.println("Usage: ExamplePlayer <url>");
