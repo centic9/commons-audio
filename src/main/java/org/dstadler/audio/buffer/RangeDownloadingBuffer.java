@@ -50,7 +50,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
      *                    is presented with the percentage of the position in the download and should return
      *                    with a pair consisting of a generic metadata-string (e.g. a song title or artist)
      *                    and a timestamp in milliseconds since the epoch.
-     *                    The function can return null via "p -> null" to not provide any metadata.
+     *                    The function can return null via "p -&gt; null" to not provide any metadata.
      *
      * @throws IOException if reading information for the given url fails.
      */
