@@ -50,6 +50,7 @@ dependencies {
 
     // MP3 SPI, used for playback
     compile 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
+    compile 'com.googlecode.soundlibs:vorbisspi:1.0.3.3'
 
     // JLayerPlayer, used for playback
     compile 'com.googlecode.soundlibs:jlayer:1.0.1.4'

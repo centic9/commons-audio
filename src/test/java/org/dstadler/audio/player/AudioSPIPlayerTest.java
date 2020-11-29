@@ -10,13 +10,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class MP3SPIPlayerTest {
+public class AudioSPIPlayerTest {
     private static final File SAMPLE_FILE = new File("src/test/resources/1-second-of-silence.mp3");
 
     @Test
     public void testSetOption() throws IOException {
         try (InputStream stream = new FileInputStream(SAMPLE_FILE)) {
-            try (MP3SPIPlayer player = new MP3SPIPlayer(stream)) {
+            try (AudioSPIPlayer player = new AudioSPIPlayer(stream)) {
                 player.setOptions("");
                 player.setOptions(null);
                 player.setOptions("1.0");
@@ -27,7 +27,7 @@ public class MP3SPIPlayerTest {
     @Test
     public void testPlay() throws IOException {
         try (InputStream stream = new FileInputStream(SAMPLE_FILE)) {
-            try (MP3SPIPlayer player = new MP3SPIPlayer(stream)) {
+            try (AudioSPIPlayer player = new AudioSPIPlayer(stream)) {
                 player.play();
             }
         } catch (IllegalArgumentException e) {
@@ -42,7 +42,7 @@ public class MP3SPIPlayerTest {
     @Test
     public void testCloseTwice() throws IOException {
         try (InputStream stream = new FileInputStream(SAMPLE_FILE)) {
-            try (MP3SPIPlayer player = new MP3SPIPlayer(stream)) {
+            try (AudioSPIPlayer player = new AudioSPIPlayer(stream)) {
                 player.close();
                 //noinspection RedundantExplicitClose
                 player.close();
@@ -52,7 +52,7 @@ public class MP3SPIPlayerTest {
 
     @Test(expected = IOException.class)
     public void testException() throws IOException {
-        try (MP3SPIPlayer player = new MP3SPIPlayer(new ByteArrayInputStream("test".getBytes()))) {
+        try (AudioSPIPlayer player = new AudioSPIPlayer(new ByteArrayInputStream("test".getBytes()))) {
             player.setOptions("-0.1");
         }
     }

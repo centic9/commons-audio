@@ -14,7 +14,7 @@ import java.io.InputStream;
  * AudioPlayer implementation which uses the Java Audio System for playback
  * together with the MP3 SPI for transcoding the MP3 audio data to PCM.
  */
-public class MP3SPIPlayer implements AudioPlayer {
+public class AudioSPIPlayer implements AudioPlayer {
     private final InputStream stream;
     private AudioInputStream ain;
 
@@ -22,7 +22,7 @@ public class MP3SPIPlayer implements AudioPlayer {
     // We haven't started the line yet.
     boolean started = false;
 
-    public MP3SPIPlayer(InputStream stream) throws IOException {
+    public AudioSPIPlayer(InputStream stream) throws IOException {
         this.stream = stream;
 
         try {
