@@ -10,13 +10,16 @@ audio, playing sound, downloading audio from certain websites, ...
 ## Contents
 
 Here an (incomplete) list of bits and pieces in this lib:
-* A simple AudioPlayer interface and implementations via JLayer, MP3-SPI and TarsosDSP libraries
+* A simple AudioPlayer interface and implementations via JLayer, MP3/OGG-SPI and TarsosDSP libraries
 * Interfaces for buffering audio data in a flexible SeekableRingBuffer
 * Downloading ranges of audio-streams from local files or HTTP
 * Accessing information about sessions of the Austrian radio station FM4
 * An implementation of the SeekableRingBuffer which also provides persisting to disk
 * A system for playing sound at different tempo via the TarsosDSP libraries for stretching/condensing audio on-the-fly
-* A basic Stream class for holding information about streams that are played  
+* A basic Stream class for holding information about streams that are played
+
+There is also a simple commandline audio-player `ExamplePlayer` which shows how to use some of the components to
+provide proper buffered playback of audio from either local files are audio streams fetched via HTTP.   
 
 ## Usage
 

@@ -3,7 +3,7 @@ package org.dstadler.audio.example;
 import org.dstadler.audio.buffer.Chunk;
 import org.dstadler.audio.buffer.RangeDownloadingBuffer;
 import org.dstadler.audio.player.AudioPlayer;
-import org.dstadler.audio.player.TarsosDSPPlayer;
+import org.dstadler.audio.player.AudioSPIPlayer;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 
 import java.io.BufferedInputStream;
@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +25,8 @@ import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
  */
 public class ExamplePlayer {
     private final static Logger log = LoggerFactory.make();
+
+    private static volatile boolean shouldStop = false;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length != 1) {
@@ -46,12 +47,11 @@ public class ExamplePlayer {
                 Chunk.CHUNK_SIZE, p -> null);
 
         // play audio in a separate thread
-        AtomicBoolean shouldStop = new AtomicBoolean();
-        Thread writer = new Thread(new AudioWriter(shouldStop, buffer), "Writer thread");
+        Thread writer = new Thread(new AudioWriter(buffer), "Writer thread");
         writer.start();
 
         // then read and populate the buffer until we have read everything
-        while (!buffer.empty()) {
+        while (!buffer.empty() && !shouldStop) {
             try {
                 // this just ensures that we fill the buffer in parallel
                 // to the writer thread so that playing audio never runs
@@ -68,7 +68,7 @@ public class ExamplePlayer {
         }
 
         // indicate that no more data is read and thus playing should stop
-        shouldStop.set(true);
+        shouldStop = true;
         writer.join();
     }
 
@@ -78,26 +78,18 @@ public class ExamplePlayer {
      * audio-player take data whenever needed.
      */
     private static class AudioWriter implements Runnable {
-        private final PipedOutputStream out;
-        private final AtomicBoolean shouldStop;
         private final RangeDownloadingBuffer buffer;
-        private InputStream inputStream;
+        private final PipedOutputStream out;
 
-        public AudioWriter(AtomicBoolean shouldStop, RangeDownloadingBuffer buffer) {
-            this.shouldStop = shouldStop;
+        public AudioWriter(RangeDownloadingBuffer buffer) {
             this.buffer = buffer;
-            out = new PipedOutputStream();
+            this.out = new PipedOutputStream();
         }
         @Override
         public void run() {
             try {
-                // allow buffer for a few chunks in the pipe to avoid flaky sound output
-                // some Audio classes try to use mark()/reset(), thus we use a wrapping BufferedInputStream()
-                // here to provide this functionality as PipedInputStream does not support it
-                inputStream = new BufferedInputStream(new PipedInputStream(out, 5*CHUNK_SIZE), CHUNK_SIZE);
-
                 //player.setOptions("");
-                Thread playerThread = new Thread(new PlayerThread(), "Player thread");
+                Thread playerThread = new Thread(new PlayerThread(out), "Player thread");
                 playerThread.setDaemon(true);
                 playerThread.start();
 
@@ -111,7 +103,7 @@ public class ExamplePlayer {
 
         private long writeLoop() throws IOException {
             long chunks = 0;
-            while (!shouldStop.get()) {
+            while (!shouldStop) {
                 // get the next chunk from the buffer, this might block if no more data is
                 // available
                 Chunk chunk = buffer.next();
@@ -130,31 +122,43 @@ public class ExamplePlayer {
             }
             return chunks;
         }
+    }
 
-        /**
-         * The audio-system in Java needs a thread for actually
-         * running the player
-         */
-        private class PlayerThread implements Runnable {
-            @Override
-            public void run() {
-                try {
-                    AudioPlayer player = createPlayer(inputStream);
+    /**
+     * The audio-system in Java needs a thread for actually
+     * running the player
+     */
+    private static class PlayerThread implements Runnable {
+        private final InputStream inputStream;
 
-                    //player.setOptions("");
+        public PlayerThread(PipedOutputStream out) throws IOException {
+            // allow buffer for a few chunks in the pipe to avoid flaky sound output
+            // some Audio classes try to use mark()/reset(), thus we use a wrapping BufferedInputStream()
+            // here to provide this functionality as PipedInputStream does not support it
+            this.inputStream = new BufferedInputStream(new PipedInputStream(out, 5 * CHUNK_SIZE), CHUNK_SIZE);
+        }
 
-                    player.play();
-                } catch (Throwable e) {
-                    log.log(Level.WARNING, "Caught unexpected exception", e);
-                }
+        @Override
+        public void run() {
+            try {
+                AudioPlayer player = createPlayer(inputStream);
+
+                //player.setOptions("");
+
+                player.play();
+            } catch (Throwable e) {
+                log.log(Level.WARNING, "Caught unexpected exception", e);
+
+                shouldStop = true;
             }
         }
+    }
 
-        public static AudioPlayer createPlayer(InputStream inputStream) {
-            // any of the implementations will play .mp3 streams
-            return new TarsosDSPPlayer(inputStream);
-//        return new MP3SPIPlayer(inputStream);
+    public static AudioPlayer createPlayer(InputStream inputStream) throws IOException {
+        // any of the implementations will play .mp3 streams
+        // the SPI-based one can play OggVorbis as well
+//        return new TarsosDSPPlayer(inputStream);
+        return new AudioSPIPlayer(inputStream);
 //        return new JLayerPlayer(inputStream);
-        }
     }
 }
