@@ -38,6 +38,22 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
     private long nextDownloadPos = 0;
 
+    /**
+     * Create a buffer for downloading a audio-stream via the given URL.
+     *
+     * @param url The URL to fetch data from. Can be a local file-name or a file:// url.
+     * @param user The user to use for authentication, can be empty or null to not use authentication
+     * @param pwd The password to use for authenticatoin, can be null if no authentication is necessary
+     * @param bufferedChunks The number of "chunks" to buffer. See {@link Chunk}
+     * @param chunkSize The size of single "chunks", a common value is provided via {@link Chunk#CHUNK_SIZE}
+     * @param metaDataFun Allows to provide a callback which is invoked for providing additional metdata, it
+     *                    is presented with the percentage of the position in the download and should return
+     *                    with a pair consisting of a generic metadata-string (e.g. a song title or artist)
+     *                    and a timestamp in milliseconds since the epoch.
+     *                    The function can return null via "p -> null" to not provide any metadata.
+     *
+     * @throws IOException if reading information for the given url fails.
+     */
     public RangeDownloadingBuffer(String url, String user, String pwd, int bufferedChunks, int chunkSize,
                                   Function<Double, Pair<String, Long>> metaDataFun) throws IOException {
         if(url.startsWith("file://")) {
@@ -145,7 +161,9 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         for (; count < toDownload && count * chunkSize < bytes.length; count++) {
             Pair<String, Long> metaData = getMetadata(nextDownloadPos + count * chunkSize);
             buffer.add(new Chunk(Arrays.copyOfRange(bytes, count * chunkSize,
-                    Math.min(bytes.length, (count + 1) * chunkSize)), metaData.getKey(), metaData.getValue()));
+                    Math.min(bytes.length, (count + 1) * chunkSize)),
+                    metaData == null ? "" : metaData.getKey(),
+                    metaData == null ? 0L : metaData.getValue()));
         }
 
         // advance the download-position by the exact number of bytes that

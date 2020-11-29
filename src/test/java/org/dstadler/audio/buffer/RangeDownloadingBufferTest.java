@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Function;
 
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
 import static org.junit.Assert.assertArrayEquals;
@@ -37,16 +38,22 @@ public class RangeDownloadingBufferTest {
 
     private RangeDownloadingBuffer buffer;
 
-    @Parameterized.Parameters(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}")
+    @Parameterized.Parameters(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { SAMPLE_URL, 34, 555180, 555148 },
+                { SAMPLE_URL, 34, 555180, 555148, Pair.of("", 100L) },
 
-                { SAMPLE_FILE, 36, 587241, 587207 },
-                { SAMPLE_FILE_URL, 36, 587241, 587207 },
+                { SAMPLE_FILE, 36, 587241, 587207, Pair.of("", 100L) },
+                { SAMPLE_FILE_URL, 36, 587241, 587207, Pair.of("", 100L) },
 
-                { SAMPLE_FILE2, 30, 485375, 485347 },
-                { SAMPLE_FILE2_URL, 30, 485375, 485347 },
+                { SAMPLE_FILE2, 30, 485375, 485347, Pair.of("", 100L) },
+                { SAMPLE_FILE2_URL, 30, 485375, 485347, Pair.of("", 100L) },
+
+                // null metadata
+                { SAMPLE_FILE, 36, 587241, 587207, null },
+
+                // some other metadata
+                { SAMPLE_FILE, 36, 587241, 587207, Pair.of("some meta data", 76L) },
         });
     }
 
@@ -58,11 +65,13 @@ public class RangeDownloadingBufferTest {
     public int fileSize;
     @Parameterized.Parameter(3)
     public int fileSize2;
+    @Parameterized.Parameter(4)
+    public Pair<String, Long> metaData;
 
     @Before
     public void setUp() {
         try {
-            buffer = new RangeDownloadingBuffer(sample, "", null, 10, CHUNK_SIZE, percentage -> Pair.of("", 100L));
+            buffer = new RangeDownloadingBuffer(sample, "", null, 10, CHUNK_SIZE, p -> metaData);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -204,8 +213,8 @@ public class RangeDownloadingBufferTest {
         Chunk chunk = buffer.next();
         assertNotNull(chunk);
         assertEquals(CHUNK_SIZE, chunk.getData().length);
-        assertEquals("", chunk.getMetaData());
-        assertEquals(100L, chunk.getTimestamp());
+        assertEquals(metaData == null ? "" : metaData.getLeft(), chunk.getMetaData());
+        assertEquals(metaData == null ? 0L : metaData.getRight(), chunk.getTimestamp());
 
         assertArrayEquals(peek.getData(), chunk.getData());
     }
@@ -317,7 +326,13 @@ public class RangeDownloadingBufferTest {
         assertEquals(expectedChunks, buffer.capacity());
         assertEquals(expectedChunks, buffer.fill());
 
-        Stream stream = new Stream();
+        Stream stream = new Stream() {
+            // use the same meta-data as the buffer
+            @Override
+            public Function<Double, Pair<String, Long>> getMetaDataFun() {
+                return p -> metaData;
+            }
+        };
         stream.setUrl(sample);
         stream.setStreamType(Stream.StreamType.live);
         stream.setStartTimestamp(100L);
