@@ -43,12 +43,12 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
      * Negative numbers indicate backwards, positive indicate
      * forward.
      * The return value indicates how many chunks could actually be
-     * seeked up the start or end of the buffer.
+     * seeked towards the start or end of the buffer.
      *
      * @param nrOfChunks A signed number indicating the number of
      *                   blocks to go forward or backwards in the buffer
      *
-     * @return The number of chunks that could be seeked up to the
+     * @return The number of chunks that could be seeked towards the
      *      start or end of the buffer, i.e. return == nrOfChunks indicates
      *      that seeking this many chunks forward or backwards was possible.
      */
@@ -61,6 +61,10 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
     boolean empty();
 
     /**
+     * Check if all slots in the buffer are filled with data, i.e.
+     * calling next() as many times as the number of chunks would
+     * still not block for more data..
+     *
      * @return true if all slots in the buffer are filled.
      */
     boolean full();
@@ -92,13 +96,14 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
     int fill();
 
     /**
-     * Sets the buffer to empty, i.e. size() and fill() will return 0
-     * afterwards and next() without add() would block or throw an Exception.
+     * Sets the buffer to empty, i.e. size(), fill(), bufferedForward() and
+     * bufferedBackwards() will return 0 afterwards and next() without
+     * add() would block or throw an Exception.
      */
     void reset();
 
     /**
-     * Provides how many chunks can be fetched or seeked forward in the
+     * Provides information how many chunks can be fetched or seeked forward in the
      * buffer until a blocking read operation is necessary.
      *
       * @return The number of chunks that are buffered.
@@ -106,7 +111,7 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
     int bufferedForward();
 
     /**
-     * Provides how many chunks can be seeked backwards in the buffer
+     * Provides information how many chunks can be seeked backwards in the buffer
      * without a blocking read operation.
      *
      * @return The number of chunks that are buffered.
