@@ -405,4 +405,19 @@ public class RangeDownloadingBufferTest {
 
         System.out.println("After fillup: " + (System.currentTimeMillis() - start));
     }
+
+    @Test
+    public void testSeekNotEmpty() throws IOException {
+        assertFalse("Not empty at the beginning", buffer.empty());
+
+        assertEquals("Load 10 chunks", 10, buffer.fillupBuffer(0, 10));
+        assertFalse("Not empty after initial fill-up", buffer.empty());
+
+        assertEquals("Able to seek 20 chunks", 20, buffer.seek(20));
+        assertFalse("Not empty after seeking", buffer.empty());
+
+        int seeked = buffer.seek(300);
+        assertTrue("Had: " + seeked, seeked >= 10);
+        assertTrue("Should be at the end now", buffer.empty());
+    }
 }
