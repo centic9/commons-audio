@@ -1,5 +1,6 @@
 package org.dstadler.audio.buffer;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dstadler.audio.download.RangeDownload;
@@ -28,6 +29,9 @@ import java.util.logging.Logger;
  */
 public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persistable {
     private final static Logger log = LoggerFactory.make();
+
+    @VisibleForTesting
+    int RETRY_SLEEP_TIME = 5000;
 
     private final int bufferedChunks;
     private final int chunkSize;
@@ -107,12 +111,13 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
                 }
 
                 log.warning(String.format("Retry %,d: Failed to download %,d bytes, chunkSize: %,d, bufferedChunks: %,d, " +
-                                "min: %,d, max: %,d from position %,d: %s",
-                        retries, chunkSize * buffer.size(), chunkSize, bufferedChunks, min, max, nextDownloadPos, e));
+                                "min: %,d, max: %,d from position %,d: length: %,d: %s",
+                        retries, chunkSize * buffer.size(), chunkSize, bufferedChunks, min, max, nextDownloadPos,
+                        download.getLength(), e));
 
                 try {
                     //noinspection BusyWait
-                    Thread.sleep(5000);
+                    Thread.sleep(RETRY_SLEEP_TIME);
                 } catch (InterruptedException ex) {
                     log.log(Level.WARNING, "Sleeping was interrupted", ex);
                 }
