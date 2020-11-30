@@ -41,13 +41,17 @@ public class BufferBasedTempoStrategy implements TempoStrategy {
 
     @Override
     public float calculateTempo() {
-        double chunksPerSecond = buffer.get().getChunksPerSecond();
+        CountingSeekableRingBuffer bufferLocal = buffer.get();
 
-        double maxSecondsBackwards = ((double)(buffer.get().fill() - buffer.get().size()))/chunksPerSecond;
-        double maxSecondsForward = ((double)buffer.get().size())/chunksPerSecond;
+        double chunksPerSecond = bufferLocal.getChunksPerSecond();
+
+        int fill = bufferLocal.fill();
+        int size = bufferLocal.size();
+        double maxSecondsBackwards = ((double)(fill - size))/chunksPerSecond;
+        double maxSecondsForward = ((double) size)/chunksPerSecond;
 
         // use a quarter of the current size at both ends for tempo-adjustment
-        double limit = ((double)buffer.get().fill())/4/chunksPerSecond;
+        double limit = ((double) fill)/4/chunksPerSecond;
 
         // no computation if the area is not very large due to small buffer size
         if(limit < 200) {
