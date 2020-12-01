@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class FM4Stream {
     private final static Logger log = LoggerFactory.make();
 
-    private static final String STREAM_URL_BASE = "https://loopstream01.apa.at/?channel=fm4&id=";
+    private static final String STREAM_URL_BASE = "https://loopstreamfm4.apa.at/?channel=fm4&id=";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
