@@ -73,15 +73,18 @@ public class FM4 {
                 collect(Collectors.toList());
     }
 
-    public void downloadStream(FM4Stream match, File downloadBaseDir) throws IOException {
+    public void downloadStream(FM4Stream stream, File downloadDir) throws IOException {
         int count = 0;
-        for (String url : match.getStreams()) {
-            File destination = new File(downloadBaseDir, match.getTitle() + " " + match.getShortTime().replace(":", "_") + "_" + count + ".mp3");
-            log.info("Downloading URL: " + url + " to " + destination);
+        for (String url : stream.getStreams()) {
+            File destination = new File(downloadDir, stream.getTitle() + " " +
+                    stream.getShortTime().replace(":", "_") + "_" + count + ".mp3");
+
+            log.info("Downloading " + stream.getProgramKey() + " - " + stream.getShortTime() + " - " +
+                    stream.getTitle() + " to URL: " + url + " to " + destination);
+
             HttpClientWrapper.downloadFile(url, destination, 120_000);
 
             count++;
         }
     }
-
 }
