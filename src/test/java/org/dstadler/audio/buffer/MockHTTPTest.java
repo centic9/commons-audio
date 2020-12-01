@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -159,6 +160,20 @@ public class MockHTTPTest {
                         break;
                 }
             });
+        }
+    }
+
+    @Test
+    public void testSeekWithFilledBuffer() throws IOException {
+        try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer(new File("src/test/resources/test.bin").getAbsolutePath(),
+                "", null, 10000, 1024, p -> null)) {
+            assertEquals(574, buffer.fillupBuffer(0, 99999));
+            assertFalse(buffer.empty());
+            //System.out.println("Buffer: " + buffer);
+
+            assertEquals(500, buffer.seek(500));
+            assertFalse(buffer.empty());
+            //System.out.println("Buffer: " + buffer);
         }
     }
 }
