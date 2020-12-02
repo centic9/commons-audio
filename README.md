@@ -17,15 +17,16 @@ Here an (incomplete) list of bits and pieces in this lib:
 * An implementation of the SeekableRingBuffer which also provides persisting to disk
 * A system for playing sound at different tempo via the TarsosDSP libraries for stretching/condensing audio on-the-fly
 * A basic Stream class for holding information about streams that are played
+* Extensions to PipedInputStream which help with clearing and flushing the internal buffer
 
-There is also a simple commandline audio-player `ExamplePlayer` which shows how to use some of the components to
-provide proper buffered playback of audio from either local files are audio streams fetched via HTTP.   
+There is also a simple commandline audio-player `ExamplePlayer` which shows how to use the components to
+provide proper buffered playback of audio from either local files or audio streams fetched via HTTP.   
 
 ## Usage
 
 The SeekableRingBuffer and it's implementations are at the core of some of my audio applications, 
 they allow to have a full-featured ring-buffer for audio-data in the application and for example 
-have one thread fetch the audio data from somewhere, e.g. from file or from a HTTP download or a
+have one thread fetch the audio data from somewhere, e.g. from a file or from an HTTP download or a
 live stream of some radio-station. Another thread can read from the stream and handle sending the audio
 to the local player. 
 
