@@ -26,3 +26,6 @@ build/
 # IntelliJ
 /out/
 sloccount.sc
+
+ExamplePlayer.*.log
+ExamplePlayer.*.log.lck
