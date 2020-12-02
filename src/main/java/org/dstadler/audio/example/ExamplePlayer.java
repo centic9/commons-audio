@@ -4,6 +4,7 @@ import org.dstadler.audio.buffer.Chunk;
 import org.dstadler.audio.buffer.RangeDownloadingBuffer;
 import org.dstadler.audio.player.AudioPlayer;
 import org.dstadler.audio.player.AudioSPIPlayer;
+import org.dstadler.audio.util.ClearablePipedInputStream;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.util.SuppressForbidden;
 
@@ -36,6 +37,8 @@ public class ExamplePlayer {
             System.exit(1);
         }
 
+        LoggerFactory.initLogging();
+
         run(args[0]);
     }
 
@@ -49,8 +52,11 @@ public class ExamplePlayer {
                 Chunk.CHUNK_SIZE, p -> null);
 
         // play audio in a separate thread
-        Thread writer = new Thread(new AudioWriter(buffer), "Writer thread");
+        AudioWriter audioWriter = new AudioWriter(buffer);
+        Thread writer = new Thread(audioWriter, "Writer thread");
         writer.start();
+
+        //int seeked = -1;
 
         // then read and populate the buffer until we have read everything
         while (!buffer.empty() && !shouldStop) {
@@ -64,6 +70,11 @@ public class ExamplePlayer {
                 }
 
                 Thread.sleep(1000);
+
+                /* just for testing seeking
+                if (seeked == -1) {
+                    seeked = seek(buffer, audioWriter, 0.95);
+                }*/
             } catch (/*IOException |*/ InterruptedException e) {
                 log.log(Level.WARNING, "Caught unexpected exception", e);
             }
@@ -74,6 +85,31 @@ public class ExamplePlayer {
         writer.join();
     }
 
+    @SuppressWarnings("unused")
+    private static int seek(RangeDownloadingBuffer buffer, AudioWriter audioWriter, double percentage) throws IOException {
+        int availableChunks = buffer.fill();
+        int availableBackwardChunks = availableChunks - buffer.size();
+
+        // compute where we need to seek to based on the available number of chunks
+        // and the current read-position
+        double nrOfChunks = percentage * availableChunks;
+        int nrOfChunksRounded = (int)(percentage * availableChunks);
+
+        // when we need to seek backwards, this will become negative
+        final int chunksToSeek = nrOfChunksRounded - availableBackwardChunks;
+
+        log.info("Clearing piped-buffer");
+        audioWriter.clearBuffer();
+
+        // ask the buffer to seek that man chunks forward or backwards
+        int seeked = buffer.seek(chunksToSeek);
+
+        log.info("Seeking " + seeked + " chunks, had request of " + chunksToSeek + " and " + nrOfChunksRounded +
+                "/" + nrOfChunks + " chunks because of percentage " + percentage + " and available chunks: " + availableChunks +
+                " and available backwards: " + availableBackwardChunks + ": " + buffer);
+        return seeked;
+    }
+
     /**
      * A thread which fetches data from the buffer and populates
      * a PipedInputStream that is always filled to let the actual
@@ -82,23 +118,32 @@ public class ExamplePlayer {
     private static class AudioWriter implements Runnable {
         private final RangeDownloadingBuffer buffer;
         private final PipedOutputStream out;
+        private final ClearablePipedInputStream in;
 
-        public AudioWriter(RangeDownloadingBuffer buffer) {
+        public AudioWriter(RangeDownloadingBuffer buffer) throws IOException {
             this.buffer = buffer;
             this.out = new PipedOutputStream();
+
+            // configure enough buffer for a few chunks in the pipe to avoid flaky sound output
+            in = new ClearablePipedInputStream(out, 5 * CHUNK_SIZE);
         }
+
         @Override
         public void run() {
             try {
                 //player.setOptions("");
-                Thread playerThread = new Thread(new PlayerThread(out), "Player thread");
+
+                Thread playerThread = new Thread(new PlayerThread(in), "Player thread");
                 playerThread.setDaemon(true);
                 playerThread.start();
 
                 long chunks = writeLoop();
 
                 log.info("Stopping playing after " + chunks + " chunks");
-            } catch (IOException e) {
+
+                // wait for all data to be read by the playing thread
+                in.waitAllConsumed();
+            } catch (IOException | InterruptedException e) {
                 log.log(Level.WARNING, "Caught unexpected exception", e);
             }
         }
@@ -114,6 +159,8 @@ public class ExamplePlayer {
                     break;
                 }
 
+                log.fine("Write chunk " + chunk + " with " + chunk.getData().length + " bytes");
+
                 // pass on the chunk to the stream for playing
                 out.write(chunk.getData());
 
@@ -124,6 +171,10 @@ public class ExamplePlayer {
             }
             return chunks;
         }
+
+        public void clearBuffer() throws IOException {
+            in.clearBuffer();
+        }
     }
 
     /**
@@ -133,11 +184,10 @@ public class ExamplePlayer {
     private static class PlayerThread implements Runnable {
         private final InputStream inputStream;
 
-        public PlayerThread(PipedOutputStream out) throws IOException {
-            // allow buffer for a few chunks in the pipe to avoid flaky sound output
+        public PlayerThread(PipedInputStream in) {
             // some Audio classes try to use mark()/reset(), thus we use a wrapping BufferedInputStream()
             // here to provide this functionality as PipedInputStream does not support it
-            this.inputStream = new BufferedInputStream(new PipedInputStream(out, 5 * CHUNK_SIZE), CHUNK_SIZE);
+            this.inputStream = new BufferedInputStream(in, CHUNK_SIZE);
         }
 
         @Override
@@ -154,13 +204,13 @@ public class ExamplePlayer {
                 shouldStop = true;
             }
         }
-    }
 
-    public static AudioPlayer createPlayer(InputStream inputStream) throws IOException {
-        // any of the implementations will play .mp3 streams
-        // the SPI-based one can play OggVorbis as well
+        private AudioPlayer createPlayer(InputStream inputStream) throws IOException {
+            // any of the implementations will play .mp3 streams
+            // the SPI-based one can play OggVorbis as well
 //        return new TarsosDSPPlayer(inputStream);
-        return new AudioSPIPlayer(inputStream);
+            return new AudioSPIPlayer(inputStream);
 //        return new JLayerPlayer(inputStream);
+        }
     }
 }
