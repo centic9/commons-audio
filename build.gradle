@@ -61,6 +61,10 @@ dependencies {
     // binary serialization of data during shutdown
     compile 'de.undercouch:bson4jackson:2.11.0'
 
+    // provide a logging.properties only when running the example, but
+    // don't include it in the jar-file
+    runtimeOnly files('src/runtime/resources')
+
     testCompile 'junit:junit:4.13.1'
     testCompile 'org.dstadler:commons-test:1.0.0.19'
 }
