@@ -127,55 +127,80 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
     // only synchronize the actual reading and adding to the buffer and adjusting nextDownloadPos
     // to not hold the lock while sleeping during retries
-    private synchronized int downloadChunksSync(int min, int max) throws IOException {
-        int toDownload = bufferedChunks - buffer.size();
+    private  int downloadChunksSync(int min, int max) throws IOException {
+        // we need to avoid synchronizing the actual HTTP download,
+        // so we extract some variables in a synchronized block and
+        // check afterwards if the buffer changed while we download data
+        while (true) {
+            int toDownload;
+            long nextDownloadPosBefore;
+            synchronized (this) {
+                toDownload = bufferedChunks - buffer.size();
 
-        // nothing to download because enough is buffered already?
-        // this can be negative if we seek backwards
-        if(toDownload <= 0) {
-            return 0;
+                // nothing to download because enough is buffered already?
+                // this can be negative if we seek backwards
+                if (toDownload <= 0) {
+                    return 0;
+                }
+
+                // nothing to download because we are at the end of the stream?
+                if (nextDownloadPos >= download.getLength()) {
+                    return 0;
+                }
+
+                // only download up to the given number of chunks
+                if (max != -1) {
+                    toDownload = Math.min(toDownload, max);
+                }
+
+                // download nothing if toDownload is below "min"
+                if (min != -1 && toDownload < min) {
+                    return 0;
+                }
+
+                Preconditions.checkState(toDownload > 0,
+                        "Invalid value for toDownload: %s, having %s chunks and buffer %s",
+                        toDownload, bufferedChunks, buffer.size());
+
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine(String.format("Downloading %,d chunks at download-position %,d from %s",
+                            toDownload, nextDownloadPos, download));
+                }
+
+                // this call may download data via HTTP and thus can block or timeout only after some time
+                // so we should not do this inside the synchronized
+                nextDownloadPosBefore = this.nextDownloadPos;
+            }
+
+            byte[] bytes = download.readRange(nextDownloadPosBefore,
+                    (int) Math.min(chunkSize * toDownload, download.getLength() - nextDownloadPosBefore));
+
+            // now synchronize again to verify if the buffer changed in the meantime
+            synchronized (this) {
+                if (nextDownloadPosBefore != nextDownloadPos) {
+                    log.info("Restarting download of " + toDownload + " chunks as buffer changed while downloading: having download position " +
+                            nextDownloadPos + " but expected " + nextDownloadPosBefore + ": " + toString());
+
+                    // restart downloading
+                    continue;
+                }
+
+                int count = 0;
+                for (; count < toDownload && count * chunkSize < bytes.length; count++) {
+                    Pair<String, Long> metaData = getMetadata(this.nextDownloadPos + count * chunkSize);
+                    buffer.add(new Chunk(Arrays.copyOfRange(bytes, count * chunkSize,
+                            Math.min(bytes.length, (count + 1) * chunkSize)),
+                            metaData == null ? "" : metaData.getKey(),
+                            metaData == null ? 0L : metaData.getValue()));
+                }
+
+                // advance the download-position by the exact number of bytes that
+                // were actually read
+                this.nextDownloadPos += bytes.length;
+
+                return count;
+            }
         }
-
-        // nothing to download because we are at the end of the stream?
-        if(nextDownloadPos >= download.getLength()) {
-            return 0;
-        }
-
-        // only download up to the given number of chunks
-        if(max != -1) {
-            toDownload = Math.min(toDownload, max);
-        }
-
-        // download nothing if toDownload is below "min"
-        if(min != -1 && toDownload < min) {
-            return 0;
-        }
-
-        Preconditions.checkState(toDownload > 0,
-                "Invalid value for toDownload: %s, having %s chunks and buffer %s",
-                toDownload, bufferedChunks, buffer.size());
-
-        if(log.isLoggable(Level.FINE)) {
-            log.fine(String.format("Downloading %,d chunks at download-position %,d from %s",
-                    toDownload, nextDownloadPos, download));
-        }
-
-        byte[] bytes = download.readRange(nextDownloadPos, (int) Math.min(chunkSize * toDownload, download.getLength() - nextDownloadPos));
-
-        int count = 0;
-        for (; count < toDownload && count * chunkSize < bytes.length; count++) {
-            Pair<String, Long> metaData = getMetadata(nextDownloadPos + count * chunkSize);
-            buffer.add(new Chunk(Arrays.copyOfRange(bytes, count * chunkSize,
-                    Math.min(bytes.length, (count + 1) * chunkSize)),
-                    metaData == null ? "" : metaData.getKey(),
-                    metaData == null ? 0L : metaData.getValue()));
-        }
-
-        // advance the download-position by the exact number of bytes that
-        // were actually read
-        nextDownloadPos += bytes.length;
-
-        return count;
     }
 
     private Pair<String, Long> getMetadata(long pos) {
