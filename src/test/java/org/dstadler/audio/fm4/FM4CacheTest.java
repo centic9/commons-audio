@@ -2,6 +2,8 @@ package org.dstadler.audio.fm4;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.dstadler.commons.testing.ThreadTestHelper;
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -18,6 +20,14 @@ import static org.junit.Assert.assertTrue;
 
 public class FM4CacheTest {
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    @After
+    public void tearDown() throws InterruptedException {
+        // ensure no threads are left
+        ThreadTestHelper.waitForThreadToFinishSubstring("FM4", 1_000);
+        ThreadTestHelper.assertNoThreadLeft("Should not have a thread with 'FM4', see the thread-dump in the logs",
+                "FM4");
+    }
 
     @Test
     public void testCache() {
@@ -249,4 +259,42 @@ public class FM4CacheTest {
             cache.refresh();
         }
     }
+
+    @Test
+    public void testThread() throws InterruptedException {
+        try (FM4Cache cache = new FM4Cache(new FM4())) {
+            // wait for the thread be started
+            for (int i = 0; i < 10; i++) {
+                if (lookupThread("FM4Cache") != null) {
+                    break;
+                }
+                Thread.sleep(10);
+            }
+
+            // we should have the thread started now
+            assertNotNull("Need a thread names 'FM4Cache' to be running now",
+                    lookupThread("FM4Cache"));
+
+            assertNotNull(cache);
+        }
+    }
+
+    /**
+     * Note: this can be replaced by ExecutorUtil.lookupThread() as
+     * soon as we have upgraded to a newer version of commons-dost
+     */
+    public static Thread lookupThread(String contains) {
+        int count = Thread.currentThread().getThreadGroup().activeCount();
+
+        Thread[] threads = new Thread[count];
+        Thread.currentThread().getThreadGroup().enumerate(threads);
+
+        for (Thread t : threads) {
+            if (t != null && t.getName().contains(contains)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
 }
