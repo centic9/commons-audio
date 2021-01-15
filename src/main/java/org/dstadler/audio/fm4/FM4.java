@@ -18,7 +18,10 @@ import java.util.stream.Collectors;
 public class FM4 {
     private final static Logger log = LoggerFactory.make();
 
-    private static final String FM4_STREAM_URL = "https://audioapi.orf.at/fm4/json/4.0/broadcasts?_o=fm4.orf.at";
+    // Broken: http://mp3stream1.apasf.apa.at:8000
+    public static final String FM4_STREAM_URL = "https://orf-live.ors-shoutcast.at/fm4-q2a";
+
+    private static final String FM4_API_URL = "https://audioapi.orf.at/fm4/json/4.0/broadcasts?_o=fm4.orf.at";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -26,9 +29,9 @@ public class FM4 {
         final String json;
         try {
             // fetch stream
-            json = HttpClientWrapper.retrieveData(FM4_STREAM_URL);
+            json = HttpClientWrapper.retrieveData(FM4_API_URL);
         } catch (IOException e) {
-            throw new IOException("While reading from: " + FM4_STREAM_URL, e);
+            throw new IOException("While reading from: " + FM4_API_URL, e);
         }
 
         JsonNode jsonNode = objectMapper.readTree(json);

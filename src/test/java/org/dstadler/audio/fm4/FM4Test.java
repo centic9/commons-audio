@@ -3,6 +3,7 @@ package org.dstadler.audio.fm4;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.dstadler.commons.net.UrlUtils;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class FM4Test {
@@ -94,5 +96,10 @@ public class FM4Test {
     public void testDownloadStreamInvalidURL() throws IOException {
         JsonNode jsonNode = objectMapper.readTree(JSON.replace("$url", "http://invalid/url"));
         fm4.downloadStream(new FM4Stream(jsonNode), new File("/tmp"));
+    }
+
+    @Test
+    public void testFM4StreamURL() {
+        assertNull(UrlUtils.getAccessError(FM4.FM4_STREAM_URL, true, false, 1_000));
     }
 }
