@@ -223,7 +223,7 @@ public class BlockingSeekableRingBuffer implements SeekableRingBuffer<Chunk>, Pe
     }
 
     @Override
-    public int bufferedForward() {
+    public synchronized int bufferedForward() {
         if(nextAdd >= nextGet) {
             return nextAdd - nextGet;
         } else if (fill == buffer.length - 1) {
@@ -234,7 +234,7 @@ public class BlockingSeekableRingBuffer implements SeekableRingBuffer<Chunk>, Pe
     }
 
     @Override
-    public int bufferedBackward() {
+    public synchronized int bufferedBackward() {
         if(nextAdd >= nextGet) {
             return fill - nextAdd + nextGet;
         } else {
