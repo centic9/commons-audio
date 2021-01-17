@@ -389,19 +389,20 @@ public class RangeDownloadingBufferTest {
     public void testSlowStartBenchmark() throws IOException, InterruptedException {
         long start = System.currentTimeMillis();
         System.out.println("Starting download: " + (System.currentTimeMillis() - start));
-        RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("https://loopstream01.apa.at/?channel=fm4&id=2020-03-22_0959_tl_54_7DaysSun6_95352.mp3",
-                "", null, 500, CHUNK_SIZE, percentage -> Pair.of("", 0L));
-        System.out.println("After startup: " + (System.currentTimeMillis() - start));
+        try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("https://loopstream01.apa.at/?channel=fm4&id=2020-03-22_0959_tl_54_7DaysSun6_95352.mp3",
+                "", null, 500, CHUNK_SIZE, percentage -> Pair.of("", 0L))) {
+            System.out.println("After startup: " + (System.currentTimeMillis() - start));
 
-        for(int i = 0;i < 20;i++) {
-            buffer.next();
+            for (int i = 0; i < 20; i++) {
+                buffer.next();
 
-            System.out.println("After next: " + (System.currentTimeMillis() - start));
+                System.out.println("After next: " + (System.currentTimeMillis() - start));
 
-            Thread.sleep(1000);
+                Thread.sleep(1000);
+            }
+
+            buffer.fillupBuffer(15, expectedChunks - 2);
         }
-
-        buffer.fillupBuffer(15, expectedChunks-2);
 
         System.out.println("After fillup: " + (System.currentTimeMillis() - start));
     }

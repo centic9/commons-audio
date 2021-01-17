@@ -3,16 +3,27 @@ package org.dstadler.audio.fm4;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.HexDump;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.util.EntityUtils;
+import org.dstadler.commons.http.HttpClientWrapper;
 import org.dstadler.commons.net.UrlUtils;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -101,5 +112,40 @@ public class FM4Test {
     @Test
     public void testFM4StreamURL() {
         assertNull(UrlUtils.getAccessError(FM4.FM4_STREAM_URL, true, false, 1_000));
+    }
+
+    /**
+     * Verify that the FM4 stream server continues to respond this strange error message
+     * instead of a valid HTTP status code when an invalid stream-url is used.
+     *
+     * If this changes, we should adjust the handling of this error message in some
+     * places.
+     */
+    @Test
+    public void testNotFoundIsHTTP200PlusMessage() throws IOException {
+        try (HttpClientWrapper httpClient = new HttpClientWrapper(10_000)) {
+            String url = "https://loopstreamfm4.apa.at/?channel=fm4&id=2021-01-09_1659_tl_54_7DaysSat14_111346.mp3";
+            final HttpUriRequest httpGet = new HttpGet(url);
+
+            // Range: bytes=0-40
+            httpGet.setHeader("Range", "bytes=0-40");
+
+            try (CloseableHttpResponse response = httpClient.getHttpClient().execute(httpGet)) {
+                HttpEntity entity = HttpClientWrapper.checkAndFetch(response, url);
+                try {
+                    byte[] bytes = new byte[41];
+                    IOUtils.read(entity.getContent(), bytes);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    HexDump.dump(bytes, 0, stream, 0);
+                    System.out.println(stream.toString("UTF-8"));
+
+                    assertEquals("Could not find any loopchannels",
+                            new String(bytes, 0, 31, StandardCharsets.UTF_8));
+                } finally {
+                    // ensure all content is taken out to free resources
+                    EntityUtils.consume(entity);
+                }
+            }
+        }
     }
 }
