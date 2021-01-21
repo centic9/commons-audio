@@ -1,7 +1,9 @@
 package org.dstadler.audio.buffer;
 
+import com.google.common.base.Preconditions;
 import org.dstadler.commons.metrics.MovingAverage;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -30,7 +32,8 @@ public class CountingSeekableRingBufferImpl implements CountingSeekableRingBuffe
     private final MovingAverage chunksWrittenPerSecond = new MovingAverage(MOVING_WINDOW);
     private final MovingAverage chunksReadPerSecond = new MovingAverage(MOVING_WINDOW);
 
-    public CountingSeekableRingBufferImpl(SeekableRingBuffer<Chunk> delegate) {
+    public CountingSeekableRingBufferImpl(@Nonnull SeekableRingBuffer<Chunk> delegate) {
+        Preconditions.checkNotNull(delegate, "Buffer cannot be null");
         this.delegate = delegate;
     }
 

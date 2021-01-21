@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import static org.dstadler.audio.buffer.CountingSeekableRingBufferImpl.DEFAULT_CHUNKS_PER_SECOND;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekableRingBufferTester {
@@ -142,5 +143,11 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
                 }
             }
         });
+    }
+
+    @Test
+    public void testNullDelegate() {
+        //noinspection ConstantConditions
+        assertThrows(NullPointerException.class, () -> new CountingSeekableRingBufferImpl(null));
     }
 }
