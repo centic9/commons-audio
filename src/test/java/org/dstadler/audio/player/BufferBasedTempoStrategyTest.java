@@ -1,12 +1,13 @@
 package org.dstadler.audio.player;
 
+import org.dstadler.audio.buffer.BlockingSeekableRingBuffer;
 import org.dstadler.audio.buffer.CountingSeekableRingBuffer;
 import org.dstadler.audio.buffer.CountingSeekableRingBufferImpl;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class BufferBasedTempoStrategyTest {
     private final AtomicInteger fill = new AtomicInteger();
@@ -14,7 +15,7 @@ public class BufferBasedTempoStrategyTest {
 
     // mock the implementation with values for the test, only getChunksWrittenPerSecond(),
     // fill(), size() and capacity() are called on the buffer
-    private final CountingSeekableRingBuffer buffer = new CountingSeekableRingBufferImpl(null) {
+    private final CountingSeekableRingBuffer buffer = new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10)) {
         @Override
         public int size() {
             return size.get();
@@ -181,7 +182,7 @@ public class BufferBasedTempoStrategyTest {
     @Test
     public void testWithChunksPerSecond() {
         // test with some chunksWrittenPerSecond as well
-        CountingSeekableRingBuffer buffer = new CountingSeekableRingBufferImpl(null) {
+        CountingSeekableRingBuffer buffer = new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10)) {
             @Override
             public int size() {
                 return 12;
