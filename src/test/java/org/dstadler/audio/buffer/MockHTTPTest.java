@@ -101,7 +101,7 @@ public class MockHTTPTest {
 
         @Override
         public void run(int threadNum, int itNum) throws Exception {
-            int rnd = RandomUtils.nextInt(0, 16);
+            int rnd = RandomUtils.nextInt(0, 17);
             switch (rnd) {
                 case 0:
                     buffer.peek();
@@ -180,19 +180,35 @@ public class MockHTTPTest {
                     assertTrue(seeked <= 0);
                     assertTrue(seeked * -1 <= buffer.capacity());
                     break;
-                case 13:
+                case 13: {
                     int fill = buffer.fill();
                     assertTrue(fill >= 0);
                     assertTrue(fill <= buffer.capacity());
                     break;
-                case 14:
+                }
+                case 14: {
                     // another test of size without synchronized block
                     int size = buffer.size();
                     assertTrue("Having size: " + size, size >= 0);
+                    break;
+                }
                 case 15:
                     // another test of capacity without synchronized block
                     int capacity = buffer.capacity();
                     assertTrue("Having capacity: " + capacity, capacity >= 0);
+                    break;
+                case 16: {
+                    final int fill;
+                    final int size;
+                    synchronized (buffer) {
+                        fill = buffer.fill();
+                        size = buffer.size();
+                    }
+                    assertTrue(fill >= 0);
+                    assertTrue(fill <= buffer.capacity());
+                    assertTrue(fill >= size);
+                    break;
+                }
             }
         }
     }
