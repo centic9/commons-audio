@@ -39,6 +39,8 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
         assertTrue(Double.isInfinite(getBuffer().getChunksWrittenPerSecond()));
         assertEquals(0, getBuffer().getChunksReadPerSecond(), 0);
         assertEquals(DEFAULT_CHUNKS_PER_SECOND, getBuffer().getChunksPerSecond(), 0.01);
+
+        assertEquals(0, ((CountingSeekableRingBufferImpl)getBuffer()).getChunksReadOverall());
     }
 
     @Test
@@ -86,6 +88,8 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
         final double expected = 4 / ((double) (end - start)) * 1000;
         assertEquals(expected, getBuffer().getChunksReadPerSecond(), 0.01);
         assertEquals(expected, getBuffer().getChunksPerSecond(), 0.01);
+
+        assertEquals(4, ((CountingSeekableRingBufferImpl)getBuffer()).getChunksReadOverall());
     }
 
     @Test
