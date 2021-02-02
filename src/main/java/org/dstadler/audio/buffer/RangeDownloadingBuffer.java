@@ -173,7 +173,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
             }
 
             byte[] bytes = download.readRange(nextDownloadPosBefore,
-                    (int) Math.min(chunkSize * toDownload, download.getLength() - nextDownloadPosBefore));
+                    (int) Math.min((long) chunkSize * toDownload, download.getLength() - nextDownloadPosBefore));
 
             // now synchronize again to verify if the buffer changed in the meantime
             synchronized (this) {
@@ -187,7 +187,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
                 int count = 0;
                 for (; count < toDownload && count * chunkSize < bytes.length; count++) {
-                    Pair<String, Long> metaData = getMetadata(this.nextDownloadPos + count * chunkSize);
+                    Pair<String, Long> metaData = getMetadata(this.nextDownloadPos + (long) count * chunkSize);
                     buffer.add(new Chunk(Arrays.copyOfRange(bytes, count * chunkSize,
                             Math.min(bytes.length, (count + 1) * chunkSize)),
                             metaData == null ? "" : metaData.getKey(),
@@ -322,15 +322,12 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         return (int) Math.ceil(((double)download.getLength())/chunkSize);
     }
 
-    /**
-     * This method is not synchronized on-purpose
-     * as we accept the potential mis-reporting of
-     * size in favour of always returning quickly
-     * here and not blocking if download is currently
-     * underway.
-     */
     @Override
-    public int size() {
+    public synchronized int size() {
+        // This method is synchronized as otherwise wrong results did happen fairly
+        // frequently. We now ensure that downloading data is not done inside a
+        // synchronized block, so we can ensure that we report proper size here always
+
         // in this case we always report how many chunks we can still read
         // up to the end of the file
         return (int) Math.ceil(((double)download.getLength() - nextDownloadPos)/chunkSize) +
@@ -388,7 +385,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         // set persisted position where we should start reading based on the
         // current download-position minus the data that is stored in the buffer and thus
         // also needs to be downloaded again
-        long startPosition = nextDownloadPos - buffer.size() * chunkSize;
+        long startPosition = nextDownloadPos - (long) buffer.size() * chunkSize;
 
         if(startPosition < 0) {
             log.warning(String.format("Found invalid startPosition: %,d with next download-position at %,d and buffer-size of %,d, resetting to 0",
