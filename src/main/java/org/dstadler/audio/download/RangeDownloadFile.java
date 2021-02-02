@@ -16,15 +16,17 @@ public class RangeDownloadFile implements RangeDownload {
     private final static Logger log = LoggerFactory.make();
 
     private final File file;
+    private final long length;
     private boolean closed = false;
 
     public RangeDownloadFile(File file) {
         this.file = file;
+        this.length = file.length();
     }
 
     @Override
     public long getLength() {
-        return file.length();
+        return length;
     }
 
     @Override
