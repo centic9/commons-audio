@@ -46,7 +46,7 @@ public class FM4Cache implements AutoCloseable {
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
             new BasicThreadFactory.Builder()
                     .daemon(true)
-                    .namingPattern("FM4Cache-")
+                    .namingPattern("FM4Cache-%d")
                     .uncaughtExceptionHandler((t, e) ->
                             log.log(Level.WARNING, "Had unexpected exception", e))
                     .build());
