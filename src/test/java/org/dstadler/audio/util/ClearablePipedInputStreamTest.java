@@ -1,5 +1,6 @@
 package org.dstadler.audio.util;
 
+import org.dstadler.commons.testing.TestHelpers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,6 +9,7 @@ import java.io.PipedOutputStream;
 
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class ClearablePipedInputStreamTest {
     private final PipedOutputStream out = new PipedOutputStream();
@@ -78,5 +80,22 @@ public class ClearablePipedInputStreamTest {
         in.clearBuffer();
 
         assertEquals(0, in.available());
+    }
+
+    @Test
+    public void testToString() throws IOException, InterruptedException {
+        assertNotNull(out.toString());
+        assertNotNull(in.toString());
+
+        TestHelpers.ToStringTest(in);
+
+        in.clearBuffer();
+        TestHelpers.ToStringTest(in);
+
+        in.waitAllConsumed();
+        TestHelpers.ToStringTest(in);
+
+        in.close();
+        TestHelpers.ToStringTest(in);
     }
 }

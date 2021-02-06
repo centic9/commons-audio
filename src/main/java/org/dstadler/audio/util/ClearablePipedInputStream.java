@@ -56,4 +56,13 @@ public class ClearablePipedInputStream extends PipedInputStream {
             Thread.sleep(100);
         }
     }
+
+    @Override
+    public String toString() {
+        return "ClearablePipedInputStream{" +
+                "buffer=" + buffer.length +
+                ", in=" + in +
+                ", out=" + out +
+                '}';
+    }
 }
