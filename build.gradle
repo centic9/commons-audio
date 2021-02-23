@@ -65,7 +65,7 @@ dependencies {
     // don't include it in the jar-file
     runtimeOnly files('src/runtime/resources')
 
-    testCompile 'junit:junit:4.13.1'
+    testCompile 'junit:junit:4.13.2'
     testCompile 'org.dstadler:commons-test:1.0.0.19'
 }
 
