@@ -21,8 +21,9 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
 
     /**
      * Fetch the next chunk from the ring-buffer and advance the read-position.
-     * This call may be blocking until a chunk becomes available or
-     * close() is called.
+     *
+     * This call may block until a chunk becomes available, the thread is
+     * interrupted or close() is called.
      *
      * @return An array of bytes or null if the buffer was closed.
      */
@@ -32,6 +33,9 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
      * Fetch the next chunk from the buffer if possible, return null otherwise.
      * This does not advance the read-position, so a subsequent peek() or next()
      * will return the same chunk again.
+     *
+     * This call may block until a chunk becomes available, the thread is
+     * interrupted or close() is called.
      *
      * @return A chunk if available or null if the buffer is empty or the buffer
      *      is closed already.
