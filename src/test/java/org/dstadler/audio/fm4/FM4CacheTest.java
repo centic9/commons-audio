@@ -2,6 +2,7 @@ package org.dstadler.audio.fm4;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.ThreadTestHelper;
 import org.junit.After;
 import org.junit.Assume;
@@ -21,12 +22,16 @@ import static org.junit.Assert.assertTrue;
 public class FM4CacheTest {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    private final MemoryLeakVerifier verifier = new MemoryLeakVerifier();
+
     @After
     public void tearDown() throws InterruptedException {
         // ensure no threads are left
         ThreadTestHelper.waitForThreadToFinishSubstring("FM4", 1_000);
         ThreadTestHelper.assertNoThreadLeft("Should not have a thread with 'FM4', see the thread-dump in the logs",
                 "FM4");
+
+        verifier.assertGarbageCollected();
     }
 
     @Test
@@ -43,11 +48,15 @@ public class FM4CacheTest {
 
             assertNotNull(cache.allStreams());
             assertTrue(cache.allStreams().size() > 0);
+
+            verifier.addObject(cache);
         }
 
         // cache itself is not static, so size should be zero again now
         try (FM4Cache cache = new FM4Cache(new FM4())) {
             assertEquals(0, cache.size());
+
+            verifier.addObject(cache);
         }
     }
 
@@ -75,6 +84,8 @@ public class FM4CacheTest {
             node.put("end", 1L);
 
             assertNull(cache.getNext(new FM4Stream(node)));
+
+            verifier.addObject(cache);
         }
     }
 
@@ -116,6 +127,8 @@ public class FM4CacheTest {
                 assertNull("Stream 2 should be the last one, had: " + fm4Streams,
                         cache.getNext(stream2));
             }
+
+            verifier.addObject(cache);
         }
     }
 
@@ -143,6 +156,8 @@ public class FM4CacheTest {
             node.put("end", 1L);
 
             assertNull(cache.getPrevious(new FM4Stream(node)));
+
+            verifier.addObject(cache);
         }
     }
 
@@ -184,6 +199,8 @@ public class FM4CacheTest {
                 assertNull("Stream 2 should be the first one, had: " + fm4Streams,
                         cache.getPrevious(stream2));
             }
+
+            verifier.addObject(cache);
         }
     }
 
@@ -202,6 +219,8 @@ public class FM4CacheTest {
             assertNull(cache.getNextByStreamURL(null));
             assertNull(cache.getNextByStreamURL(""));
             assertNull(cache.getNextByStreamURL("blabla"));
+
+            verifier.addObject(cache);
         }
     }
 
@@ -245,6 +264,8 @@ public class FM4CacheTest {
                 assertNull("Stream 2 should be the last one, had: " + fm4Streams,
                         cache.getNextByStreamURL(url2));
             }
+
+            verifier.addObject(cache);
         }
     }
 
@@ -256,6 +277,8 @@ public class FM4CacheTest {
                 throw new IOException("Test-exception");
             }
         })) {
+            verifier.addObject(cache);
+
             cache.refresh();
         }
     }
@@ -276,6 +299,8 @@ public class FM4CacheTest {
                     lookupThread("FM4Cache"));
 
             assertNotNull(cache);
+
+            verifier.addObject(cache);
         }
     }
 
@@ -296,5 +321,4 @@ public class FM4CacheTest {
         }
         return null;
     }
-
 }

@@ -9,8 +9,10 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.util.EntityUtils;
 import org.dstadler.commons.http.HttpClientWrapper;
 import org.dstadler.commons.http.NanoHTTPD;
+import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.dstadler.commons.testing.TestHelpers;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -31,10 +33,19 @@ public class RangeDownloadHTTPTest {
 
     private static final String FM4_URL = "https://loopstreamfm4.apa.at/?channel=fm4&id=2019-12-21_2200_tl_54_7DaysSat20_90331.mp3";
 
+    private final MemoryLeakVerifier verifier = new MemoryLeakVerifier();
+
+    @After
+    public void tearDown() {
+        verifier.assertGarbageCollected();
+    }
+
     @Test
     public void testLength() throws Exception {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
             assertEquals(EXPECTED_LENGTH, download.getLength());
+
+            verifier.addObject(download);
         }
     }
 
@@ -44,12 +55,16 @@ public class RangeDownloadHTTPTest {
         download.close();
 
         assertEquals(EXPECTED_LENGTH, download.getLength());
+
+        verifier.addObject(download);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testClosed() throws IOException {
         RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null);
         download.close();
+
+        verifier.addObject(download);
 
         download.readRange(0, 1);
     }
@@ -60,6 +75,8 @@ public class RangeDownloadHTTPTest {
             byte[] bytes = download.readRange(0, 200);
             assertEquals(200, bytes.length);
             assertEquals("PNG", new String(Arrays.copyOfRange(bytes, 1, 4)));
+
+            verifier.addObject(download);
         }
     }
 
@@ -76,6 +93,8 @@ public class RangeDownloadHTTPTest {
             assertArrayEquals(bytes2, bytes3);
 
             //assertEquals("PNG", new String(Arrays.copyOfRange(bytes, 1, 4)));
+
+            verifier.addObject(download);
         }
     }
 
@@ -146,6 +165,8 @@ public class RangeDownloadHTTPTest {
             TestHelpers.ToStringTest(download);
 
             assertTrue("Had: " + download.toString(), download.toString().contains(Long.toString(EXPECTED_LENGTH)));
+
+            verifier.addObject(download);
         }
     }
 
@@ -161,6 +182,8 @@ public class RangeDownloadHTTPTest {
             try (RangeDownload download = new RangeDownloadHTTP("http://localhost:" + server.getPort(),
                     "user123", "pwd")) {
                 assertEquals(132, download.getLength());
+
+                verifier.addObject(download);
             }
         }
     }
@@ -168,6 +191,8 @@ public class RangeDownloadHTTPTest {
     @Test(expected = IllegalArgumentException.class)
     public void readWithStartBeyondLength() throws IOException {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
+            verifier.addObject(download);
+
             download.readRange(99999999L, 200);
         }
     }
@@ -175,6 +200,8 @@ public class RangeDownloadHTTPTest {
     @Test
     public void readBeyondLength() throws IOException {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
+            verifier.addObject(download);
+
             byte[] bytes = download.readRange(download.getLength() - 100, 200);
             assertEquals(100, bytes.length);
         }
@@ -183,6 +210,8 @@ public class RangeDownloadHTTPTest {
     @Test(expected = IllegalArgumentException.class)
     public void readWithInvalidSizeAt0() throws IOException {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
+            verifier.addObject(download);
+
             download.readRange(0, 0);
         }
     }
@@ -190,6 +219,8 @@ public class RangeDownloadHTTPTest {
     @Test(expected = IllegalArgumentException.class)
     public void readWithInvalidSizeAt100() throws IOException {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
+            verifier.addObject(download);
+
             download.readRange(100, 0);
         }
     }
@@ -197,6 +228,8 @@ public class RangeDownloadHTTPTest {
     @Test(expected = IllegalArgumentException.class)
     public void readWithInvalidSizeAtMinus100() throws IOException {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
+            verifier.addObject(download);
+
             download.readRange(-100, 10);
         }
     }

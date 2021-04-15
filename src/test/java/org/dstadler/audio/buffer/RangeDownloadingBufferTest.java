@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dstadler.audio.stream.Stream;
 import org.dstadler.commons.http.NanoHTTPD;
+import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.dstadler.commons.testing.TestHelpers;
 import org.junit.After;
@@ -39,6 +40,8 @@ public class RangeDownloadingBufferTest {
 
     private static final String SAMPLE_FILE2 = new File("src/test/resources/test2.bin").getAbsolutePath();
     private static final String SAMPLE_FILE2_URL = "file://" + new File("src/test/resources/test2.bin").getAbsolutePath();
+
+    private final MemoryLeakVerifier verifier = new MemoryLeakVerifier();
 
     private RangeDownloadingBuffer buffer;
 
@@ -88,6 +91,8 @@ public class RangeDownloadingBufferTest {
 
             buffer.close();
         }
+
+        verifier.assertGarbageCollected();
     }
 
     @Test
@@ -404,7 +409,13 @@ public class RangeDownloadingBufferTest {
     public void testWithUserAndAuthResponse() throws IOException {
         try (MockRESTServer server = new MockRESTServer("404", "text/html", "")) {
             buffer.close();
-            buffer = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
+
+            // we want to ensure that nothing keeps the buffer in memory after it is closed
+            // here
+            verifier.addObject(buffer);
+            buffer = null;
+
+            new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
                     "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L));
         }
     }
@@ -452,5 +463,19 @@ public class RangeDownloadingBufferTest {
         int seeked = buffer.seek(300);
         assertTrue("Had: " + seeked, seeked >= 10);
         assertTrue("Should be at the end now", buffer.empty());
+    }
+
+    @Test
+    public void testMemoryLeaks() {
+        // load some data into the buffer
+        assertNotNull(buffer.peek());
+        assertEquals(10, buffer.bufferedForward());
+        assertEquals(0, buffer.bufferedBackward());
+
+        // then close it and unset the member to ensure nothing
+        // keeps the class in memory
+        buffer.close();
+        verifier.addObject(buffer);
+        buffer = null;
     }
 }

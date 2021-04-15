@@ -1,8 +1,10 @@
 package org.dstadler.audio.buffer;
 
 import org.apache.commons.lang3.RandomUtils;
+import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.TestHelpers;
 import org.dstadler.commons.testing.ThreadTestHelper;
+import org.junit.After;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -18,9 +20,16 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
     private static final int NUMBER_OF_THREADS = 10;
     private static final int NUMBER_OF_TESTS = 100000;
 
+    private final MemoryLeakVerifier verifier = new MemoryLeakVerifier();
+
     protected SeekableRingBuffer<Chunk> buffer = getBlockingSeekableRingBuffer();
 
     abstract SeekableRingBuffer<Chunk> getBlockingSeekableRingBuffer();
+
+    @After
+    public void tearDown() {
+        verifier.assertGarbageCollected();
+    }
 
     @Test
     public void empty() {
@@ -335,5 +344,20 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
             buffer.add(new Chunk(new byte[] { i }, "", 0));
         }
         TestHelpers.ToStringTest(buffer);
+    }
+
+    @Test
+    public void testMemoryLeaks() {
+        // load some data into the buffer
+        for(byte i = 0;i < 15;i++) {
+            buffer.add(new Chunk(new byte[] { i }, "", 0));
+        }
+        assertNotNull(buffer.peek());
+
+        // then close it and unset the member to ensure nothing
+        // keeps the class in memory
+        buffer.close();
+        verifier.addObject(buffer);
+        buffer = null;
     }
 }
