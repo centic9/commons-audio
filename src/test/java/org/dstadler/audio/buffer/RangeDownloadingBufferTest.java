@@ -79,6 +79,7 @@ public class RangeDownloadingBufferTest {
     public void setUp() {
         try {
             buffer = new RangeDownloadingBuffer(sample, "", null, 10, CHUNK_SIZE, p -> metaData);
+            verifier.addObject(buffer);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -90,6 +91,9 @@ public class RangeDownloadingBufferTest {
             TestHelpers.ToStringTest(buffer);
 
             buffer.close();
+
+            // set to null to allow to check for memory leaks below
+            buffer = null;
         }
 
         verifier.assertGarbageCollected();
@@ -410,11 +414,6 @@ public class RangeDownloadingBufferTest {
         try (MockRESTServer server = new MockRESTServer("404", "text/html", "")) {
             buffer.close();
 
-            // we want to ensure that nothing keeps the buffer in memory after it is closed
-            // here
-            verifier.addObject(buffer);
-            buffer = null;
-
             new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
                     "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L));
         }
@@ -463,19 +462,5 @@ public class RangeDownloadingBufferTest {
         int seeked = buffer.seek(300);
         assertTrue("Had: " + seeked, seeked >= 10);
         assertTrue("Should be at the end now", buffer.empty());
-    }
-
-    @Test
-    public void testMemoryLeaks() {
-        // load some data into the buffer
-        assertNotNull(buffer.peek());
-        assertEquals(10, buffer.bufferedForward());
-        assertEquals(0, buffer.bufferedBackward());
-
-        // then close it and unset the member to ensure nothing
-        // keeps the class in memory
-        buffer.close();
-        verifier.addObject(buffer);
-        buffer = null;
     }
 }
