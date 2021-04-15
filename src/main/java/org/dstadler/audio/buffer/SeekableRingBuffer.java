@@ -1,5 +1,7 @@
 package org.dstadler.audio.buffer;
 
+import org.dstadler.audio.util.RuntimeInterruptedException;
+
 /**
  * An interface for a specialized RingBuffer which allows to step
  * forward/backward in the stored elements as long as elements are
@@ -16,6 +18,8 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
      * the oldest chunk in the buffer.
      *
      * @param chunk A chunk of bytes to store
+     * @throws UnsupportedOperationException If the implementation does not support adding chunks
+     *          e.g. when an external data source is underlying this buffer
      */
     void add(T chunk);
 
@@ -26,6 +30,8 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
      * interrupted or close() is called.
      *
      * @return An array of bytes or null if the buffer was closed.
+     * @throws RuntimeInterruptedException If waiting is interrupted
+     * @throws IllegalStateException If the buffer cannot be filled
      */
     T next();
 
@@ -38,7 +44,7 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
      * interrupted or close() is called.
      *
      * @return A chunk if available or null if the buffer is empty or the buffer
-     *      is closed already.
+     *      is closed already or if reading data fails.
      */
     T peek();
 
@@ -124,6 +130,8 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
 
     /**
      * Overridden from {@link AutoCloseable} to remove thrown Exception
+     *
+     * @throws IllegalStateException If closing the buffer fails.
      */
     @Override
     void close();

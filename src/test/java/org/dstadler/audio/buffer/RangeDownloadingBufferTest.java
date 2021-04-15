@@ -1,7 +1,9 @@
 package org.dstadler.audio.buffer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dstadler.audio.stream.Stream;
+import org.dstadler.commons.http.NanoHTTPD;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.dstadler.commons.testing.TestHelpers;
 import org.junit.After;
@@ -15,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
@@ -23,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
@@ -220,6 +224,33 @@ public class RangeDownloadingBufferTest {
     }
 
     @Test
+    public void testPeekIOException() throws IOException {
+        final AtomicInteger calls = new AtomicInteger(0);
+        try (MockRESTServer server = new MockRESTServer(() -> {
+            if (calls.incrementAndGet() == 1) {
+                // mock initial response with Accept-Ranges and Content-Length
+                NanoHTTPD.Response response = new NanoHTTPD.Response("200", "text/html", "");
+                response.addHeader("Accept-Ranges", "0-999");
+                response.addHeader("Content-Length", "999");
+                return response;
+            }
+
+            return new NanoHTTPD.Response("404", "text/html", StringUtils.repeat(" ", 999));
+        })) {
+            buffer.close();
+            buffer = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
+                    "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L));
+
+            buffer.RETRY_SLEEP_TIME = 1;
+
+            assertNull("Should return null because fetching data fails internall", buffer.peek());
+
+            assertThrows(IllegalStateException.class,
+                    () -> buffer.next());
+        }
+    }
+
+    @Test
     public void testReadAtEnd() {
         assertEquals(expectedChunks, buffer.seek(999999));
 
@@ -372,6 +403,7 @@ public class RangeDownloadingBufferTest {
     @Test(expected = IOException.class)
     public void testWithUserAndAuthResponse() throws IOException {
         try (MockRESTServer server = new MockRESTServer("404", "text/html", "")) {
+            buffer.close();
             buffer = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
                     "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L));
         }

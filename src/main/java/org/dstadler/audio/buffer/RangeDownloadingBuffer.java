@@ -249,7 +249,10 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
                 log.info(String.format("Downloaded %,d chunks, now at download-position %,d, length %,d, buffer: %s",
                         chunks, nextDownloadPos, download.getLength(), buffer));
             } catch (IOException e) {
-                throw new IllegalStateException("Failed to fill-up buffer", e);
+                log.log(Level.WARNING,
+                        String.format("Failed to fill-up buffer for peek, now at download-position %,d, length %,d, buffer: %s",
+                        nextDownloadPos, download.getLength(), buffer), e);
+                return null;
             }
         }
 
