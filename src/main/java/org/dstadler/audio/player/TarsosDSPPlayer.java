@@ -51,22 +51,27 @@ public class TarsosDSPPlayer implements AudioPlayer {
 
             // transform the stream to mono as TarsosDSP can only process Mono currently
             AudioInputStream monoStream = AudioUtils.convertToMono(ain);
-            AudioFormat monoFormat = monoStream.getFormat();
-
-            // then define the time stretching step
-            WaveformSimilarityBasedOverlapAdd wsola = new WaveformSimilarityBasedOverlapAdd(
-                    WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, monoFormat.getSampleRate()));
-
-            // then start up the TarsosDSP audio system
-            TarsosDSPAudioInputStream audioStream = new JVMAudioInputStream(monoStream);
-            dispatcher = new AudioDispatcher(audioStream,
-                    wsola.getInputBufferSize() * monoFormat.getChannels(),
-                    wsola.getOverlap() * monoFormat.getChannels());
 
             // if we should speed up or slow down audio playback, add the WSOLA time stretcher
             if(tempo != 1.0f) {
+                AudioFormat monoFormat = monoStream.getFormat();
+
+                // then define the time stretching step
+                WaveformSimilarityBasedOverlapAdd wsola = new WaveformSimilarityBasedOverlapAdd(
+                        WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, monoFormat.getSampleRate()));
+
+                // then start up the TarsosDSP audio system
+                TarsosDSPAudioInputStream audioStream = new JVMAudioInputStream(monoStream);
+                dispatcher = new AudioDispatcher(audioStream,
+                        wsola.getInputBufferSize() * monoFormat.getChannels(),
+                        wsola.getOverlap() * monoFormat.getChannels());
+
                 dispatcher.addAudioProcessor(wsola);
+            } else {
+                TarsosDSPAudioInputStream audioStream = new JVMAudioInputStream(monoStream);
+                dispatcher = new AudioDispatcher(audioStream, 1024, 512);
             }
+
             //  the audio-output processor provides the actual audio playback in the pipeline
             dispatcher.addAudioProcessor(new be.tarsos.dsp.io.jvm.AudioPlayer(dispatcher.getFormat()));
 
