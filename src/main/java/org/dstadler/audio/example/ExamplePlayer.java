@@ -87,6 +87,8 @@ public class ExamplePlayer {
 
     @SuppressWarnings("unused")
     private static int seek(RangeDownloadingBuffer buffer, AudioWriter audioWriter, double percentage) throws IOException {
+        log.info("Seeking to " + (percentage*100) + "%");
+
         int availableChunks = buffer.fill();
         int availableBackwardChunks = availableChunks - buffer.size();
 
@@ -98,11 +100,12 @@ public class ExamplePlayer {
         // when we need to seek backwards, this will become negative
         final int chunksToSeek = nrOfChunksRounded - availableBackwardChunks;
 
+        // ask the buffer to seek that man chunks forward or backwards
+        log.info("Seeking " + chunksToSeek + " chunks in the buffer");
+        int seeked = buffer.seek(chunksToSeek);
+
         log.info("Clearing piped-buffer");
         audioWriter.clearBuffer();
-
-        // ask the buffer to seek that man chunks forward or backwards
-        int seeked = buffer.seek(chunksToSeek);
 
         log.info("Seeking " + seeked + " chunks, had request of " + chunksToSeek + " and " + nrOfChunksRounded +
                 "/" + nrOfChunks + " chunks because of percentage " + percentage + " and available chunks: " + availableChunks +
