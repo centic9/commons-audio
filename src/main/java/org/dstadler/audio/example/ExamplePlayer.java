@@ -120,11 +120,17 @@ public class ExamplePlayer {
      */
     private static class AudioWriter implements Runnable {
         private final RangeDownloadingBuffer buffer;
-        private final PipedOutputStream out;
-        private final ClearablePipedInputStream in;
+
+        private PipedOutputStream out;
+        private ClearablePipedInputStream in;
+        private PlayerThread player;
 
         public AudioWriter(RangeDownloadingBuffer buffer) throws IOException {
             this.buffer = buffer;
+            createPipe();
+        }
+
+        private synchronized void createPipe() throws IOException {
             this.out = new PipedOutputStream();
 
             // configure enough buffer for a few chunks in the pipe to avoid flaky sound output
@@ -136,7 +142,8 @@ public class ExamplePlayer {
             try {
                 //player.setOptions("");
 
-                Thread playerThread = new Thread(new PlayerThread(in), "Player thread");
+                player = new PlayerThread(in);
+                Thread playerThread = new Thread(player, "Player thread");
                 playerThread.setDaemon(true);
                 playerThread.start();
 
@@ -165,7 +172,9 @@ public class ExamplePlayer {
                 log.fine("Write chunk " + chunk + " with " + chunk.getData().length + " bytes");
 
                 // pass on the chunk to the stream for playing
-                out.write(chunk.getData());
+                synchronized (this) {
+                    out.write(chunk.getData());
+                }
 
                 chunks++;
                 if (chunks % 200 == 0) {
@@ -177,6 +186,16 @@ public class ExamplePlayer {
 
         public void clearBuffer() throws IOException {
             in.clearBuffer();
+
+            if (player != null) {
+                // we also need to re-create the pipe as it is closed
+                // when the AudioPlayer stops
+                createPipe();
+
+                // ask the player to restart to clear the buffer and start
+                // playing data from the new position
+                player.triggerRestart(in);
+            }
         }
     }
 
@@ -185,7 +204,10 @@ public class ExamplePlayer {
      * running the player
      */
     private static class PlayerThread implements Runnable {
-        private final InputStream inputStream;
+        private InputStream inputStream;
+
+        private volatile boolean restart = true;
+        private AudioPlayer player;
 
         public PlayerThread(PipedInputStream in) {
             // some Audio classes try to use mark()/reset(), thus we use a wrapping BufferedInputStream()
@@ -196,11 +218,16 @@ public class ExamplePlayer {
         @Override
         public void run() {
             try {
-                AudioPlayer player = createPlayer(inputStream);
+                while (restart) {
+                    log.log(Level.INFO, "Starting player");
+                    restart = false;
 
-                //player.setOptions("");
+                    player = createPlayer(inputStream);
 
-                player.play();
+                    //player.setOptions("");
+
+                    player.play();
+                }
             } catch (Throwable e) {
                 log.log(Level.WARNING, "Caught unexpected exception", e);
 
@@ -208,12 +235,23 @@ public class ExamplePlayer {
             }
         }
 
+        public void triggerRestart(InputStream stream) throws IOException {
+            if (player != null) {
+                log.log(Level.INFO, "Restarting player");
+
+                this.inputStream = stream;
+                restart = true;
+
+                player.close();
+            }
+        }
+
         private AudioPlayer createPlayer(InputStream inputStream) throws IOException {
             // any of the implementations will play .mp3 streams
             // the SPI-based one can play OggVorbis as well
-//        return new TarsosDSPPlayer(inputStream);
+//            return new TarsosDSPPlayer(inputStream);
             return new AudioSPIPlayer(inputStream);
-//        return new JLayerPlayer(inputStream);
+//            return new JLayerPlayer(inputStream);
         }
     }
 }
