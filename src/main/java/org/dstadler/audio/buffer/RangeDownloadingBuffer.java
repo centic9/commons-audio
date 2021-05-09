@@ -110,9 +110,9 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
                     throw e;
                 }
 
-                log.warning(String.format("Retry %,d: Failed to download %,d bytes, chunkSize: %,d, bufferedChunks: %,d, " +
+                log.warning(String.format("Retry %,d: Failed to download, buffer: %,d bytes, chunkSize: %,d, bufferedChunks: %,d, " +
                                 "min: %,d, max: %,d from position %,d: length: %,d: %s",
-                        retries, chunkSize * buffer.size(), chunkSize, bufferedChunks, min, max, nextDownloadPos,
+                        retries, buffer.size(), chunkSize, bufferedChunks, min, max, nextDownloadPos,
                         download.getLength(), e));
 
                 try {
