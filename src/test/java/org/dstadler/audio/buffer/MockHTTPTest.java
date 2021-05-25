@@ -9,8 +9,10 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -225,5 +227,82 @@ public class MockHTTPTest {
             assertFalse(buffer.empty());
             //System.out.println("Buffer: " + buffer);
         }
+    }
+
+
+    @Test
+    public void testInterruptSleepInFillup() throws InterruptedException, IOException {
+        AtomicInteger httpCalls = new AtomicInteger();
+        AtomicBoolean fail = new AtomicBoolean();
+        try (MockRESTServer server = new MockRESTServer(() -> {
+            httpCalls.incrementAndGet();
+
+            if(fail.get()) {
+                return new NanoHTTPD.Response("404", "application/binary", "");
+            } else {
+                NanoHTTPD.Response response = new NanoHTTPD.Response("200", "application/binary", "");
+                response.addHeader("Accept-Ranges", "0-20000");
+                response.addHeader("Content-Length", "20000");
+                return response;
+            }
+        })) {
+            try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
+                    "", null, 100, Chunk.CHUNK_SIZE, null)) {
+                // make the HTTP server return a failure
+                fail.set(true);
+
+                CountDownLatch preStartLatch = new CountDownLatch(1);
+                CountDownLatch startLatch = new CountDownLatch(1);
+                AtomicReference<Exception> exc = new AtomicReference<>();
+
+                Thread thread = new Thread("fillup") {
+                    @Override
+                    public void run() {
+                        preStartLatch.countDown();
+
+                        try {
+                            startLatch.await();
+                        } catch (InterruptedException e) {
+                            exc.set(e);
+                        }
+
+                        try {
+                            // this is expected to fail and start a re-try and sleep
+                            assertEquals(0, buffer.fillupBuffer(-1, 100));
+                        } catch (IOException | RuntimeException e) {
+                            exc.set(e);
+                        }
+                    }
+                };
+
+                thread.start();
+
+                // make sure the thread is read to do it's work
+                preStartLatch.await();
+                startLatch.countDown();
+
+                // wait a bit to make sure we are in the Sleep
+                Thread.sleep(500);
+
+                // interrupt thread now
+                thread.interrupt();
+
+                // no other exception is expected before joining the thread
+                if (exc.get() != null) {
+                    throw new IllegalStateException("Unexpected exception in thread", exc.get());
+                }
+
+                // now the thread should stop quickly and should propagate the interrupted state
+                thread.join();
+
+                // no other exception is expected after joining the thread
+                if (exc.get() != null) {
+                    throw new IllegalStateException("Unexpected exception in thread", exc.get());
+                }
+            }
+        }
+
+        assertEquals("Expecting one call initially and first try",
+                1 + 1, httpCalls.get());
     }
 }

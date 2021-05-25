@@ -96,7 +96,8 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
      *            to download at least this many chunks
      * @param max If -1, fill the buffer completely, otherwise
      *            download up to max chunks into the buffer.
-     * @return The number of chunks downloaded
+     * @return The number of chunks downloaded, 0 if the thread was interrupted
+     *          while sleeping for retries
      * @throws IOException If downloading fails
      */
     public int fillupBuffer(int min, int max) throws IOException {
@@ -120,6 +121,11 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
                     Thread.sleep(RETRY_SLEEP_TIME);
                 } catch (InterruptedException ex) {
                     log.log(Level.WARNING, "Sleeping was interrupted", ex);
+
+                    // try to pass on the interrupted-state (this did not work in tests?!)
+                    Thread.currentThread().interrupt();
+
+                    return 0;
                 }
             }
         }
