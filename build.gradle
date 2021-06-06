@@ -10,7 +10,7 @@ buildscript {
 plugins {
 	// https://github.com/researchgate/gradle-release
 	id 'net.researchgate.release' version '2.8.1'
-    id 'io.codearte.nexus-staging' version '0.22.0'
+    id 'io.codearte.nexus-staging' version '0.30.0'
 }
 
 apply plugin: 'java'
@@ -40,13 +40,13 @@ forbiddenApisMain {
 
 dependencies {
     compile 'org.dstadler:commons-dost:1.0.0.32'
-    compile 'com.fasterxml.jackson.core:jackson-core:2.12.1'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.12.1'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.12.3'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     compile 'com.google.code.findbugs:jsr305:3.0.2'
-    compile 'com.google.guava:guava:30.1-jre'
+    compile 'com.google.guava:guava:30.1.1-jre'
 
     // Can be removed after commons-dost 1.0.0.32 or newer is included
-    compile 'commons-io:commons-io:2.8.0'
+    compile 'commons-io:commons-io:2.9.0'
 
     // MP3 SPI, used for playback
     compile 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
