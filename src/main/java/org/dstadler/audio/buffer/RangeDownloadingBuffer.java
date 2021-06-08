@@ -2,6 +2,8 @@ package org.dstadler.audio.buffer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dstadler.audio.download.RangeDownload;
 import org.dstadler.audio.download.RangeDownloadFile;
@@ -60,13 +62,15 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
      */
     public RangeDownloadingBuffer(String url, String user, String pwd, int bufferedChunks, int chunkSize,
                                   Function<Double, Pair<String, Long>> metaDataFun) throws IOException {
-        if(url.startsWith("file://")) {
-            try {
-                this.download = new RangeDownloadFile(new File(new URL(url).toURI()));
-            } catch (URISyntaxException e) {
-                throw new IOException(e);
-            }
-        } else if(url.startsWith("/") || (url.startsWith("\\"))) {
+        if(url.startsWith("file://") && !url.startsWith("file://C:\\")) {
+			try {
+				this.download = new RangeDownloadFile(new File(new URL(url).toURI()));
+			} catch (URISyntaxException | IllegalArgumentException e) {
+				throw new IOException("While handling url: " + url, e);
+			}
+		} else if (url.startsWith("file://C:\\")) {
+			this.download = new RangeDownloadFile(new File(StringUtils.removeStart(url, "file://")));
+		} else if (url.startsWith("/") || url.startsWith("\\") || url.startsWith("C:\\")) {
                 this.download = new RangeDownloadFile(new File(url));
         } else {
             this.download = new RangeDownloadHTTP(url, user, pwd);
