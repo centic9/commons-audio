@@ -173,7 +173,7 @@ public class MockHTTPTest {
                     }
                     break;
                 case 11:
-                    BufferPersistenceDTO dto = buffer.toPersistence(null, true);
+                    BufferPersistenceDTO dto = buffer.toPersistence(null, true, true);
                     assertTrue(dto.getNextDownloadPosition() >= 0);
                     break;
                 case 12:

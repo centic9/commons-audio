@@ -14,7 +14,9 @@ public interface Persistable {
      *
      * @param stream The currently playing stream/file/download
      * @param playing If the stream is currently playing
+	 * @param downloadWhilePaused If the stream should continue to be
+	 *                          	downloaded while playing is paused
      * @return A populated instance of {@link BufferPersistenceDTO}
      */
-    BufferPersistenceDTO toPersistence(Stream stream, boolean playing);
+    BufferPersistenceDTO toPersistence(Stream stream, boolean playing, boolean downloadWhilePaused);
 }

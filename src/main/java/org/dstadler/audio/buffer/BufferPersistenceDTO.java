@@ -24,6 +24,7 @@ public class BufferPersistenceDTO {
 
     private final Stream stream;
     private final boolean playing;
+    private final boolean downloadWhilePaused;
 
     // default constructor for persistence
     @SuppressWarnings("unused")
@@ -35,9 +36,11 @@ public class BufferPersistenceDTO {
         this.stream = null;
         this.nextDownloadPosition = 0;
         this.playing = false;
+        this.downloadWhilePaused = false;
     }
 
-    public BufferPersistenceDTO(Chunk[] buffer, int nextGet, int nextAdd, int fill, Stream stream, boolean playing) {
+    public BufferPersistenceDTO(Chunk[] buffer, int nextGet, int nextAdd, int fill, Stream stream, boolean playing,
+			boolean downloadWhilePaused) {
         // copy the array to be able to continue adding items to the buffer
         // while the data is written
         this.buffer = ArrayUtils.clone(buffer);
@@ -47,10 +50,11 @@ public class BufferPersistenceDTO {
         this.stream = stream;
         this.nextDownloadPosition = 0;
         this.playing = playing;
+        this.downloadWhilePaused = downloadWhilePaused;
 
     }
 
-    public BufferPersistenceDTO(long nextDownloadPosition, Stream stream, boolean playing) {
+    public BufferPersistenceDTO(long nextDownloadPosition, Stream stream, boolean playing, boolean downloadWhilePaused) {
         this.buffer = null;
         this.nextGet = 0;
         this.nextAdd = 0;
@@ -58,6 +62,7 @@ public class BufferPersistenceDTO {
         this.stream = stream;
         this.nextDownloadPosition = nextDownloadPosition;
         this.playing = playing;
+        this.downloadWhilePaused = downloadWhilePaused;
     }
 
     public Chunk[] getBuffer() {
@@ -88,7 +93,11 @@ public class BufferPersistenceDTO {
         return playing;
     }
 
-    @Override
+	public boolean isDownloadWhilePaused() {
+		return downloadWhilePaused;
+	}
+
+	@Override
     public String toString() {
         return "BufferPersistenceDTO{" +
                 (buffer == null ? "" : "chunks=" + buffer.length) +
@@ -98,6 +107,7 @@ public class BufferPersistenceDTO {
                 ", nextDownloadPosition=" + nextDownloadPosition +
                 ", stream=" + stream +
                 ", playing=" + playing +
+                ", downloadWhilePaused=" + downloadWhilePaused +
                 '}';
     }
 }

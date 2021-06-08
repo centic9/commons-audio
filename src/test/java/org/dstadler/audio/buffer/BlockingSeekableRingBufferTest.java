@@ -27,7 +27,7 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
         stream.setStreamType(Stream.StreamType.live);
 
         // get the persistence
-        final BufferPersistenceDTO dto = localBuffer.toPersistence(stream, false);
+        final BufferPersistenceDTO dto = localBuffer.toPersistence(stream, false, false);
         assertNotNull(dto);
         assertEquals("url1", dto.getStream().getUrl());
 

@@ -31,13 +31,15 @@ public class BufferPersistenceTest {
             stream.setStreamType(Stream.StreamType.live);
 
             final BlockingSeekableRingBuffer buffer = new BlockingSeekableRingBuffer(10);
-            BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false));
+            BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false, false));
 
             assertTrue(BufferPersistence.hasBufferOnDisk(file));
 
             final BufferPersistenceDTO dto = BufferPersistence.readBufferFromDisk(file);
             assertEquals("url1", dto.getStream().getUrl());
             assertEquals(Stream.StreamType.live, dto.getStream().getStreamType());
+			assertFalse(dto.isPlaying());
+			assertFalse(dto.isDownloadWhilePaused());
 
             BlockingSeekableRingBuffer  back = BlockingSeekableRingBuffer.fromPersistence(dto);
             assertTrue(BufferPersistence.hasBufferOnDisk(file));
@@ -71,7 +73,7 @@ public class BufferPersistenceTest {
             stream.setUrl("url1");
             stream.setStreamType(Stream.StreamType.download);
 
-            BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, true));
+            BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, true, true));
 
             assertTrue(BufferPersistence.hasBufferOnDisk(file));
 
@@ -79,6 +81,7 @@ public class BufferPersistenceTest {
             assertEquals("url1", dto.getStream().getUrl());
             assertEquals(Stream.StreamType.download, dto.getStream().getStreamType());
             assertTrue(dto.isPlaying());
+			assertTrue(dto.isDownloadWhilePaused());
 
             BlockingSeekableRingBuffer back = BlockingSeekableRingBuffer.fromPersistence(dto);
             assertTrue(BufferPersistence.hasBufferOnDisk(file));
@@ -133,7 +136,7 @@ public class BufferPersistenceTest {
                 stream.setStreamType(Stream.StreamType.live);
 
                 long start = System.currentTimeMillis();
-                BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false));
+                BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false, false));
                 log.info("Writing for run " + i + " took " + (System.currentTimeMillis() - start) + "ms");
 
                 assertTrue(BufferPersistence.hasBufferOnDisk(file));
@@ -142,6 +145,8 @@ public class BufferPersistenceTest {
                 final BufferPersistenceDTO dto = BufferPersistence.readBufferFromDisk(file);
                 assertEquals("url1", dto.getStream().getUrl());
                 assertEquals(Stream.StreamType.live, dto.getStream().getStreamType());
+                assertFalse(dto.isPlaying());
+                assertFalse(dto.isDownloadWhilePaused());
 
                 BlockingSeekableRingBuffer back = BlockingSeekableRingBuffer.fromPersistence(dto);
                 log.info("Reading for run " + i + " took " + (System.currentTimeMillis() - start) + "ms");

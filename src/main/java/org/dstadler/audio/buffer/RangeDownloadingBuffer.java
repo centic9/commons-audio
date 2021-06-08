@@ -390,7 +390,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
     }
 
     @Override
-    public synchronized BufferPersistenceDTO toPersistence(Stream stream, boolean playing) {
+    public synchronized BufferPersistenceDTO toPersistence(Stream stream, boolean playing, boolean downloadWhilePaused) {
         // set persisted position where we should start reading based on the
         // current download-position minus the data that is stored in the buffer and thus
         // also needs to be downloaded again
@@ -404,7 +404,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
         log.fine("Persisting stream: " + stream + " at " + nextDownloadPos + "/" + startPosition);
 
-        return new BufferPersistenceDTO(startPosition, stream, playing);
+        return new BufferPersistenceDTO(startPosition, stream, playing, downloadWhilePaused);
     }
 
     public static RangeDownloadingBuffer fromPersistence(BufferPersistenceDTO dto, int bufferedChunks, int chunkSize) throws IOException {

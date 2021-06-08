@@ -262,8 +262,8 @@ public class BlockingSeekableRingBuffer implements SeekableRingBuffer<Chunk>, Pe
     }
 
     @Override
-    public synchronized BufferPersistenceDTO toPersistence(Stream stream, boolean playing) {
-        return new BufferPersistenceDTO(buffer, nextGet, nextAdd, fill, stream, playing);
+    public synchronized BufferPersistenceDTO toPersistence(Stream stream, boolean playing, boolean downloadWhilePaused) {
+        return new BufferPersistenceDTO(buffer, nextGet, nextAdd, fill, stream, playing, downloadWhilePaused);
     }
 
     public static BlockingSeekableRingBuffer fromPersistence(BufferPersistenceDTO dto) throws IOException {

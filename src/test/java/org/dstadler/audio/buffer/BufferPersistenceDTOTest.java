@@ -18,7 +18,7 @@ public class BufferPersistenceDTOTest {
         stream.setStreamType(Stream.StreamType.live);
 
         BufferPersistenceDTO dto = new BufferPersistenceDTO(new Chunk[] { new Chunk(new byte[] {1}, "meta", 123)},
-                0, 1, 2, stream, true);
+                0, 1, 2, stream, true, true);
         assertArrayEquals(new Chunk[] { new Chunk(new byte[] {1}, "meta", 123)}, dto.getBuffer());
         assertEquals(0, dto.getNextGet());
         assertEquals(1, dto.getNextAdd());
@@ -27,6 +27,7 @@ public class BufferPersistenceDTOTest {
         assertEquals(Stream.StreamType.live, dto.getStream().getStreamType());
         assertEquals(0, dto.getNextDownloadPosition());
         assertTrue(dto.isPlaying());
+        assertTrue(dto.isDownloadWhilePaused());
 
         TestHelpers.ToStringTest(dto);
     }
@@ -37,7 +38,7 @@ public class BufferPersistenceDTOTest {
         stream.setUrl("url1");
         stream.setStreamType(Stream.StreamType.download);
 
-        BufferPersistenceDTO dto = new BufferPersistenceDTO(3, stream, false);
+        BufferPersistenceDTO dto = new BufferPersistenceDTO(3, stream, false, false);
         assertNull(dto.getBuffer());
         assertEquals(0, dto.getNextGet());
         assertEquals(0, dto.getNextAdd());
@@ -46,6 +47,7 @@ public class BufferPersistenceDTOTest {
         assertEquals(Stream.StreamType.download, dto.getStream().getStreamType());
         assertEquals(3, dto.getNextDownloadPosition());
         assertFalse(dto.isPlaying());
+        assertFalse(dto.isDownloadWhilePaused());
 
         TestHelpers.ToStringTest(dto);
     }

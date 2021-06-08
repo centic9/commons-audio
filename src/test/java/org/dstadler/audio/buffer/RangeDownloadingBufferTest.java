@@ -378,7 +378,7 @@ public class RangeDownloadingBufferTest {
         stream.setStartTimestamp(100L);
 
         // get the persistence
-        final BufferPersistenceDTO dto = buffer.toPersistence(stream, false);
+        final BufferPersistenceDTO dto = buffer.toPersistence(stream, false, false);
         assertNotNull(dto);
         assertEquals(sample, dto.getStream().getUrl());
 
