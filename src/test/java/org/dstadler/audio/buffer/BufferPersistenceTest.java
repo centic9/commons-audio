@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class BufferPersistenceTest {
@@ -161,6 +162,45 @@ public class BufferPersistenceTest {
         } finally {
             // make sure to clean up even on exception
             assertTrue(!file.exists() || file.delete());
+        }
+    }
+
+
+
+    @Test
+    public void testInvalidStartPosition() throws IOException {
+        File tempPersist = File.createTempFile("RangeDownloadingBuffer", ".bin");
+        try {
+            // first get a "next download position" > 0 persisted
+            String url = new File("src/test/resources/test.bin").getAbsolutePath();
+            try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer(url,
+                    "", null, 100, Chunk.CHUNK_SIZE, null)) {
+
+                buffer.next();
+                assertEquals(1, buffer.bufferedBackward());
+
+                Stream stream = new Stream();
+                stream.setUrl(url);
+                BufferPersistenceDTO dto = buffer.toPersistence(stream, false, false);
+                assertNotNull(dto);
+                BufferPersistence.writeBufferToDisk(tempPersist, dto);
+            }
+
+            // restore from previous persisted data
+            BufferPersistenceDTO dtoBack = BufferPersistence.readBufferFromDisk(tempPersist);
+
+            try (RangeDownloadingBuffer buffer = RangeDownloadingBuffer.fromPersistence(dtoBack, 100, Chunk.CHUNK_SIZE)) {
+                assertEquals("Zero expected here because we restored the buffer",
+                        0, buffer.bufferedBackward());
+
+                buffer.next();
+
+                Stream stream = new Stream();
+                BufferPersistenceDTO dto = buffer.toPersistence(stream, false, false);
+                assertNotNull(dto);
+            }
+        } finally {
+            assertTrue(!tempPersist.exists() || tempPersist.delete());
         }
     }
 }

@@ -214,6 +214,9 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
     }
 
     private Pair<String, Long> getMetadata(long pos) {
+        if (metaDataFun == null) {
+            return Pair.of("", 0L);
+        }
         return metaDataFun.apply(((double)pos)/download.getLength());
     }
 
