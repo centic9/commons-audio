@@ -8,6 +8,9 @@ import org.dstadler.commons.logging.jdk.LoggerFactory;
 import javax.annotation.Nonnull;
 import java.util.function.Supplier;
 
+import static org.dstadler.audio.player.BufferBasedTempoStrategy.DEFAULT_KEEP_AREA_SECONDS;
+import static org.dstadler.audio.player.BufferBasedTempoStrategy.DEFAULT_SPEED_STEP;
+
 /**
  * Interface to provide a way to compute what audio-tempo
  * should be used for playback, e.g. based on buffer-position
@@ -35,7 +38,7 @@ public interface TempoStrategy {
             LoggerFactory.make().warning("Could not create unknown tempo strategy '" + strategyAndTempo + "'");
         }
 
-        return new BufferBasedTempoStrategy(buffer);
+        return new BufferBasedTempoStrategy(buffer, DEFAULT_KEEP_AREA_SECONDS, DEFAULT_SPEED_STEP);
     }
 
     /**

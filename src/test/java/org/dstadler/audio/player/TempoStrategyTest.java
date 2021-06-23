@@ -2,6 +2,8 @@ package org.dstadler.audio.player;
 
 import org.junit.Test;
 
+import static org.dstadler.audio.player.BufferBasedTempoStrategy.DEFAULT_KEEP_AREA_SECONDS;
+import static org.dstadler.audio.player.BufferBasedTempoStrategy.DEFAULT_SPEED_STEP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -66,6 +68,6 @@ public class TempoStrategyTest {
         assertEquals("constant:1.0", TempoStrategy.CONSTANT_1);
 
         assertEquals(TempoStrategy.CONSTANT, new ConstantTempoStrategy(1.0f).name());
-        assertEquals(TempoStrategy.ADAPTIVE, new BufferBasedTempoStrategy(() -> null).name());
+        assertEquals(TempoStrategy.ADAPTIVE, new BufferBasedTempoStrategy(() -> null, DEFAULT_KEEP_AREA_SECONDS, DEFAULT_SPEED_STEP).name());
     }
 }

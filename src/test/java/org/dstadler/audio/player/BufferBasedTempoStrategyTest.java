@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.dstadler.audio.player.BufferBasedTempoStrategy.DEFAULT_KEEP_AREA_SECONDS;
+import static org.dstadler.audio.player.BufferBasedTempoStrategy.DEFAULT_SPEED_STEP;
 import static org.junit.Assert.assertEquals;
 
 public class BufferBasedTempoStrategyTest {
@@ -33,7 +35,7 @@ public class BufferBasedTempoStrategyTest {
         }
     };
 
-    private final BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer);
+    private final BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, DEFAULT_KEEP_AREA_SECONDS, DEFAULT_SPEED_STEP);
 
     @Test
     public void testCalculationEmpty() {
@@ -182,29 +184,54 @@ public class BufferBasedTempoStrategyTest {
     @Test
     public void testWithChunksPerSecond() {
         // test with some chunksWrittenPerSecond as well
-        CountingSeekableRingBuffer buffer = new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10)) {
-            @Override
-            public int size() {
-                return 12;
-            }
-
-            @Override
-            public int fill() {
-                return 307;
-            }
-
-            @Override
-            public double getChunksWrittenPerSecond() {
-                return 1.49;
-            }
-        };
-        BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer);
+        CountingSeekableRingBuffer buffer = new TestBufferImpl();
+        BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, DEFAULT_KEEP_AREA_SECONDS, DEFAULT_SPEED_STEP);
 
         assertEquals(0.95f, strategy.calculateTempo(), 0.01);
     }
 
     @Test
+    public void testWithDifferentKeepArea() {
+        CountingSeekableRingBuffer buffer = new TestBufferImpl();
+        BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, 600, DEFAULT_SPEED_STEP);
+
+        assertEquals("With larger keep area we should not apply any change in tempo here and thus should get back 1.0f",
+                1f, strategy.calculateTempo(), 0.01);
+    }
+
+    @Test
+    public void testWithDifferentSpeedStep() {
+        // test with some chunksWrittenPerSecond as well
+        CountingSeekableRingBuffer buffer = new TestBufferImpl();
+        BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, DEFAULT_KEEP_AREA_SECONDS, 0.01f);
+
+        assertEquals("With smaller speedStep we should get back a smaller slowdown value of 0.99f instead of default 0.95f",
+                0.99f, strategy.calculateTempo(), 0.01);
+    }
+
+    @Test
     public void testName() {
         assertEquals("adaptive", strategy.name());
+    }
+
+    private static class TestBufferImpl extends CountingSeekableRingBufferImpl {
+        public TestBufferImpl() {
+            super(new BlockingSeekableRingBuffer(10));
+        }
+
+        @Override
+        public int size() {
+            return 12;
+        }
+
+        @Override
+        public int fill() {
+            return 307;
+        }
+
+        @Override
+        public double getChunksWrittenPerSecond() {
+            return 1.49;
+        }
     }
 }
