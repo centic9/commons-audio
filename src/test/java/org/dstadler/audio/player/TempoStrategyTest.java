@@ -1,6 +1,11 @@
 package org.dstadler.audio.player;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.dstadler.audio.player.BufferBasedTempoStrategy.DEFAULT_KEEP_AREA_SECONDS;
 import static org.dstadler.audio.player.BufferBasedTempoStrategy.DEFAULT_SPEED_STEP;
@@ -11,26 +16,66 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+@RunWith(Parameterized.class)
 public class TempoStrategyTest {
+    @Parameterized.Parameters(name = "Tempo-Strategy: {0}, isValid: {1}, isFailing: {2}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                // only the ones without param are 'valid'
+                { TempoStrategy.DEFAULT, true, false },
+                { TempoStrategy.ADAPTIVE, true, false },
+                { TempoStrategy.CONSTANT, true, false },
+
+                { "", false, false },
+                { "unknown", false, false },
+                { TempoStrategy.DEFAULT + ":", false, false },
+                { TempoStrategy.ADAPTIVE_PREFIX, false, false },
+                { TempoStrategy.ADAPTIVE_PREFIX + "150:0.01", false, false },
+                { TempoStrategy.ADAPTIVE_PREFIX + "abcd", false, false },
+                { TempoStrategy.CONSTANT_1, false, false },
+                { TempoStrategy.CONSTANT_PREFIX + "0.3", false, false },
+
+                // this one is failing parsing
+                { TempoStrategy.CONSTANT_PREFIX + "abcd", false, true },
+        });
+    }
+
+    @Parameterized.Parameter
+    public String tempoStrategy;
+
+    @Parameterized.Parameter(1)
+    public boolean isValid;
+
+    @Parameterized.Parameter(2)
+    public boolean isFailing;
+
     @Test
     public void testCreate() {
-        assertNotNull(TempoStrategy.create("", null));
-        assertNotNull(TempoStrategy.create("default", null));
-        assertNotNull(TempoStrategy.create("adaptive", null));
-        assertNotNull(TempoStrategy.create("default:", null));
-        assertNotNull(TempoStrategy.create(TempoStrategy.ADAPTIVE_PREFIX, null));
-        assertNotNull(TempoStrategy.create(TempoStrategy.ADAPTIVE_PREFIX + "150:0.01", null));
-        assertNotNull(TempoStrategy.create(TempoStrategy.ADAPTIVE_PREFIX + "abcd", null));
-        assertNotNull(TempoStrategy.create(TempoStrategy.CONSTANT_1, null));
-        assertNotNull(TempoStrategy.create(TempoStrategy.CONSTANT_PREFIX + "0.3", null));
-
-        assertNotNull(TempoStrategy.create("unknown", null));
-
         try {
-            TempoStrategy.create(TempoStrategy.CONSTANT_PREFIX + "abcd", null);
-            fail("Should catch exception here");
+            assertNotNull(TempoStrategy.create(tempoStrategy, null));
+            if (isFailing) {
+                fail("Should catch exception here");
+            }
         } catch (NumberFormatException e) {
-            // expected here
+            // expected only if specified in the parameters
+            if (!isFailing) {
+                throw e;
+            }
+        }
+    }
+
+    @Test
+    public void testValidate() {
+        try {
+            TempoStrategy.validate(tempoStrategy);
+            if (!isValid) {
+                fail("Should not be valid here");
+            }
+        } catch (IllegalStateException e) {
+            // expected only if specified in the parameters
+            if (isValid) {
+                throw e;
+            }
         }
     }
 
@@ -57,13 +102,6 @@ public class TempoStrategyTest {
     @Test(expected = IllegalStateException.class)
     public void testValidateInvalid3() {
         TempoStrategy.validate(" constant");
-    }
-
-    @Test
-    public void testValidate() {
-        TempoStrategy.validate("default");
-        TempoStrategy.validate(TempoStrategy.CONSTANT);
-        TempoStrategy.validate("adaptive");
     }
 
     @Test
