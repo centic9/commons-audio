@@ -189,7 +189,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
             synchronized (this) {
                 if (nextDownloadPosBefore != nextDownloadPos) {
                     log.info("Restarting download of " + toDownload + " chunks as buffer changed while downloading: having download position " +
-                            nextDownloadPos + " but expected " + nextDownloadPosBefore + ": " + toString());
+                            nextDownloadPos + " but expected " + nextDownloadPosBefore + ": " + this);
 
                     // restart downloading
                     continue;
@@ -393,6 +393,10 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
                 ", nextDownloadPos=" + nextDownloadPos +
                 ", percentage=" + (((double)nextDownloadPos)/download.getLength()) +
                 ", metaData=" + getMetadata(nextDownloadPos) +
+                ", capacity=" + capacity() +
+                ", size=" + size() +
+                ", empty=" + empty() +
+                ", full=" + full() +
                 '}';
     }
 

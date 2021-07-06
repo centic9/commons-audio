@@ -424,6 +424,11 @@ public class RangeDownloadingBufferTest {
         TestHelpers.ToStringTest(buffer);
         assertNotNull(buffer.next());
         TestHelpers.ToStringTest(buffer);
+
+        assertTrue("Had: " + buffer,
+                buffer.toString().contains("empty=" + (buffer.empty() ? "true" : "false")));
+        assertTrue("Had: " + buffer,
+                buffer.toString().contains("full=" + (buffer.full() ? "true" : "false")));
     }
 
     @Ignore("Just used for testing download speed")
