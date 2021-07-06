@@ -36,10 +36,13 @@ public class RangeDownloadingBufferTest {
     private static final String SAMPLE_URL = "https://file-examples-com.github.io/uploads/2017/10/file_example_JPG_500kB.jpg";
 
     private static final String SAMPLE_FILE = new File("src/test/resources/test.bin").getAbsolutePath();
-    private static final String SAMPLE_FILE_URL = "file://" + new File("src/test/resources/test.bin").getAbsolutePath();
+    private static final String SAMPLE_FILE_URL = "file://" + SAMPLE_FILE;
 
     private static final String SAMPLE_FILE2 = new File("src/test/resources/test2.bin").getAbsolutePath();
-    private static final String SAMPLE_FILE2_URL = "file://" + new File("src/test/resources/test2.bin").getAbsolutePath();
+    private static final String SAMPLE_FILE2_URL = "file://" + SAMPLE_FILE2;
+
+    private static final String EMPTY_FILE = new File("src/test/resources/empty.bin").getAbsolutePath();
+    private static final String EMPTY_FILE_URL = "file://" + EMPTY_FILE;
 
     private final MemoryLeakVerifier verifier = new MemoryLeakVerifier();
 
@@ -55,6 +58,9 @@ public class RangeDownloadingBufferTest {
 
                 { SAMPLE_FILE2, 30, 485375, 485347, Pair.of("", 100L) },
                 { SAMPLE_FILE2_URL, 30, 485375, 485347, Pair.of("", 100L) },
+
+                { EMPTY_FILE, 0, 0, 0, Pair.of("", 0L) },
+                { EMPTY_FILE_URL, 0, 0, 0, Pair.of("", 0L) },
 
                 // null metadata
                 { SAMPLE_FILE, 36, 587241, 587207, null },
@@ -109,43 +115,61 @@ public class RangeDownloadingBufferTest {
         assertEquals(0, buffer.bufferedForward());
         assertEquals(0, buffer.bufferedBackward());
 
-        assertNotNull(buffer.peek());
-        assertEquals(10, buffer.bufferedForward());
+        if (fileSize == 0) {
+            assertEquals(0, buffer.bufferedForward());
+            assertNull(buffer.peek());
+        } else {
+            assertNotNull(buffer.peek());
+            assertEquals(10, buffer.bufferedForward());
+        }
         assertEquals(0, buffer.bufferedBackward());
 
-        assertNotNull(buffer.next());
-        assertEquals(9, buffer.bufferedForward());
-        assertEquals(1, buffer.bufferedBackward());
+        if (fileSize == 0) {
+            assertNull(buffer.next());
+            assertEquals(0, buffer.bufferedForward());
+            assertEquals(0, buffer.bufferedBackward());
+            assertNull(buffer.next());
+            assertNull(buffer.next());
+            assertNull(buffer.next());
+        } else {
+            assertNotNull(buffer.next());
+            assertEquals(9, buffer.bufferedForward());
+            assertEquals(1, buffer.bufferedBackward());
 
-        assertNotNull(buffer.next());
-        assertEquals(8, buffer.bufferedForward());
-        assertEquals(2, buffer.bufferedBackward());
+            assertNotNull(buffer.next());
+            assertEquals(8, buffer.bufferedForward());
+            assertEquals(2, buffer.bufferedBackward());
 
-        assertNotNull(buffer.next());
-        assertNotNull(buffer.next());
-        assertNotNull(buffer.next());
-        assertNotNull(buffer.next());
-        assertNotNull(buffer.next());
-        assertNotNull(buffer.next());
-        assertNotNull(buffer.next());
-        assertEquals(1, buffer.bufferedForward());
-        assertEquals(9, buffer.bufferedBackward());
+            assertNotNull(buffer.next());
+            assertNotNull(buffer.next());
+            assertNotNull(buffer.next());
+            assertNotNull(buffer.next());
+            assertNotNull(buffer.next());
+            assertNotNull(buffer.next());
+            assertNotNull(buffer.next());
+            assertEquals(1, buffer.bufferedForward());
+            assertEquals(9, buffer.bufferedBackward());
 
-        assertNotNull(buffer.next());
-        assertEquals(0, buffer.bufferedForward());
-        assertEquals(10, buffer.bufferedBackward());
+            assertNotNull(buffer.next());
+            assertEquals(0, buffer.bufferedForward());
+            assertEquals(10, buffer.bufferedBackward());
 
-        assertNotNull(buffer.next());
-        assertEquals("Having: " + buffer, 9, buffer.bufferedForward());
-        assertEquals("internal buffer only stores 19 elements, thus one is already removed by adding 10 more",
-                10, buffer.bufferedBackward());
+            assertNotNull(buffer.next());
+            assertEquals("Having: " + buffer, 9, buffer.bufferedForward());
+            assertEquals("internal buffer only stores 19 elements, thus one is already removed by adding 10 more",
+                    10, buffer.bufferedBackward());
+        }
     }
 
     @Test
     public void testInitialSize() {
         TestHelpers.ToStringTest(buffer);
 
-        assertFalse(buffer.empty());
+        if (fileSize == 0) {
+            assertTrue(buffer.empty());
+        } else {
+            assertFalse(buffer.empty());
+        }
         assertTrue(buffer.full());
         assertEquals(expectedChunks, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
@@ -154,9 +178,13 @@ public class RangeDownloadingBufferTest {
 
     @Test
     public void testFillupBuffer() throws Exception {
-        assertEquals(10, buffer.fillupBuffer(-1, -1));
-
-        assertFalse(buffer.empty());
+        if (fileSize == 0) {
+            assertEquals(0, buffer.fillupBuffer(-1, -1));
+            assertTrue(buffer.empty());
+        } else {
+            assertEquals(10, buffer.fillupBuffer(-1, -1));
+            assertFalse(buffer.empty());
+        }
         assertTrue(buffer.full());
         assertEquals(expectedChunks, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
@@ -164,7 +192,11 @@ public class RangeDownloadingBufferTest {
 
         assertEquals(0, buffer.fillupBuffer(-1, -1));
 
-        assertFalse(buffer.empty());
+        if (fileSize == 0) {
+            assertTrue(buffer.empty());
+        } else {
+            assertFalse(buffer.empty());
+        }
         assertTrue(buffer.full());
         assertEquals(expectedChunks, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
@@ -175,15 +207,24 @@ public class RangeDownloadingBufferTest {
     public void testFillupBufferMin() throws Exception {
         assertEquals(0, buffer.fillupBuffer(1000, 10));
 
-        assertFalse(buffer.empty());
+        if (fileSize == 0) {
+            assertTrue(buffer.empty());
+        } else {
+            assertFalse(buffer.empty());
+        }
         assertTrue(buffer.full());
         assertEquals(expectedChunks, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
         assertEquals(expectedChunks, buffer.fill());
 
-        assertEquals(8, buffer.fillupBuffer(2, 8));
 
-        assertFalse(buffer.empty());
+        if (fileSize == 0) {
+            assertEquals(0, buffer.fillupBuffer(2, 8));
+            assertTrue(buffer.empty());
+        } else {
+            assertEquals(8, buffer.fillupBuffer(2, 8));
+            assertFalse(buffer.empty());
+        }
         assertTrue(buffer.full());
         assertEquals(expectedChunks, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
@@ -192,6 +233,11 @@ public class RangeDownloadingBufferTest {
 
     @Test
     public void testFillupBufferWithBufferData() throws Exception {
+        // not useful for buffer without data
+        if (fileSize == 0) {
+            return;
+        }
+
         for(int i = 0;i < 20;i++) {
             assertNotNull("Having: " + buffer, buffer.next());
         }
@@ -220,16 +266,25 @@ public class RangeDownloadingBufferTest {
     @Test
     public void testPeek() {
         Chunk peek = buffer.peek();
-        assertNotNull(peek);
-        assertEquals(CHUNK_SIZE, peek.getData().length);
+        if (fileSize == 0) {
+            assertNull(peek);
+        } else {
+            assertNotNull(peek);
+            assertEquals(CHUNK_SIZE, peek.getData().length);
+        }
 
         Chunk chunk = buffer.next();
-        assertNotNull(chunk);
-        assertEquals(CHUNK_SIZE, chunk.getData().length);
-        assertEquals(metaData == null ? "" : metaData.getLeft(), chunk.getMetaData());
-        assertEquals(metaData == null ? 0L : metaData.getRight(), chunk.getTimestamp());
+        if (fileSize == 0) {
+            assertNull(chunk);
+        } else {
+            assertNotNull(peek);
+            assertNotNull(chunk);
+            assertEquals(CHUNK_SIZE, chunk.getData().length);
+            assertEquals(metaData == null ? "" : metaData.getLeft(), chunk.getMetaData());
+            assertEquals(metaData == null ? 0L : metaData.getRight(), chunk.getTimestamp());
 
-        assertArrayEquals(peek.getData(), chunk.getData());
+            assertArrayEquals(peek.getData(), chunk.getData());
+        }
     }
 
     @Test
@@ -274,6 +329,11 @@ public class RangeDownloadingBufferTest {
 
     @Test
     public void testEmpty() throws IOException {
+        // not useful for buffer without data
+        if (fileSize == 0) {
+            return;
+        }
+
         // go nearly to the end of the buffer
         assertEquals(expectedChunks - 2, buffer.seek(buffer.size() - 2));
 
@@ -290,16 +350,22 @@ public class RangeDownloadingBufferTest {
     @Test
     public void testReadChunkAndSeek() {
         Chunk chunk = buffer.next();
-        assertNotNull(chunk);
-        assertEquals(CHUNK_SIZE, chunk.getData().length);
+        if (fileSize == 0) {
+            assertNull(chunk);
+        } else {
+            assertNotNull(chunk);
+            assertEquals(CHUNK_SIZE, chunk.getData().length);
+            assertEquals(expectedChunks-1, buffer.size());
+        }
 
-        assertEquals(expectedChunks-1, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
         assertEquals(expectedChunks, buffer.fill());
 
-        assertEquals(expectedChunks-2, buffer.seek(expectedChunks-2));
+        if (fileSize != 0) {
+            assertEquals(expectedChunks - 2, buffer.seek(expectedChunks - 2));
+            assertEquals(1, buffer.size());
+        }
 
-        assertEquals(1, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
         assertEquals(expectedChunks, buffer.fill());
     }
@@ -319,36 +385,42 @@ public class RangeDownloadingBufferTest {
         buffer = new RangeDownloadingBuffer(sample, "", null, 10, 1, percentage -> Pair.of("", 0L));
 
         Chunk chunk = buffer.next();
-        assertNotNull(chunk);
-        assertEquals(1, chunk.getData().length);
+        if (fileSize == 0) {
+            assertNull(chunk);
+        } else {
+            assertNotNull(chunk);
+            assertEquals(1, chunk.getData().length);
+        }
 
         assertEquals(fileSize, buffer.size());
-        assertEquals(fileSize+1, buffer.capacity());
-        assertEquals(fileSize+1, buffer.fill());
+        if (fileSize != 0) {
+            assertEquals(fileSize + 1, buffer.capacity());
+            assertEquals(fileSize + 1, buffer.fill());
 
-        assertEquals(expectedChunks-2, buffer.seek(expectedChunks-2));
+            assertEquals(expectedChunks - 2, buffer.seek(expectedChunks - 2));
 
-        assertEquals(fileSize2, buffer.size());
-        assertEquals(fileSize+1, buffer.capacity());
-        assertEquals(fileSize+1, buffer.fill());
+            assertEquals(fileSize2, buffer.size());
+            assertEquals(fileSize + 1, buffer.capacity());
+            assertEquals(fileSize + 1, buffer.fill());
 
-        assertEquals(-1*(expectedChunks-2), buffer.seek(-1*(expectedChunks-2)));
+            assertEquals(-1 * (expectedChunks - 2), buffer.seek(-1 * (expectedChunks - 2)));
 
-        assertEquals(fileSize, buffer.size());
-        assertEquals(fileSize+1, buffer.capacity());
-        assertEquals(fileSize+1, buffer.fill());
+            assertEquals(fileSize, buffer.size());
+            assertEquals(fileSize + 1, buffer.capacity());
+            assertEquals(fileSize + 1, buffer.fill());
 
-        assertEquals(-1, buffer.seek(-expectedChunks-2));
+            assertEquals(-1, buffer.seek(-expectedChunks - 2));
 
-        assertEquals(fileSize+1, buffer.size());
-        assertEquals(fileSize+1, buffer.capacity());
-        assertEquals(fileSize+1, buffer.fill());
+            assertEquals(fileSize + 1, buffer.size());
+            assertEquals(fileSize + 1, buffer.capacity());
+            assertEquals(fileSize + 1, buffer.fill());
 
-        assertEquals(0, buffer.seek(0));
+            assertEquals(0, buffer.seek(0));
 
-        assertEquals(fileSize+1, buffer.size());
-        assertEquals(fileSize+1, buffer.capacity());
-        assertEquals(fileSize+1, buffer.fill());
+            assertEquals(fileSize + 1, buffer.size());
+            assertEquals(fileSize + 1, buffer.capacity());
+            assertEquals(fileSize + 1, buffer.fill());
+        }
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -360,9 +432,17 @@ public class RangeDownloadingBufferTest {
     public void testPersistence() throws IOException {
         buffer.next();
 
-        assertFalse("Had: " + buffer, buffer.empty());
+        if (fileSize == 0) {
+            assertTrue("Had: " + buffer, buffer.empty());
+        } else {
+            assertFalse("Had: " + buffer, buffer.empty());
+        }
         assertTrue("Had: " + buffer, buffer.full());
-        assertEquals(expectedChunks-1, buffer.size());
+        if (fileSize == 0) {
+            assertEquals(0, buffer.size());
+        } else {
+            assertEquals(expectedChunks - 1, buffer.size());
+        }
         assertEquals(expectedChunks, buffer.capacity());
         assertEquals(expectedChunks, buffer.fill());
 
@@ -384,12 +464,23 @@ public class RangeDownloadingBufferTest {
 
         // then convert the DTO back into a buffer and then compare
         RangeDownloadingBuffer back = RangeDownloadingBuffer.fromPersistence(dto, 10, CHUNK_SIZE);
-        assertEquals(toStringReplace(buffer), toStringReplace(back));
+        assertEquals(
+                fileSize == 0 ?
+                        toStringReplace(buffer).replace("stop=true", "stop=false") :
+                        toStringReplace(buffer), toStringReplace(back));
 
         // and finally ensure the state is the same
-        assertFalse(back.empty());
+        if (fileSize == 0) {
+            assertTrue(back.empty());
+        } else {
+            assertFalse(back.empty());
+        }
         assertTrue(back.full());
-        assertEquals(expectedChunks-1, back.size());
+        if (fileSize == 0) {
+            assertEquals(0, buffer.size());
+        } else {
+            assertEquals(expectedChunks - 1, back.size());
+        }
         assertEquals(expectedChunks, back.capacity());
         assertEquals(expectedChunks, back.fill());
     }
@@ -422,7 +513,11 @@ public class RangeDownloadingBufferTest {
     @Test
     public void testToString() {
         TestHelpers.ToStringTest(buffer);
-        assertNotNull(buffer.next());
+        if (fileSize == 0) {
+            assertNull(buffer.next());
+        } else {
+            assertNotNull(buffer.next());
+        }
         TestHelpers.ToStringTest(buffer);
 
         assertTrue("Had: " + buffer,
@@ -456,16 +551,32 @@ public class RangeDownloadingBufferTest {
 
     @Test
     public void testSeekNotEmpty() throws IOException {
-        assertFalse("Not empty at the beginning", buffer.empty());
+        if (fileSize == 0) {
+            assertTrue("Empty at the beginning", buffer.empty());
+            assertEquals("Not able to read 10 chunks", 0, buffer.fillupBuffer(0, 10));
 
-        assertEquals("Load 10 chunks", 10, buffer.fillupBuffer(0, 10));
-        assertFalse("Not empty after initial fill-up", buffer.empty());
+            assertTrue("Still empty after initial fill-up", buffer.empty());
 
-        assertEquals("Able to seek 20 chunks", 20, buffer.seek(20));
-        assertFalse("Not empty after seeking", buffer.empty());
+            assertEquals("Not able to seek 20 chunks", 0, buffer.seek(20));
+
+            assertTrue("Still empty after seeking", buffer.empty());
+        } else {
+            assertFalse("Not empty at the beginning", buffer.empty());
+            assertEquals("Load 10 chunks", 10, buffer.fillupBuffer(0, 10));
+
+            assertFalse("Not empty after initial fill-up", buffer.empty());
+
+            assertEquals("Able to seek 20 chunks", 20, buffer.seek(20));
+
+            assertFalse("Not empty after seeking", buffer.empty());
+        }
 
         int seeked = buffer.seek(300);
-        assertTrue("Had: " + seeked, seeked >= 10);
+        if (fileSize == 0) {
+            assertEquals("Had: " + seeked, 0, seeked);
+        } else {
+            assertTrue("Had: " + seeked, seeked >= 10);
+        }
         assertTrue("Should be at the end now", buffer.empty());
     }
 }
