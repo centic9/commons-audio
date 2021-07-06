@@ -191,7 +191,7 @@ public class BlockingSeekableRingBuffer implements SeekableRingBuffer<Chunk>, Pe
 
     @Override
     public synchronized boolean full() {
-        // If tail is ahead the head by 1, we are full
+        // If tail is ahead of the head by 1, we are full
         return ((nextAdd + 1) % buffer.length) == nextGet;
     }
 
@@ -257,7 +257,7 @@ public class BlockingSeekableRingBuffer implements SeekableRingBuffer<Chunk>, Pe
                 ", capacity=" + capacity() +
                 ", size=" + size() +
                 ", empty=" + empty() +
-                ", full=" + empty() +
+                ", full=" + full() +
                 '}';
     }
 

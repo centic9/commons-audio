@@ -8,6 +8,7 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRingBufferTester {
     @Override
@@ -56,5 +57,28 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
         assertFalse(localBuffer.empty());
         assertEquals(8, localBuffer.size());
         assertEquals(9, localBuffer.fill());
+    }
+
+    @Test
+    public void testToString() {
+        BlockingSeekableRingBuffer localBuffer = new BlockingSeekableRingBuffer(10);
+
+        assertTrue(localBuffer.empty());
+        assertFalse(localBuffer.full());
+        assertTrue("Had: " + localBuffer,
+                localBuffer.toString().contains("empty=true"));
+        assertTrue("Had: " + localBuffer,
+                localBuffer.toString().contains("full=false"));
+
+        for(byte i = 0;i < 15;i++) {
+            localBuffer.add(new Chunk(new byte[] { i }, "", 0));
+        }
+
+        assertFalse(localBuffer.empty());
+        assertTrue(localBuffer.full());
+        assertTrue("Had: " + localBuffer,
+                localBuffer.toString().contains("empty=false"));
+        assertTrue("Had: " + localBuffer,
+                localBuffer.toString().contains("full=true"));
     }
 }
