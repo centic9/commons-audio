@@ -6,6 +6,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
+import org.dstadler.commons.util.ExecutorUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -250,35 +250,6 @@ public class FM4Cache implements AutoCloseable {
 
     @Override
     public void close() {
-        shutdownAndAwaitTermination(executor);
-    }
-
-    /**
-     * shutdown the service
-     *
-     * Note: This can be replaced by ExecutorUtil.shutdownAndAwaitTermination()
-     * from commons-dost as soon as we have upgraded to a newer version.
-     */
-    public static void shutdownAndAwaitTermination(ExecutorService executor) {
-        // Disable new tasks from being submitted
-        executor.shutdown();
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                // Some jobs did not finish yet => cancel currently executing tasks
-                executor.shutdownNow();
-
-                // Wait again for tasks to respond to being cancelled
-                if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                    log.info("Executor did not shutdown cleanly in the given timeout of 10 seconds before cancelling current jobs and 10 seconds after cancelling jobs");
-                }
-            }
-        } catch (@SuppressWarnings("unused") InterruptedException ie) {
-            // (Re-)Cancel if current thread also interrupted
-            executor.shutdownNow();
-
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
-        }
+        ExecutorUtil.shutdownAndAwaitTermination(executor, 10_000);
     }
 }
