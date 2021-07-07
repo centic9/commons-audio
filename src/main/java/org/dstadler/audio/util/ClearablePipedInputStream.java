@@ -32,10 +32,15 @@ public class ClearablePipedInputStream extends PipedInputStream {
         // blocking read() if another thread tries to read
         // between calling available() and read() here.
 
-        // read data until none are available any more
-        while (available() > 0) {
+        // skip data until none is available any more
+        while (true) {
+            int n = available();
+            if (n <= 0) {
+                break;
+            }
+
             //noinspection ResultOfMethodCallIgnored
-            read();
+            skip(n);
         }
     }
 

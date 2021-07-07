@@ -1,15 +1,21 @@
 package org.dstadler.audio.util;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.dstadler.commons.testing.TestHelpers;
+import org.dstadler.commons.testing.ThreadTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.PipedOutputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class ClearablePipedInputStreamTest {
     private final PipedOutputStream out = new PipedOutputStream();
@@ -22,7 +28,11 @@ public class ClearablePipedInputStreamTest {
 
     @Test
     public void testWaitAllConsumedNoData() throws IOException, InterruptedException {
+        assertEquals(0, in.available());
+
         out.write(0);
+        assertEquals(1, in.available());
+
         assertEquals(0, in.read());
         assertEquals(0, in.available());
 
@@ -34,6 +44,7 @@ public class ClearablePipedInputStreamTest {
 
     @Test
     public void testWaitAllConsumedWithData() throws IOException, InterruptedException {
+        assertEquals(0, in.available());
         out.write(0);
         assertEquals(1, in.available());
 
@@ -84,18 +95,89 @@ public class ClearablePipedInputStreamTest {
 
     @Test
     public void testToString() throws IOException, InterruptedException {
+        assertEquals(0, in.available());
+
         assertNotNull(out.toString());
         assertNotNull(in.toString());
 
         TestHelpers.ToStringTest(in);
+        assertEquals(0, in.available());
 
         in.clearBuffer();
         TestHelpers.ToStringTest(in);
+        assertEquals(0, in.available());
 
         in.waitAllConsumed();
         TestHelpers.ToStringTest(in);
+        assertEquals(0, in.available());
 
         in.close();
         TestHelpers.ToStringTest(in);
+    }
+
+    // can currently only run two because PipedInputStream "binds" the read/write side to threads internally
+    private static final int NUMBER_OF_THREADS = 2;
+    private static final int NUMBER_OF_TESTS = 10000;
+
+    @Test
+    public void testMultipleThreads() throws Throwable {
+        ThreadTestHelper helper =
+                new ThreadTestHelper(NUMBER_OF_THREADS, NUMBER_OF_TESTS);
+
+        AtomicBoolean stop = new AtomicBoolean();
+        AtomicReference<Exception> exc = new AtomicReference<>();
+        Thread th = new Thread("Consumer") {
+            @Override
+            public void run() {
+                try {
+                    while (!stop.get()) {
+                        Thread.sleep(100);
+
+                        // periodically clear or consume all to get stuck writers running again
+                        if (RandomUtils.nextBoolean()) {
+                            in.clearBuffer();
+                        } else {
+                            in.waitAllConsumed();
+                        }
+                    }
+                } catch (Exception e) {
+                    exc.set(e);
+                }
+            }
+        };
+        th.start();
+
+        helper.executeTest((threadNum, itNum) -> {
+            // we need to split this by thread
+            try {
+                switch (threadNum) {
+                    case 0:
+                        out.write(0);
+                        break;
+                    case 1:
+                        // only read if there is something to read to avoid
+                        // blocking reads
+                        //noinspection SynchronizeOnNonFinalField
+                        synchronized (in) {
+                            if (in.available() > 0) {
+                                assertEquals(0, in.read());
+                            }
+                        }
+                        break;
+                    default:
+                        fail("Unexpected random: " + itNum);
+                }
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed for thread " + Thread.currentThread() + ": " + threadNum, e);
+            }
+        });
+
+        // make sure to clean the buffer here to not have the thread being stuck on waitAllConsumed
+        in.clearBuffer();
+
+        stop.set(true);
+        th.join();
+        assertNull("Expected no exception, but had: " + exc.get(),
+                exc.get());
     }
 }
