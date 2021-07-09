@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.ThreadTestHelper;
+import org.dstadler.commons.util.ExecutorUtil;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Test;
@@ -288,7 +289,7 @@ public class FM4CacheTest {
         try (FM4Cache cache = new FM4Cache(new FM4())) {
             // wait for the thread be started
             for (int i = 0; i < 10; i++) {
-                if (lookupThread("FM4Cache") != null) {
+                if (ExecutorUtil.lookupThread("FM4Cache") != null) {
                     break;
                 }
                 Thread.sleep(10);
@@ -296,29 +297,11 @@ public class FM4CacheTest {
 
             // we should have the thread started now
             assertNotNull("Need a thread names 'FM4Cache' to be running now",
-                    lookupThread("FM4Cache"));
+                    ExecutorUtil.lookupThread("FM4Cache"));
 
             assertNotNull(cache);
 
             verifier.addObject(cache);
         }
-    }
-
-    /**
-     * Note: this can be replaced by ExecutorUtil.lookupThread() as
-     * soon as we have upgraded to a newer version of commons-dost
-     */
-    public static Thread lookupThread(String contains) {
-        int count = Thread.currentThread().getThreadGroup().activeCount();
-
-        Thread[] threads = new Thread[count];
-        Thread.currentThread().getThreadGroup().enumerate(threads);
-
-        for (Thread t : threads) {
-            if (t != null && t.getName().contains(contains)) {
-                return t;
-            }
-        }
-        return null;
     }
 }
