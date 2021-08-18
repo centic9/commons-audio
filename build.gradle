@@ -45,9 +45,6 @@ dependencies {
     compile 'com.google.code.findbugs:jsr305:3.0.2'
     compile 'com.google.guava:guava:30.1.1-jre'
 
-    // Can be removed after commons-dost 1.0.0.32 or newer is included
-    compile 'commons-io:commons-io:2.9.0'
-
     // MP3 SPI, used for playback
     compile 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
     compile 'com.googlecode.soundlibs:vorbisspi:1.0.3.3'
