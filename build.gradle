@@ -40,8 +40,8 @@ forbiddenApisMain {
 
 dependencies {
     compile 'org.dstadler:commons-dost:1.0.0.33'
-    compile 'com.fasterxml.jackson.core:jackson-core:2.12.4'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.12.5'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.12.5'
     compile 'com.google.code.findbugs:jsr305:3.0.2'
     compile 'com.google.guava:guava:30.1.1-jre'
 
@@ -56,7 +56,7 @@ dependencies {
     compile fileTree(dir: 'lib', include: ['*.jar'])
 
     // binary serialization of data during shutdown
-    compile 'de.undercouch:bson4jackson:2.11.0'
+    compile 'de.undercouch:bson4jackson:2.12.0'
 
     // provide a logging.properties only when running the example, but
     // don't include it in the jar-file
