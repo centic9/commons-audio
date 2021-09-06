@@ -3,6 +3,7 @@ package org.dstadler.audio.util;
 import org.apache.commons.lang3.RandomUtils;
 import org.dstadler.commons.testing.TestHelpers;
 import org.dstadler.commons.testing.ThreadTestHelper;
+import org.dstadler.commons.util.ThreadDump;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -165,9 +166,22 @@ public class ClearablePipedInputStreamTest {
                         }
                         break;
                     default:
-                        fail("Unexpected random: " + itNum);
+                        fail("Unexpected thread: " + threadNum);
                 }
             } catch (Exception e) {
+                ThreadDump threadDump = new ThreadDump(true, true);
+                String threadDumpStr = threadDump.toString();
+
+                // writing can fail in "thread 0" if thread "1" finished and stopped first
+                if (e instanceof IOException &&
+                        e.getMessage().contains("Read end dead") &&
+                        Thread.currentThread().getName().startsWith("ThreadTestHelper-Thread 0") &&
+                        !threadDumpStr.contains("ThreadTestHelper-Thread 1")) {
+                    return;
+                }
+
+                System.out.println(threadDumpStr);
+
                 throw new IllegalStateException("Failed for thread " + Thread.currentThread() + ": " + threadNum, e);
             }
         });
