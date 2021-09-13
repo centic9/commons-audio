@@ -23,7 +23,8 @@ public class FM4 {
     // Broken: http://mp3stream1.apasf.apa.at:8000
     public static final String FM4_STREAM_URL = "https://orf-live.ors-shoutcast.at/fm4-q2a";
 
-    private static final String FM4_API_URL = "https://audioapi.orf.at/fm4/json/4.0/broadcasts?_o=fm4.orf.at";
+    public static final String FM4_API_URL = "https://audioapi.orf.at/fm4/json/4.0/broadcasts?_o=fm4.orf.at";
+    public static final String OOE_API_URL = "https://audioapi.orf.at/ooe/json/4.0/broadcasts?_o=ooe.orf.at";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

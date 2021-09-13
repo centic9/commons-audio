@@ -45,6 +45,22 @@ public class FM4Test {
     }
 
     @Test
+    public void testFetchRadioOOE() throws IOException {
+        List<FM4Stream> ooeStreams = fm4.fetchStreams(FM4.OOE_API_URL, FM4Stream.OOE_STREAM_URL_BASE);
+
+        assertNotNull(ooeStreams);
+        assertFalse(ooeStreams.isEmpty());
+
+        FM4Stream stream = ooeStreams.iterator().next();
+        assertNotNull(stream.getProgramKey());
+        assertNotNull(stream.getStreams());
+        assertNotNull(stream.getShortSummary());
+        assertNotNull(stream.getShortTime());
+        assertNotNull(stream.getSummary());
+        assertNotNull(stream.getTitle());
+    }
+
+    @Test
     public void testFilter() throws IOException {
         List<FM4Stream> fm4Streams = fm4.filterStreams("4MO");
 

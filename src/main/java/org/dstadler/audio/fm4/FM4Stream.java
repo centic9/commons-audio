@@ -16,6 +16,7 @@ public class FM4Stream {
     private final static Logger log = LoggerFactory.make();
 
     public static final String FM4_STREAM_URL_BASE = "https://loopstreamfm4.apa.at/?channel=fm4&id=";
+    public static final String OOE_STREAM_URL_BASE = "https://loopstreamoe2o.apa.at/?channel=oe2o&id=";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
