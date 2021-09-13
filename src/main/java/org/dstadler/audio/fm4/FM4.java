@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
+
 public class FM4 {
     private final static Logger log = LoggerFactory.make();
 
@@ -26,12 +28,16 @@ public class FM4 {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public List<FM4Stream> fetchStreams() throws IOException {
+        return fetchStreams(FM4_API_URL, FM4_STREAM_URL_BASE);
+    }
+
+    public List<FM4Stream> fetchStreams(String apiUrl, String streamUrlBase) throws IOException {
         final String json;
         try {
             // fetch stream
-            json = HttpClientWrapper.retrieveData(FM4_API_URL);
+            json = HttpClientWrapper.retrieveData(apiUrl);
         } catch (IOException e) {
-            throw new IOException("While reading from: " + FM4_API_URL, e);
+            throw new IOException("While reading from: " + apiUrl, e);
         }
 
         JsonNode jsonNode = objectMapper.readTree(json);
@@ -47,7 +53,7 @@ public class FM4 {
         List<FM4Stream> streams = new ArrayList<>();
         for (JsonNode node : jsonNode) {
             for (JsonNode broadcast : node.get("broadcasts")) {
-                streams.add(new FM4Stream(broadcast));
+                streams.add(new FM4Stream(broadcast, streamUrlBase));
             }
         }
         return streams;

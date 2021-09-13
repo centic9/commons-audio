@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -84,7 +85,7 @@ public class FM4CacheTest {
             node.put("start", Long.MAX_VALUE);
             node.put("end", 1L);
 
-            assertNull(cache.getNext(new FM4Stream(node)));
+            assertNull(cache.getNext(new FM4Stream(node, FM4_STREAM_URL_BASE)));
 
             verifier.addObject(cache);
         }
@@ -156,7 +157,7 @@ public class FM4CacheTest {
             node.put("start", Long.MAX_VALUE);
             node.put("end", 1L);
 
-            assertNull(cache.getPrevious(new FM4Stream(node)));
+            assertNull(cache.getPrevious(new FM4Stream(node, FM4_STREAM_URL_BASE)));
 
             verifier.addObject(cache);
         }

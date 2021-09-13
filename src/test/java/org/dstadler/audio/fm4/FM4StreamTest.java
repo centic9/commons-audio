@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
+import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -82,17 +83,17 @@ public class FM4StreamTest {
         node.put("start", 1L);
         node.put("end", 1L);
 
-        FM4Stream fm4 = new FM4Stream(node);
-        FM4Stream equal = new FM4Stream(node);
+        FM4Stream fm4 = new FM4Stream(node, FM4_STREAM_URL_BASE);
+        FM4Stream equal = new FM4Stream(node, FM4_STREAM_URL_BASE);
 
         node.put("programKey", "XYZ");
-        FM4Stream notEquals = new FM4Stream(node);
+        FM4Stream notEquals = new FM4Stream(node, FM4_STREAM_URL_BASE);
 
         TestHelpers.EqualsTest(fm4, equal, notEquals);
 
         node.put("programKey", "ABC");
         node.put("start", 2L);
-        notEquals = new FM4Stream(node);
+        notEquals = new FM4Stream(node, FM4_STREAM_URL_BASE);
         TestHelpers.EqualsTest(fm4, equal, notEquals);
 
         TestHelpers.HashCodeTest(fm4, equal);

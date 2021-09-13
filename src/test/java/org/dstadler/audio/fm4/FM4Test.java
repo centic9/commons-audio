@@ -24,6 +24,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -97,7 +98,7 @@ public class FM4Test {
             File tempDir = File.createTempFile("FM4Test", ".dir");
             try {
                 assertTrue(tempDir.delete());
-                fm4.downloadStream(new FM4Stream(jsonNode), tempDir);
+                fm4.downloadStream(new FM4Stream(jsonNode, FM4_STREAM_URL_BASE), tempDir);
             } finally {
                 FileUtils.deleteDirectory(tempDir);
             }
@@ -107,7 +108,7 @@ public class FM4Test {
     @Test(expected = UnknownHostException.class)
     public void testDownloadStreamInvalidURL() throws IOException {
         JsonNode jsonNode = objectMapper.readTree(JSON.replace("$url", "http://invalid/url"));
-        fm4.downloadStream(new FM4Stream(jsonNode), new File("/tmp"));
+        fm4.downloadStream(new FM4Stream(jsonNode, FM4_STREAM_URL_BASE), new File("/tmp"));
     }
 
     @Test

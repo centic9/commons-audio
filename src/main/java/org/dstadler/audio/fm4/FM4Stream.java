@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class FM4Stream {
     private final static Logger log = LoggerFactory.make();
 
-    private static final String STREAM_URL_BASE = "https://loopstreamfm4.apa.at/?channel=fm4&id=";
+    public static final String FM4_STREAM_URL_BASE = "https://loopstreamfm4.apa.at/?channel=fm4&id=";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -27,7 +27,9 @@ public class FM4Stream {
     private final long start;
     private final long duration;
 
-    public FM4Stream(JsonNode node) {
+    private final String streamUrlBase;
+
+    public FM4Stream(JsonNode node, String streamUrlBase) {
         programKey = node.get("programKey").asText();
         title = node.get("title").asText().trim();
         subtitle = node.get("subtitle").asText();
@@ -35,6 +37,8 @@ public class FM4Stream {
         time = node.get("startISO").asText();
         start = node.get("start").asLong();
         duration = node.get("end").asLong() - start;
+
+        this.streamUrlBase = streamUrlBase;
     }
 
     public String getProgramKey() {
@@ -98,7 +102,7 @@ public class FM4Stream {
 
         List<String> streams = new ArrayList<>();
         for (JsonNode stream : jsonNode.get("streams")) {
-            streams.add(STREAM_URL_BASE + stream.get("loopStreamId").asText());
+            streams.add(streamUrlBase + stream.get("loopStreamId").asText());
         }
 
         log.info("Found " + streams.size() + " streams: " + streams);
