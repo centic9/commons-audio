@@ -39,24 +39,24 @@ forbiddenApisMain {
 }
 
 dependencies {
-    compile 'org.dstadler:commons-dost:1.0.0.33'
-    compile 'com.fasterxml.jackson.core:jackson-core:2.13.0'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
-    compile 'com.google.code.findbugs:jsr305:3.0.2'
-    compile 'com.google.guava:guava:31.0.1-jre'
+    implementation 'org.dstadler:commons-dost:1.0.0.33'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation 'com.google.guava:guava:31.0.1-jre'
 
     // MP3 SPI, used for playback
-    compile 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
-    compile 'com.googlecode.soundlibs:vorbisspi:1.0.3.3'
+    implementation 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
+    implementation 'com.googlecode.soundlibs:vorbisspi:1.0.3.3'
 
     // JLayerPlayer, used for playback
-    compile 'com.googlecode.soundlibs:jlayer:1.0.1.4'
+    implementation 'com.googlecode.soundlibs:jlayer:1.0.1.4'
 
     // for TarsosDSP sound stretching functionality
-    compile fileTree(dir: 'lib', include: ['*.jar'])
+    implementation fileTree(dir: 'lib', include: ['*.jar'])
 
     // binary serialization of data during shutdown
-    compile 'de.undercouch:bson4jackson:2.12.0'
+    implementation 'de.undercouch:bson4jackson:2.12.0'
 
     // provide a logging.properties only when running the example, but
     // don't include it in the jar-file
