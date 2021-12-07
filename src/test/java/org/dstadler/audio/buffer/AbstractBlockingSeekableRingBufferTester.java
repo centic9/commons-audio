@@ -199,16 +199,23 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
     public void addAndGetMany() {
         for(byte i = 0;i < 20;i++) {
             buffer.add(new Chunk(new byte[] { i }, "", 0));
-            assertEquals(Math.min(i+1, 9), buffer.size());
-            assertEquals(Math.min(i+1, 9), buffer.fill());
+            assertEquals("Failed for i: " + i,
+					Math.min(i+1, 9), buffer.size());
+            assertEquals("Failed for i: " + i,
+					Math.min(i+1, 9), buffer.fill());
         }
-        assertEquals(9, buffer.size());
+
+		assertEquals(9, buffer.size());
         assertEquals(9, buffer.fill());
+
         for(byte i = 11;i < 20;i++) {
-            assertEquals(new Chunk(new byte[] { i }, "", 0), buffer.next());
-            assertEquals(9, buffer.fill());
+            assertEquals("Failed for i: " + i,
+					new Chunk(new byte[] { i }, "", 0), buffer.next());
+            assertEquals("Failed for i: " + i,
+					9, buffer.fill());
         }
-        assertEquals(0, buffer.size());
+
+		assertEquals(0, buffer.size());
     }
 
     @Test
@@ -294,18 +301,21 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
         for(byte i = 0;i < 15;i++) {
             buffer.add(new Chunk(new byte[] { i }, "", 0));
         }
-        assertTrue(buffer.full());
+        assertTrue("buffer should be full now", buffer.full());
         assertFalse(buffer.empty());
+        assertArrayEquals(new byte[] { 6 }, buffer.peek().getData());
         assertEquals(new Chunk(new byte[] { 6 }, "", 0), buffer.peek());
         assertEquals(9, buffer.size());
         assertEquals(9, buffer.fill());
 
         assertEquals("Cannot seek backwards in full buffer", 0, buffer.seek(-1));
+		assertArrayEquals(new byte[] { 6 }, buffer.peek().getData());
         assertEquals(new Chunk(new byte[] { 6 }, "", 0), buffer.peek());
         assertEquals(9, buffer.size());
         assertEquals(9, buffer.fill());
 
         assertEquals("Can seek forward in full buffer, making it non-full", 1, buffer.seek(1));
+		assertArrayEquals(new byte[] { 7 }, buffer.peek().getData());
         assertEquals(new Chunk(new byte[] { 7 }, "", 0), buffer.peek());
         assertFalse(buffer.full());
         assertFalse(buffer.empty());
@@ -313,6 +323,7 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
         assertEquals(9, buffer.fill());
 
         assertEquals("Can seek backwards now, making the buffer full again", -1, buffer.seek(-1));
+		assertArrayEquals(new byte[] { 6 }, buffer.peek().getData());
         assertEquals(new Chunk(new byte[] { 6 }, "", 0), buffer.peek());
         assertTrue(buffer.full());
         assertFalse(buffer.empty());
@@ -327,6 +338,7 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
         assertEquals(9, buffer.fill());
 
         assertEquals("Can seek backwards up to full() in full buffer", -9, buffer.seek(-20));
+		assertArrayEquals(new byte[] { 6 }, buffer.peek().getData());
         assertEquals(new Chunk(new byte[] { 6 }, "", 0), buffer.peek());
         assertTrue(buffer.full());
         assertFalse(buffer.empty());
