@@ -1,5 +1,7 @@
 package org.dstadler.audio.buffer;
 
+import java.io.File;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.dstadler.audio.stream.Stream;
 
@@ -26,9 +28,16 @@ public class BufferPersistenceDTO {
     private final boolean playing;
     private final boolean downloadWhilePaused;
 
+	private final int numberOfDiskChunks;
+	private final int numberOfDiskFiles;
+	private final File tempDir;
+
     // default constructor for persistence
     @SuppressWarnings("unused")
     private BufferPersistenceDTO() {
+		this.numberOfDiskChunks = 0;
+		this.numberOfDiskFiles = 0;
+		this.tempDir = null;
         this.buffer = null;
         this.nextGet = 0;
         this.nextAdd = 0;
@@ -39,23 +48,11 @@ public class BufferPersistenceDTO {
         this.downloadWhilePaused = false;
     }
 
-    public BufferPersistenceDTO(Chunk[] buffer, int nextGet, int nextAdd, int fill, Stream stream, boolean playing,
-			boolean downloadWhilePaused) {
-        // copy the array to be able to continue adding items to the buffer
-        // while the data is written
-        this.buffer = ArrayUtils.clone(buffer);
-        this.nextGet = nextGet;
-        this.nextAdd = nextAdd;
-        this.fill = fill;
-        this.stream = stream;
-        this.nextDownloadPosition = 0;
-        this.playing = playing;
-        this.downloadWhilePaused = downloadWhilePaused;
-
-    }
-
     public BufferPersistenceDTO(long nextDownloadPosition, Stream stream, boolean playing, boolean downloadWhilePaused) {
-        this.buffer = null;
+		this.numberOfDiskChunks = 0;
+		this.numberOfDiskFiles = 0;
+		this.tempDir = null;
+		this.buffer = null;
         this.nextGet = 0;
         this.nextAdd = 0;
         this.fill = 0;
@@ -65,7 +62,40 @@ public class BufferPersistenceDTO {
         this.downloadWhilePaused = downloadWhilePaused;
     }
 
-    public Chunk[] getBuffer() {
+	public BufferPersistenceDTO(Chunk[] buffer, int nextGet, int nextAdd, int fill, Stream stream, boolean playing,
+			boolean downloadWhilePaused) {
+		this.numberOfDiskChunks = 0;
+		this.numberOfDiskFiles = 0;
+		this.tempDir = null;
+		// copy the array to be able to continue adding items to the buffer
+		// while the data is written
+		this.buffer = ArrayUtils.clone(buffer);
+		this.nextGet = nextGet;
+		this.nextAdd = nextAdd;
+		this.fill = fill;
+		this.stream = stream;
+		this.nextDownloadPosition = 0;
+		this.playing = playing;
+		this.downloadWhilePaused = downloadWhilePaused;
+
+	}
+
+	public BufferPersistenceDTO(int numberOfDiskChunks, int numberOfDiskFiles, File tempDir, int nextGet, int nextAdd, int fill,
+			Stream stream, boolean playing, boolean downloadWhilePaused) {
+		this.numberOfDiskChunks = numberOfDiskChunks;
+		this.numberOfDiskFiles = numberOfDiskFiles;
+		this.tempDir = tempDir;
+		this.buffer = null;
+		this.nextGet = nextGet;
+		this.nextAdd = nextAdd;
+		this.fill = fill;
+		this.stream = stream;
+		this.nextDownloadPosition = 0;
+		this.playing = playing;
+		this.downloadWhilePaused = downloadWhilePaused;
+	}
+
+	public Chunk[] getBuffer() {
         return buffer;
     }
 
@@ -97,17 +127,42 @@ public class BufferPersistenceDTO {
 		return downloadWhilePaused;
 	}
 
-	@Override
+	public int getNumberOfDiskChunks() {
+		return numberOfDiskChunks;
+	}
+
+	public int getNumberOfDiskFiles() {
+		return numberOfDiskFiles;
+	}
+
+	public File getTempDir() {
+		return tempDir;
+	}
+
+	/*@Override
     public String toString() {
         return "BufferPersistenceDTO{" +
-                (buffer == null ? "" : "chunks=" + buffer.length) +
-                (nextGet == 0 ? "" : ", nextGet=" + nextGet) +
-                (nextAdd == 0 ? "" : ", nextAdd=" + nextAdd) +
-                (fill == 0 ? "" : ", fill=" + fill) +
                 ", nextDownloadPosition=" + nextDownloadPosition +
                 ", stream=" + stream +
                 ", playing=" + playing +
                 ", downloadWhilePaused=" + downloadWhilePaused +
                 '}';
-    }
+    }*/
+
+	@Override
+	public String toString() {
+		return "BufferPersistenceDTO{" +
+				(buffer == null ? "" : "chunks=" + buffer.length) +
+				(nextGet == 0 ? "" : ", nextGet=" + nextGet) +
+				(nextAdd == 0 ? "" : ", nextAdd=" + nextAdd) +
+				(fill == 0 ? "" : ", fill=" + fill) +
+				(nextDownloadPosition == 0 ? "": ", nextDownloadPosition=" + nextDownloadPosition) +
+				", stream=" + stream +
+				", playing=" + playing +
+				", downloadWhilePaused=" + downloadWhilePaused +
+				(numberOfDiskChunks == 0 ? "" : ", numberOfDiskChunks=" + numberOfDiskChunks) +
+				(numberOfDiskFiles == 0 ? "" : ", numberOfDiskFiles=" + numberOfDiskFiles) +
+				(tempDir == null ? "" : ", tempDir=" + tempDir) +
+				'}';
+	}
 }

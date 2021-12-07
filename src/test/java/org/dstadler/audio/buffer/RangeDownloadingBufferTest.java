@@ -461,6 +461,9 @@ public class RangeDownloadingBufferTest {
         final BufferPersistenceDTO dto = buffer.toPersistence(stream, false, false);
         assertNotNull(dto);
         assertEquals(sample, dto.getStream().getUrl());
+		assertEquals(0, dto.getNumberOfDiskFiles());
+		assertEquals(0, dto.getNumberOfDiskChunks());
+		assertNull(dto.getTempDir());
 
         // then convert the DTO back into a buffer and then compare
         RangeDownloadingBuffer back = RangeDownloadingBuffer.fromPersistence(dto, 10, CHUNK_SIZE);

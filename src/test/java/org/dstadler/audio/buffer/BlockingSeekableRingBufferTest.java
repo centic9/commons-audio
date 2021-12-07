@@ -8,6 +8,7 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRingBufferTester {
@@ -47,6 +48,9 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
         assertEquals(5, dto.getNextAdd());
         assertEquals(9, dto.getFill());
         assertEquals(10, dto.getBuffer().length);
+		assertEquals(0, dto.getNumberOfDiskFiles());
+		assertEquals(0, dto.getNumberOfDiskChunks());
+		assertNull(dto.getTempDir());
 
         // then convert the DTO back into a buffer and do a next() as well
         BlockingSeekableRingBuffer back = BlockingSeekableRingBuffer.fromPersistence(dto);

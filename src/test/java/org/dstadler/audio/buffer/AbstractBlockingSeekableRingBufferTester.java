@@ -220,8 +220,7 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
 
     @Test
     public void testMultipleThreads() throws Throwable {
-        ThreadTestHelper helper =
-                new ThreadTestHelper(NUMBER_OF_THREADS, NUMBER_OF_TESTS);
+        ThreadTestHelper helper = createThreadTestHelper();
 
         helper.executeTest(new ThreadTestHelper.TestRunnable() {
             @Override
@@ -261,7 +260,11 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
         });
     }
 
-    @Test
+	protected ThreadTestHelper createThreadTestHelper() {
+		return new ThreadTestHelper(NUMBER_OF_THREADS, NUMBER_OF_TESTS);
+	}
+
+	@Test
     public void testSeekInEmptyBuffer() {
         assertEquals("Cannot seek 0 buffer", 0, buffer.seek(0));
         assertEquals("Cannot seek forward in empty buffer", 0, buffer.seek(1));

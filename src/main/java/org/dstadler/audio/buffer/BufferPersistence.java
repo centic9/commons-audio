@@ -76,4 +76,8 @@ public class BufferPersistence {
     public static boolean hasBufferOnDisk(File file) {
         return file != null && file.exists() && file.isFile() && file.canRead();
     }
+
+	public static ObjectMapper getMapper() {
+		return mapper;
+	}
 }
