@@ -48,7 +48,7 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
         assertEquals(9, dto.getFill());
         assertEquals(10, dto.getBuffer().length);
 
-        // then conver the DTO back into a buffer and do a next() as well
+        // then convert the DTO back into a buffer and do a next() as well
         BlockingSeekableRingBuffer back = BlockingSeekableRingBuffer.fromPersistence(dto);
         assertEquals(next, back.next());
 
@@ -59,8 +59,8 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
         assertEquals(9, localBuffer.fill());
     }
 
-    @Test
-    public void testToString() {
+	@Test
+    public void testToStringBuffer() {
         BlockingSeekableRingBuffer localBuffer = new BlockingSeekableRingBuffer(10);
 
         assertTrue(localBuffer.empty());

@@ -28,8 +28,11 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
      *
      * This call may block until a chunk becomes available, the thread is
      * interrupted or close() is called.
+	 *
+	 * The implementation can decide if the call blocks or return null,
+	 * indicating an empty buffer.
      *
-     * @return An array of bytes or null if the buffer was closed.
+     * @return An array of bytes or null if the buffer was closed or is exhausted.
      * @throws RuntimeInterruptedException If waiting is interrupted
      * @throws IllegalStateException If the buffer cannot be filled
      */
@@ -43,6 +46,9 @@ public interface SeekableRingBuffer<T> extends AutoCloseable {
      * This call may block until a chunk becomes available, the thread is
      * interrupted or close() is called.
      *
+	 * The implementation can decide if the call blocks or return null,
+	 * indicating an empty buffer.
+	 *
      * @return A chunk if available or null if the buffer is empty or the buffer
      *      is closed already or if reading data fails.
      */
