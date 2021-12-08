@@ -40,6 +40,8 @@ import com.google.common.base.Preconditions;
 public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<Chunk>, Persistable {
 	private final static Logger log = LoggerFactory.make();
 
+	public static final String FILE_PREFIX = "AudioBuffer-";
+
 	private static final byte[] EMPTY = new byte[0];
 
 	private final int numberOfDiskChunks;
@@ -185,7 +187,7 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 	 */
 	private void persistBuffer() throws IOException {
 		if (isDirty) {
-			File bufferFile = new File(dataDir, "PiRdadio-" + diskBufferWritePosition + ".bson");
+			File bufferFile = new File(dataDir, FILE_PREFIX + diskBufferWritePosition + ".bson");
 
 			log.info("Writing buffer for position " + diskBufferWritePosition + " to file " + bufferFile);
 			try (OutputStream stream = new BufferedOutputStream(new FileOutputStream(bufferFile))) {
@@ -203,7 +205,7 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 	 * @throws IOException If reading from the file fails
 	 */
 	private static Chunk[] readBuffer(File tempDir, int diskBufferPosition, int numberOfChunks) throws IOException {
-		File bufferFile = new File(tempDir, "PiRdadio-" + diskBufferPosition + ".bson");
+		File bufferFile = new File(tempDir, FILE_PREFIX + diskBufferPosition + ".bson");
 
 		if (!bufferFile.exists()) {
 			log.info("Could not read disk-buffer from " + tempDir);

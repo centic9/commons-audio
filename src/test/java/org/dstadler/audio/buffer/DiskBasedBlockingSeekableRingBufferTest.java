@@ -146,6 +146,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		assertNotNull(list);
 		assertEquals("Should have disk files now",
 				1, list.length);
+		assertTrue(list[0].startsWith(DiskBasedBlockingSeekableRingBuffer.FILE_PREFIX));
 
 		buffer.add(new Chunk(new byte[] { 4 }, "", 0));
 		buffer.add(new Chunk(new byte[] { 5 }, "", 0));
@@ -155,6 +156,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		assertNotNull(list);
 		assertEquals("Should have disk files now",
 				2, list.length);
+		assertTrue(list[1].startsWith(DiskBasedBlockingSeekableRingBuffer.FILE_PREFIX));
 
 		buffer.add(new Chunk(new byte[] { 7 }, "", 0));
 		buffer.add(new Chunk(new byte[] { 8 }, "", 0));
@@ -164,6 +166,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		assertNotNull(list);
 		assertEquals("Should have disk files now",
 				3, list.length);
+		assertTrue(list[2].startsWith(DiskBasedBlockingSeekableRingBuffer.FILE_PREFIX));
 
 		buffer.add(new Chunk(new byte[] { 10 }, "", 0));
 
@@ -171,6 +174,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		assertNotNull(list);
 		assertEquals("Should have disk files now",
 				4, list.length);
+		assertTrue(list[3].startsWith(DiskBasedBlockingSeekableRingBuffer.FILE_PREFIX));
 
 		buffer.add(new Chunk(new byte[] { 11 }, "", 0));
 		buffer.add(new Chunk(new byte[] { 12 }, "", 0));
