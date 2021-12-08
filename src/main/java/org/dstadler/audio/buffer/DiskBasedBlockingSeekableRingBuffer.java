@@ -483,7 +483,8 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 	@Override
 	public String toString() {
 		return "DiskBasedBlockingSeekableRingBuffer{" +
-				"diskBufferRead=" + (diskBufferRead == null ? "<null>" : diskBufferRead.length) +
+				"dataDir=" + dataDir +
+				", diskBufferRead=" + (diskBufferRead == null ? "<null>" : diskBufferRead.length) +
 				", diskBufferWrite=" + (diskBufferWrite == null ? "<null>" : diskBufferWrite.length) +
 				", isDirty=" + isDirty +
 				", numberOfDiskChunks=" + numberOfDiskChunks +
