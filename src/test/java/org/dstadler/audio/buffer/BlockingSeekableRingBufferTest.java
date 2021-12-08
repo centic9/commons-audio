@@ -50,7 +50,7 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
         assertEquals(10, dto.getBuffer().length);
 		assertEquals(0, dto.getNumberOfDiskFiles());
 		assertEquals(0, dto.getNumberOfDiskChunks());
-		assertNull(dto.getTempDir());
+		assertNull(dto.getDataDir());
 
         // then convert the DTO back into a buffer and do a next() as well
         BlockingSeekableRingBuffer back = BlockingSeekableRingBuffer.fromPersistence(dto);
