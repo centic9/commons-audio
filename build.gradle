@@ -43,8 +43,8 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 	implementation 'commons-io:commons-io:2.11.0'
 	implementation 'org.apache.httpcomponents:httpclient:4.5.13'
-	implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.13.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation 'com.google.guava:guava:31.0.1-jre'
 
@@ -59,7 +59,7 @@ dependencies {
 	compile fileTree(dir: 'lib', include: ['*.jar'])
 
     // binary serialization of data during shutdown
-    implementation 'de.undercouch:bson4jackson:2.12.0'
+    implementation 'de.undercouch:bson4jackson:2.13.0'
 
     // provide a logging.properties only when running the example, but
     // don't include it in the jar-file
