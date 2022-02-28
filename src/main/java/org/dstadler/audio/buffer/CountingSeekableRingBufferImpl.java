@@ -163,10 +163,10 @@ public class CountingSeekableRingBufferImpl implements CountingSeekableRingBuffe
             return DEFAULT_CHUNKS_PER_SECOND;
         }
 
+		// do not report very small or large values
         if(written < 0.5 || written > 5) {
             return read;
         }
-
         if(read < 0.5 || read > 5) {
             return written;
         }
@@ -223,12 +223,14 @@ public class CountingSeekableRingBufferImpl implements CountingSeekableRingBuffe
     @Override
     public String toString() {
         return
-                "Written: " + bytesWrittenOverall.get() + " bytes/" + chunksWrittenOverall.get() + " chunks" +
-                        ", " + String.format("%.2f", getPerSecond(bytesWrittenOverall)) + " bytes/s/" + String.format("%.2f", getPerSecond(chunksWrittenOverall)) + " chunks/s" +
+                "Written: " + bytesWrittenOverall.get() + " bytes/" + chunksWrittenOverall.get() + " chunks, " +
+					String.format("%.2f", getPerSecond(bytesWrittenOverall)) + " bytes/s, " +
+					String.format("%.2f", getPerSecond(chunksWrittenOverall)) + " chunks/s" +
 
-                        ", Read: " + bytesReadOverall.get() + " bytes/" + chunksReadOverall.get() + " chunks" +
-                        ", " + String.format("%.2f", getPerSecond(bytesReadOverall)) + " bytes/s/" + String.format("%.2f", getPerSecond(chunksReadOverall)) + " chunks/s" +
+				", Read: " + bytesReadOverall.get() + " bytes/" + chunksReadOverall.get() + " chunks, " +
+					String.format("%.2f", getPerSecond(bytesReadOverall)) + " bytes/s," +
+					String.format("%.2f", getPerSecond(chunksReadOverall)) + " chunks/s" +
 
-                        ", " + delegate.toString();
+				", " + delegate.toString();
     }
 }

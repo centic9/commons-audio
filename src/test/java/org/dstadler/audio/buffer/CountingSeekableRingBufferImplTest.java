@@ -123,6 +123,15 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
     public void testToString() {
         TestHelpers.ToStringTest(buffer);
 
+		// allow to pass some time to have a validtime/s
+		try {
+			Thread.sleep(1100);
+		} catch (InterruptedException e) {
+			throw new IllegalStateException(e);
+		}
+
+		TestHelpers.ToStringTest(buffer);
+
         getBuffer().addNoStats(new Chunk(new byte[0], "", 0));
         TestHelpers.ToStringTest(buffer);
     }
