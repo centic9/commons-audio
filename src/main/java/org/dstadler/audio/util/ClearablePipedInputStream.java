@@ -66,8 +66,8 @@ public class ClearablePipedInputStream extends PipedInputStream {
     public String toString() {
         return "ClearablePipedInputStream{" +
                 "buffer=" + buffer.length +
-                ", in=" + in +
-                ", out=" + out +
+                ", inPos=" + in +
+                ", outPos=" + out +
                 '}';
     }
 }
