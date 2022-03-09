@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public class RangeDownloadingBufferTest {
     // just a sample file which should usually be available
-    private static final String SAMPLE_URL = "https://file-examples-com.github.io/uploads/2017/10/file_example_JPG_500kB.jpg";
+    private static final String SAMPLE_URL = "https://www.dstadler.org/DominikStadler2013.png";
 
     private static final String SAMPLE_FILE = new File("src/test/resources/test.bin").getAbsolutePath();
     private static final String SAMPLE_FILE_URL = "file://" + SAMPLE_FILE;
@@ -51,7 +51,7 @@ public class RangeDownloadingBufferTest {
     @Parameterized.Parameters(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { SAMPLE_URL, 34, 555180, 555148, Pair.of("", 100L) },
+                { SAMPLE_URL, 52, 841640, 841590, Pair.of("", 100L) },
 
                 { SAMPLE_FILE, 36, 587241, 587207, Pair.of("", 100L) },
                 { SAMPLE_FILE_URL, 36, 587241, 587207, Pair.of("", 100L) },
