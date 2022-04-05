@@ -49,17 +49,17 @@ dependencies {
     implementation 'com.google.guava:guava:31.1-jre'
 
     // MP3 SPI, used for playback
-    compile 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
-	compile 'com.googlecode.soundlibs:vorbisspi:1.0.3.3'
+    implementation 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
+	implementation 'com.googlecode.soundlibs:vorbisspi:1.0.3.3'
 
     // JLayerPlayer, used for playback
-	compile 'com.googlecode.soundlibs:jlayer:1.0.1.4'
+	implementation 'com.googlecode.soundlibs:jlayer:1.0.1.4'
 
     // for TarsosDSP sound stretching functionality
-	compile fileTree(dir: 'lib', include: ['*.jar'])
+	implementation fileTree(dir: 'lib', include: ['*.jar'])
 
     // binary serialization of data during shutdown
-    implementation 'de.undercouch:bson4jackson:2.13.0'
+    implementation 'de.undercouch:bson4jackson:2.13.1'
 
     // provide a logging.properties only when running the example, but
     // don't include it in the jar-file
@@ -70,7 +70,7 @@ dependencies {
 }
 
 wrapper {
-    gradleVersion = '6.6.1'
+    gradleVersion = '6.9.2'
 }
 
 task adjustWrapperPropertiesFile {
