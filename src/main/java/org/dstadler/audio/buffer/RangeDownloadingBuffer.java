@@ -124,7 +124,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
                     //noinspection BusyWait
                     Thread.sleep(RETRY_SLEEP_TIME);
                 } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Sleeping was interrupted", ex);
+                    log.log(Level.WARNING, "Sleeping was interrupted: " + ex);
 
                     // try to pass on the interrupted-state (this did not work in tests?!)
                     Thread.currentThread().interrupt();
