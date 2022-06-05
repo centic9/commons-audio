@@ -6,9 +6,10 @@ import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.util.SuppressForbidden;
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,7 +28,7 @@ public class SimplePlayer {
     @SuppressForbidden(reason = "Uses System.exit()")
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
-            System.err.println("Usage: SimplePlayer <file>");
+            System.err.println("Usage: SimplePlayer <file>\n\nBut had: " + args.length + " arguments");
             System.exit(1);
         }
 
@@ -36,12 +37,10 @@ public class SimplePlayer {
         run(args[0]);
     }
 
-    private static void run(String file) throws IOException {
+    private static void run(String file) {
         log.info("Playing file " + file);
 
-        final InputStream input = new BufferedInputStream(new FileInputStream(file), CHUNK_SIZE);
-
-        try {
+        try (final InputStream input = new BufferedInputStream(Files.newInputStream(Paths.get(file)), CHUNK_SIZE)) {
             AudioPlayer player = createPlayer(input);
 
             //player.setOptions("");
