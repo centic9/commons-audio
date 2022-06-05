@@ -184,29 +184,32 @@ public class BufferBasedTempoStrategyTest {
     @Test
     public void testWithChunksPerSecond() {
         // test with some chunksWrittenPerSecond as well
-        CountingSeekableRingBuffer buffer = new TestBufferImpl();
-        BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, DEFAULT_KEEP_AREA_SECONDS, DEFAULT_SPEED_STEP);
+        try (CountingSeekableRingBuffer buffer = new TestBufferImpl()) {
+            BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, DEFAULT_KEEP_AREA_SECONDS, DEFAULT_SPEED_STEP);
 
-        assertEquals(0.95f, strategy.calculateTempo(), 0.01);
+            assertEquals(0.95f, strategy.calculateTempo(), 0.01);
+        }
     }
 
     @Test
     public void testWithDifferentKeepArea() {
-        CountingSeekableRingBuffer buffer = new TestBufferImpl();
-        BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, 600, DEFAULT_SPEED_STEP);
+        try (CountingSeekableRingBuffer buffer = new TestBufferImpl()) {
+            BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, 600, DEFAULT_SPEED_STEP);
 
-        assertEquals("With larger keep area we should not apply any change in tempo here and thus should get back 1.0f",
-                1f, strategy.calculateTempo(), 0.01);
+            assertEquals("With larger keep area we should not apply any change in tempo here and thus should get back 1.0f",
+                    1f, strategy.calculateTempo(), 0.01);
+        }
     }
 
     @Test
     public void testWithDifferentSpeedStep() {
         // test with some chunksWrittenPerSecond as well
-        CountingSeekableRingBuffer buffer = new TestBufferImpl();
-        BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, DEFAULT_KEEP_AREA_SECONDS, 0.01f);
+        try (CountingSeekableRingBuffer buffer = new TestBufferImpl()) {
+            BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, DEFAULT_KEEP_AREA_SECONDS, 0.01f);
 
-        assertEquals("With smaller speedStep we should get back a smaller slowdown value of 0.99f instead of default 0.95f",
-                0.99f, strategy.calculateTempo(), 0.01);
+            assertEquals("With smaller speedStep we should get back a smaller slowdown value of 0.99f instead of default 0.95f",
+                    0.99f, strategy.calculateTempo(), 0.01);
+        }
     }
 
     @Test
