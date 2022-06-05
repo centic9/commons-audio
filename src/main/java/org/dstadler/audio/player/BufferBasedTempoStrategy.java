@@ -19,9 +19,9 @@ import java.util.logging.Logger;
  *
  * I.e.:
  *
- *   ------------------------------------------------------------------
- *  | 1.2 |1.15 | 1.1 |           1.0                | 0.9 |0.85 | 0.8 |
- *   ------------------------------------------------------------------
+ *   --------------------------------------------------------------------------------
+ *  | 1.2 | 1.15 | 1.1 | 1.05 |          1.0                | 0.85 | 0.9 |0.85 | 0.8 |
+ *   --------------------------------------------------------------------------------
  *
  * The result is that playback at the beginning/end of the buffer is sped up
  * or slowed down so that playback gains some buffer to skip forward/backwards
@@ -56,7 +56,7 @@ public class BufferBasedTempoStrategy implements TempoStrategy {
      *
      * @param buffer The buffer to check how far forward data is available
      * @param keepAreaSeconds How much seconds to try to keep available, i.e. slow down until this much is available for
-     *                        seeking forward or speed until that much is available for seeking backwards
+     *                        seeking forward or speed up until that much is available for seeking backwards
      * @param speedStep How much to reduce/increase speed for each "step", this step is applied up to 4 times,
      *                  i.e. a speedStep of 0.05 leads to the following slowdown/speedup-steps:
      *                  0.80, 0.85, 0.90, 0.95 and 1.05, 1.10, 1.15, 1.20.
