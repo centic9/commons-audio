@@ -71,7 +71,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 		} else if (url.startsWith("file://C:\\")) {
 			this.download = new RangeDownloadFile(new File(StringUtils.removeStart(url, "file://")));
 		} else if (url.startsWith("/") || url.startsWith("\\") || url.startsWith("C:\\")) {
-                this.download = new RangeDownloadFile(new File(url));
+            this.download = new RangeDownloadFile(new File(url));
         } else {
             this.download = new RangeDownloadHTTP(url, user, pwd);
         }

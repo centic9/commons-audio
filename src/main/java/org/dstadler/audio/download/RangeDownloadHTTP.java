@@ -31,6 +31,8 @@ import java.util.logging.Logger;
 public class RangeDownloadHTTP implements RangeDownload {
     private final static Logger log = LoggerFactory.make();
 
+    private static final int TIMEOUT_MS = 60_000;
+
     private final String url;
     private final HttpClientWrapper httpClient;
 
@@ -52,9 +54,9 @@ public class RangeDownloadHTTP implements RangeDownload {
         this.url = url;
 
         if(StringUtils.isEmpty(user)) {
-            this.httpClient = new HttpClientWrapper(10_000);
+            this.httpClient = new HttpClientWrapper(TIMEOUT_MS);
         } else {
-            this.httpClient = new HttpClientWrapper(user, pwd, 10_000);
+            this.httpClient = new HttpClientWrapper(user, pwd, TIMEOUT_MS);
         }
 
         // initialize the length and verify that the range-download will work
