@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +46,9 @@ public class FM4CacheTest {
             assertTrue("Cache should not be empty now, check stdout for error messages while fetching the data",
                     cache.size() > 0);
 
-            assertNotNull(cache.get("4UL"));
+            assertTrue("Did not get FM4 session with code '4SS' or '4LB', having: " +
+                    cache.allStreams().stream().map(FM4Stream::getProgramKey).collect(Collectors.joining(",")),
+                    cache.get("4SS") != null || cache.get("4LB") != null);
             assertNull(cache.get("NOT EXISTING"));
 
             assertNotNull(cache.allStreams());
