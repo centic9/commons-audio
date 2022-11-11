@@ -86,10 +86,13 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
 
         assertTrue(Double.isInfinite(getBuffer().getChunksWrittenPerSecond()));
         final double expected = 4 / ((double) (end - start)) * 1000;
-        assertEquals(expected, getBuffer().getChunksReadPerSecond(), 0.01);
-        assertEquals(expected, getBuffer().getChunksPerSecond(), 0.01);
+        assertEquals("Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer(),
+                expected, getBuffer().getChunksReadPerSecond(), 0.01);
+        assertEquals("Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer(),
+                expected, getBuffer().getChunksPerSecond(), 0.01);
 
-        assertEquals(4, ((CountingSeekableRingBufferImpl)getBuffer()).getChunksReadOverall());
+        assertEquals("Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer(),
+                4, ((CountingSeekableRingBufferImpl)getBuffer()).getChunksReadOverall());
     }
 
     @Test
@@ -123,7 +126,7 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
     public void testToString() {
         TestHelpers.ToStringTest(buffer);
 
-		// allow to pass some time to have a validtime/s
+		// allow to pass some time to have a valid time/s
 		try {
 			Thread.sleep(1100);
 		} catch (InterruptedException e) {
@@ -160,7 +163,7 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
 
     @Test
     public void testNullDelegate() {
-        //noinspection ConstantConditions
+        //noinspection ConstantConditions,resource
         assertThrows(NullPointerException.class, () -> new CountingSeekableRingBufferImpl(null));
     }
 }

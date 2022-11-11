@@ -216,13 +216,16 @@ public class CountingSeekableRingBufferImpl implements CountingSeekableRingBuffe
 
     private double getPerSecond(AtomicLong bytesWrittenOverall) {
         long time = System.currentTimeMillis() - start;
-        time = time / 1000;
-        return ((double) bytesWrittenOverall.get()) / time;
+
+        // multiply by thousand to convert from milliseconds to seconds
+        return ((double) bytesWrittenOverall.get()) * 1000 / time;
     }
 
     @Override
     public String toString() {
+        long time = System.currentTimeMillis() - start;
         return
+                "Start: " + start + ", time: " + time + "/" + (double)time / 1000 + ", " +
                 "Written: " + bytesWrittenOverall.get() + " bytes/" + chunksWrittenOverall.get() + " chunks, " +
 					String.format("%.2f", getPerSecond(bytesWrittenOverall)) + " bytes/s, " +
 					String.format("%.2f", getPerSecond(chunksWrittenOverall)) + " chunks/s" +
