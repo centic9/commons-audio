@@ -67,12 +67,12 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
         getBuffer().add(new Chunk(new byte[] { 1 }, "", tms));
         getBuffer().add(new Chunk(new byte[] { 1 }, "", tms));
 
-        long start = System.currentTimeMillis();
-
         final double writtenPerSecond = getBuffer().getChunksWrittenPerSecond();
         assertTrue("Had: " + writtenPerSecond, Double.isInfinite(writtenPerSecond));
         assertEquals(0, getBuffer().getChunksReadPerSecond(), 0);
         assertEquals(DEFAULT_CHUNKS_PER_SECOND, getBuffer().getChunksPerSecond(), 0.01);
+
+        long start = System.currentTimeMillis();
 
         getBuffer().next();
         Thread.sleep(600);
@@ -86,6 +86,11 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
 
         assertTrue(Double.isInfinite(getBuffer().getChunksWrittenPerSecond()));
         final double expected = 4 / ((double) (end - start)) * 1000;
+        System.out.println(
+                "Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer() +
+                        "\n" + expected +
+                        "\n" + getBuffer().getChunksReadPerSecond());
+
         assertEquals("Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer(),
                 expected, getBuffer().getChunksReadPerSecond(), 0.01);
         assertEquals("Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer(),

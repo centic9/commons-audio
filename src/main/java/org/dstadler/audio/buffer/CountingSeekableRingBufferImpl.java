@@ -223,9 +223,9 @@ public class CountingSeekableRingBufferImpl implements CountingSeekableRingBuffe
 
     @Override
     public String toString() {
-        long time = System.currentTimeMillis() - start;
+        //long time = System.currentTimeMillis() - start;
         return
-                "Start: " + start + ", time: " + time + "/" + (double)time / 1000 + ", " +
+                "Start: " + start + /*", time: " + time + "/" + (double)time / 1000 +*/ ", " +
                 "Written: " + bytesWrittenOverall.get() + " bytes/" + chunksWrittenOverall.get() + " chunks, " +
 					String.format("%.2f", getPerSecond(bytesWrittenOverall)) + " bytes/s, " +
 					String.format("%.2f", getPerSecond(chunksWrittenOverall)) + " chunks/s" +
