@@ -169,6 +169,15 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 		this.diskBufferReadPosition = getDiskPosition(nextGet);
 		this.diskBufferWritePosition = getDiskPosition(nextAdd);
 
+		Preconditions.checkArgument(nextAdd - diskBufferWritePosition >= 0 &&
+						nextAdd - diskBufferWritePosition < numberOfChunks,
+				"Invalid nextAdd: %s and %s for number of chunks: %s (%s / %s)",
+				nextAdd, diskBufferWritePosition, numberOfDiskChunks, numberOfDiskFiles);
+		Preconditions.checkArgument(nextGet - diskBufferReadPosition >= 0 &&
+						nextGet - diskBufferReadPosition < numberOfChunks,
+				"Invalid nextGet: %s for number of chunks: %s (%s / %s)",
+				nextGet, diskBufferReadPosition, numberOfDiskChunks, numberOfDiskFiles);
+
 		// try to read the buffer from disk based on these positions
 		this.diskBufferRead = readBuffer(dataDir, diskBufferReadPosition, numberOfChunks);
 		this.diskBufferWrite = readBuffer(dataDir, diskBufferWritePosition, numberOfChunks);
@@ -234,7 +243,7 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 	public synchronized void add(Chunk chunk) {
 		Preconditions.checkNotNull(chunk);
 		Preconditions.checkState(nextAdd - diskBufferWritePosition >= 0 &&
-				diskBufferWritePosition - nextAdd < numberOfChunks,
+				nextAdd - diskBufferWritePosition < numberOfChunks,
 				"Did have invalid positions: write-pos: %s, nextAdd: %s, numberOfChunks: %s",
 				diskBufferWritePosition, nextAdd, numberOfChunks);
 
@@ -410,7 +419,7 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 		if(nextGet == 0) {
 			nextGet = numberOfDiskChunks - 1;
 		} else {
-			nextGet = nextGet - 1;
+			nextGet--;
 		}
 
 		return true;

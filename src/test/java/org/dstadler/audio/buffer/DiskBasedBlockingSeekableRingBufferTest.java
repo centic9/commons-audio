@@ -44,85 +44,88 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 
 	@Test
 	public void testPersistence() throws IOException {
-		DiskBasedBlockingSeekableRingBuffer localBuffer = new DiskBasedBlockingSeekableRingBuffer(10, 3, getDataDir());
-		for(byte i = 0;i < 15;i++) {
-			localBuffer.add(new Chunk(new byte[] { i }, "", 0));
+		try (DiskBasedBlockingSeekableRingBuffer localBuffer = new DiskBasedBlockingSeekableRingBuffer(10, 3, getDataDir())) {
+			for (byte i = 0; i < 15; i++) {
+				localBuffer.add(new Chunk(new byte[] { i }, "", 0));
+			}
+
+			Stream stream = new Stream();
+			stream.setUrl("url1");
+			stream.setStreamType(Stream.StreamType.live);
+
+			// get the persistence
+			final BufferPersistenceDTO dto = localBuffer.toPersistence(stream, false, false);
+			assertNotNull(dto);
+			assertEquals("url1", dto.getStream().getUrl());
+
+			// check what next returns
+			final Chunk next = localBuffer.next();
+			assertEquals(new Chunk(new byte[] { 6 }, "", 0), next);
+
+			// check the local buffer
+			assertFalse(localBuffer.full());
+			assertFalse(localBuffer.empty());
+			assertEquals(8, localBuffer.size());
+			assertEquals(9, localBuffer.fill());
+
+			// check the DTO
+			assertEquals(6, dto.getNextGet());
+			assertEquals(5, dto.getNextAdd());
+			assertEquals(9, dto.getFill());
+			assertNull(dto.getBuffer());
+			assertEquals(3, dto.getNumberOfDiskFiles());
+			assertEquals(10, dto.getNumberOfDiskChunks());
+			assertNotNull(dto.getDataDir());
+
+			// then convert the DTO back into a buffer and do a next() as well
+			try (DiskBasedBlockingSeekableRingBuffer back = DiskBasedBlockingSeekableRingBuffer.fromPersistence(dto)) {
+				assertEquals(next, back.next());
+			}
+
+			// and finally ensure the state is the same
+			assertFalse(localBuffer.full());
+			assertFalse(localBuffer.empty());
+			assertEquals(8, localBuffer.size());
+			assertEquals(9, localBuffer.fill());
 		}
-
-		Stream stream = new Stream();
-		stream.setUrl("url1");
-		stream.setStreamType(Stream.StreamType.live);
-
-		// get the persistence
-		final BufferPersistenceDTO dto = localBuffer.toPersistence(stream, false, false);
-		assertNotNull(dto);
-		assertEquals("url1", dto.getStream().getUrl());
-
-		// check what next returns
-		final Chunk next = localBuffer.next();
-		assertEquals(new Chunk(new byte[] {6}, "", 0), next);
-
-		// check the local buffer
-		assertFalse(localBuffer.full());
-		assertFalse(localBuffer.empty());
-		assertEquals(8, localBuffer.size());
-		assertEquals(9, localBuffer.fill());
-
-		// check the DTO
-		assertEquals(6, dto.getNextGet());
-		assertEquals(5, dto.getNextAdd());
-		assertEquals(9, dto.getFill());
-		assertNull(dto.getBuffer());
-		assertEquals(3, dto.getNumberOfDiskFiles());
-		assertEquals(10, dto.getNumberOfDiskChunks());
-		assertNotNull(dto.getDataDir());
-
-		// then convert the DTO back into a buffer and do a next() as well
-		DiskBasedBlockingSeekableRingBuffer back = DiskBasedBlockingSeekableRingBuffer.fromPersistence(dto);
-		assertEquals(next, back.next());
-
-		// and finally ensure the state is the same
-		assertFalse(localBuffer.full());
-		assertFalse(localBuffer.empty());
-		assertEquals(8, localBuffer.size());
-		assertEquals(9, localBuffer.fill());
 	}
 
 	@Test
 	public void testToStringBuffer() throws IOException {
-		DiskBasedBlockingSeekableRingBuffer localBuffer = new DiskBasedBlockingSeekableRingBuffer(10, 3, getDataDir());
+		try (DiskBasedBlockingSeekableRingBuffer localBuffer = new DiskBasedBlockingSeekableRingBuffer(10, 3, getDataDir())) {
 
-		assertTrue(localBuffer.empty());
-		assertFalse(localBuffer.full());
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("empty=true"));
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("full=false"));
+			assertTrue(localBuffer.empty());
+			assertFalse(localBuffer.full());
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("empty=true"));
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("full=false"));
 
-		for(byte i = 0;i < 15;i++) {
-			localBuffer.add(new Chunk(new byte[] { i }, "", 0));
+			for (byte i = 0; i < 15; i++) {
+				localBuffer.add(new Chunk(new byte[] { i }, "", 0));
+			}
+
+			assertFalse(localBuffer.empty());
+			assertTrue(localBuffer.full());
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("empty=false"));
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("full=true"));
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("isDirty="));
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("diskBufferRead="));
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("diskBufferWrite="));
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("numberOfDiskChunks="));
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("diskBufferReadPosition="));
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("diskBufferWritePosition="));
+			assertTrue("Had: " + localBuffer,
+					localBuffer.toString().contains("dataDir="));
 		}
-
-		assertFalse(localBuffer.empty());
-		assertTrue(localBuffer.full());
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("empty=false"));
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("full=true"));
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("isDirty="));
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("diskBufferRead="));
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("diskBufferWrite="));
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("numberOfDiskChunks="));
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("diskBufferReadPosition="));
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("diskBufferWritePosition="));
-		assertTrue("Had: " + localBuffer,
-				localBuffer.toString().contains("dataDir="));
 	}
 
 	@Test
@@ -202,29 +205,45 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 
 	@Test
 	public void testLargeBuffer() throws IOException {
-		DiskBasedBlockingSeekableRingBuffer localBuffer =
-				new DiskBasedBlockingSeekableRingBuffer(1000, 33, getDataDir());
+		try (DiskBasedBlockingSeekableRingBuffer localBuffer = new DiskBasedBlockingSeekableRingBuffer(1000, 33, getDataDir())) {
 
-		for (int i = 0;i < 5000;i++) {
-			localBuffer.add(new Chunk(RandomUtils.nextBytes(1), "", 0));
+			for (int i = 0; i < 5000; i++) {
+				localBuffer.add(new Chunk(RandomUtils.nextBytes(1), "", 0));
 
-			if (RandomUtils.nextBoolean()) {
-				assertNotNull(localBuffer.peek());
-				assertNotNull(localBuffer.next());
-			}
+				if (RandomUtils.nextBoolean()) {
+					assertNotNull(localBuffer.peek());
+					assertNotNull(localBuffer.next());
+				}
 
-			if (RandomUtils.nextBoolean()) {
-				int seek = localBuffer.seek(RandomUtils.nextInt(0, 5000)-2500);
-				assertTrue("Had: " + seek + " with " + buffer,
-						seek > -1000 && seek < 1000);
+				if (RandomUtils.nextBoolean()) {
+					int seek = localBuffer.seek(RandomUtils.nextInt(0, 5000) - 2500);
+					assertTrue("Had: " + seek + " with " + buffer,
+							seek > -1000 && seek < 1000);
+				}
 			}
 		}
 	}
 
 	@Test
 	public void testInvalidDataDir() {
+		//noinspection resource
 		assertThrows(IllegalStateException.class, () ->
 			new DiskBasedBlockingSeekableRingBuffer(1000, 33,
 				new File(getDataDir(), "/_/ß\u0000")));
+	}
+
+	@Test
+	public void testInvalidConstructorValues() throws IOException {
+		Stream stream = new Stream();
+		stream.setUrl("url1");
+		stream.setStreamType(Stream.StreamType.live);
+
+		final BufferPersistenceDTO dto = new BufferPersistenceDTO(100, 20,
+				new File(getDataDir(), "test.bson"),
+				-1, -1, 0, stream, false, false);
+
+		//noinspection resource
+		assertThrows(IllegalArgumentException.class, () ->
+			DiskBasedBlockingSeekableRingBuffer.fromPersistence(dto));
 	}
 }
