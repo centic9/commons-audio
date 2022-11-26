@@ -21,8 +21,8 @@ import java.util.logging.Logger;
  * Provides functionality to download ranges from
  * URLs via the HTTP "Range requests" feature.
  *
- * See https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests for
- * the underlying part of the HTTP protocol.
+ * See <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests">https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests</a>
+ * for the underlying part of the HTTP protocol.
  *
  * After constructing the object with an URL, you
  * can query for the length of the file via getLength()
@@ -66,16 +66,16 @@ public class RangeDownloadHTTP implements RangeDownload {
             try {
                 String headers = Arrays.toString(response.getAllHeaders());
                 Preconditions.checkState(response.getFirstHeader("Accept-Ranges") != null,
-                        "Need a HTTP response for 'Accept-Ranges', but got: %s",
-                        headers);
+                        "Need a HTTP response for 'Accept-Ranges' for %s, but got: %s",
+                        url, headers);
                 Preconditions.checkState("bytes".equals(response.getFirstHeader("Accept-Ranges").getValue()) ||
                                 response.getFirstHeader("Accept-Ranges").getValue().matches("\\d+-\\d+"),
-                        "Only 'bytes' or 'n-n' is supported for HTTP header 'Accept-Ranges', but got: %s",
-                        headers);
+                        "Only 'bytes' or 'n-n' is supported for HTTP header 'Accept-Ranges' for %s, but got: %s",
+                        url, headers);
 
                 Preconditions.checkState(response.getFirstHeader("Content-Length") != null,
-                        "Need a HTTP header-response for 'Content-Length', but got: %s",
-                        headers);
+                        "Need a HTTP header-response for 'Content-Length' for %s, but got: %s",
+                        url, headers);
 
                 length = Long.parseLong(response.getFirstHeader("Content-Length").getValue());
             } finally {
