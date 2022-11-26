@@ -164,7 +164,7 @@ public class RangeDownloadHTTPTest {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
             TestHelpers.ToStringTest(download);
 
-            assertTrue("Had: " + download.toString(), download.toString().contains(Long.toString(EXPECTED_LENGTH)));
+            assertTrue("Had: " + download, download.toString().contains(Long.toString(EXPECTED_LENGTH)));
 
             verifier.addObject(download);
         }

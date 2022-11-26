@@ -69,7 +69,7 @@ public class RangeDownloadFileTest {
         try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
             TestHelpers.ToStringTest(download);
 
-            assertTrue("Expected " + EXPECTED_LENGTH + ", but had: " + download.toString(),
+            assertTrue("Expected " + EXPECTED_LENGTH + ", but had: " + download,
                     download.toString().contains(Long.toString(EXPECTED_LENGTH)));
 
             verifier.addObject(download);
