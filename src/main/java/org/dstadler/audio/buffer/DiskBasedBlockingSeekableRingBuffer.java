@@ -226,10 +226,12 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 
 			return createEmptyBuffer(numberOfChunks);
 		} else {
-			log.info("Reading buffer from file " + bufferFile);
+			if (log.isLoggable(Level.FINE)) {
+				log.fine("Reading buffer from file " + bufferFile);
+			}
 			try (InputStream stream = new BufferedInputStream(new FileInputStream(bufferFile))) {
 				Chunk[] buffer = BufferPersistence.getMapper().readValue(stream, Chunk[].class);
-				log.info("Read " + buffer.length + " chunks from file " + bufferFile);
+				log.info("Position " + diskBufferPosition + ": read " + buffer.length + " chunks from file " + bufferFile);
 				return buffer;
 			}
 		}
