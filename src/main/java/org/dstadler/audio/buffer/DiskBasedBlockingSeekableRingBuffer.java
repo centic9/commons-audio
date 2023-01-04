@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.dstadler.audio.stream.Stream;
@@ -136,7 +137,8 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 	 *
 	 * @param numberOfDiskChunks Number of byte-array chunks that are stored on disk
 	 * @param numberOfDiskFiles Into how many files the disk-buffer is split. This also
-	 *                          controls how big the in-memory area needs to be
+	 *                          controls how big the in-memory area needs to be via
+	 *                          numberOfDiskChunks / numberOfDiskFiles
 	 * @param dataDir The directory where buffers can be persisted.
 	 * @param nextGet The position for the next get operation
 	 * @param nextAdd The position for the next add operation
@@ -169,14 +171,17 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 		this.diskBufferReadPosition = getDiskPosition(nextGet);
 		this.diskBufferWritePosition = getDiskPosition(nextAdd);
 
+		Preconditions.checkArgument(nextAdd < numberOfDiskChunks,
+				"Invalid nextAdd: %s for number of chunks: %s (%s / %s)",
+				nextAdd, numberOfChunks, numberOfDiskChunks, numberOfDiskFiles);
 		Preconditions.checkArgument(nextAdd - diskBufferWritePosition >= 0 &&
 						nextAdd - diskBufferWritePosition < numberOfChunks,
 				"Invalid nextAdd: %s and %s for number of chunks: %s (%s / %s)",
-				nextAdd, diskBufferWritePosition, numberOfDiskChunks, numberOfDiskFiles);
+				nextAdd, diskBufferWritePosition, numberOfChunks, numberOfDiskChunks, numberOfDiskFiles);
 		Preconditions.checkArgument(nextGet - diskBufferReadPosition >= 0 &&
 						nextGet - diskBufferReadPosition < numberOfChunks,
 				"Invalid nextGet: %s for number of chunks: %s (%s / %s)",
-				nextGet, diskBufferReadPosition, numberOfDiskChunks, numberOfDiskFiles);
+				nextGet, diskBufferReadPosition, numberOfChunks, numberOfDiskChunks, numberOfDiskFiles);
 
 		// try to read the buffer from disk based on these positions
 		this.diskBufferRead = readBuffer(dataDir, diskBufferReadPosition, numberOfChunks);

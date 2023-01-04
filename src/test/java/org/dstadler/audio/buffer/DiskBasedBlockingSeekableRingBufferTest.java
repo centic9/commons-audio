@@ -1,24 +1,26 @@
 package org.dstadler.audio.buffer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomUtils;
+import org.dstadler.audio.stream.Stream;
+import org.dstadler.commons.logging.jdk.LoggerFactory;
+import org.dstadler.commons.testing.ThreadTestHelper;
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomUtils;
-import org.dstadler.audio.stream.Stream;
-import org.dstadler.commons.testing.ThreadTestHelper;
-import org.junit.After;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSeekableRingBufferTester {
 	private static File DATA_DIR;
+
+	@BeforeClass
+	public static void beforeClass() throws IOException {
+		LoggerFactory.initLogging();
+	}
 
 	@After
 	public void tearDownDataDir() throws IOException {
@@ -233,7 +235,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 	}
 
 	@Test
-	public void testInvalidConstructorValues() throws IOException {
+	public void testInvalidConstructorValuesNegative() throws IOException {
 		Stream stream = new Stream();
 		stream.setUrl("url1");
 		stream.setStreamType(Stream.StreamType.live);
@@ -245,5 +247,43 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		//noinspection resource
 		assertThrows(IllegalArgumentException.class, () ->
 			DiskBasedBlockingSeekableRingBuffer.fromPersistence(dto));
+	}
+
+	@Test
+	public void testInvalidConstructorValuesInvalidDataDir() {
+		Stream stream = new Stream();
+		stream.setUrl("url1");
+		stream.setStreamType(Stream.StreamType.live);
+
+		final BufferPersistenceDTO dto = new BufferPersistenceDTO(100, 20,
+				null, 2, 1, 0, stream, false, false);
+
+		//noinspection resource
+		assertThrows(IOException.class, () ->
+			DiskBasedBlockingSeekableRingBuffer.fromPersistence(dto));
+	}
+
+	@Test
+	public void testInvalidConstructorValuesOutOfRange() throws IOException {
+		Stream stream = new Stream();
+		stream.setUrl("url1");
+		stream.setStreamType(Stream.StreamType.live);
+
+		final BufferPersistenceDTO dto = new BufferPersistenceDTO(100, 20,
+				new File(getDataDir(), "test.bson"),
+				2, 100, 0, stream, false, false);
+
+		//noinspection resource
+		assertThrows(IllegalArgumentException.class, () ->
+			DiskBasedBlockingSeekableRingBuffer.fromPersistence(dto));
+	}
+
+	@Test
+	public void testConcurrentAddRemove() {
+		for (int i = 0; i < 100; i++) {
+			buffer.add(new Chunk(new byte[0], "", 1));
+			assertNotNull(buffer.peek());
+			assertNotNull(buffer.next());
+		}
 	}
 }
