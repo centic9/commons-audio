@@ -251,7 +251,9 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 		Preconditions.checkNotNull(chunk);
 		Preconditions.checkState(nextAdd - diskBufferWritePosition >= 0 &&
 				nextAdd - diskBufferWritePosition < numberOfChunks,
-				"Did have invalid positions: write-pos: %s, nextAdd: %s, numberOfChunks: %s",
+				"Did have invalid positions: %s needs to be in range [0, %s[, " +
+						"but had write-pos: %s, nextAdd: %s, numberOfChunks: %s",
+				nextAdd - diskBufferWritePosition, numberOfChunks,
 				diskBufferWritePosition, nextAdd, numberOfChunks);
 
 		diskBufferWrite[nextAdd - diskBufferWritePosition] = chunk;
@@ -309,21 +311,27 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 		}
 	}
 
+	/**
+	 * Check if the next add position is outside the chunks that we have available
+	 */
 	private void checkWriteBuffer() {
-		// check if the next get position is outside the chunk that we have available
 		if (nextAdd < diskBufferWritePosition ||
 				(nextAdd >= (diskBufferWritePosition + numberOfChunks))) {
 			try {
 				// make sure a dirty buffer is persisted
-				persistBuffer();
-
-				diskBufferWritePosition = getDiskPosition(nextAdd);
+				try {
+					persistBuffer();
+				} finally {
+					// make sure to adjust disk-buffer write position even if writing does fail
+					// e.g. reading thread may be interrupted by switching streams at the same time
+					diskBufferWritePosition = getDiskPosition(nextAdd);
+				}
 
 				// we read the previous chunk to keep the previous data if
 				// we seek away and thus flush the memory-buffer to disk again
 				diskBufferWrite = readBuffer(dataDir, diskBufferWritePosition, numberOfChunks);
 			} catch (IOException e) {
-				throw new IllegalStateException("Could not fetch current buffer for writing at position " +
+				throw new IllegalStateException("Could not update current buffers for writing at position " +
 						diskBufferWritePosition + " from " + dataDir, e);
 			}
 		}

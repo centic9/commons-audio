@@ -2,14 +2,17 @@ package org.dstadler.audio.buffer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.dstadler.audio.stream.Stream;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
+import org.dstadler.commons.testing.TestHelpers;
 import org.dstadler.commons.testing.ThreadTestHelper;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
@@ -279,11 +282,62 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 	}
 
 	@Test
+	public void testConstructFromPersistence() throws IOException {
+		Stream stream = new Stream();
+		stream.setUrl("url1");
+		stream.setStreamType(Stream.StreamType.live);
+
+		final BufferPersistenceDTO dto = new BufferPersistenceDTO(100, 20,
+				new File(getDataDir(), "test.bson"),
+				2, 99, 0, stream, false, false);
+
+		try (DiskBasedBlockingSeekableRingBuffer localBuffer = DiskBasedBlockingSeekableRingBuffer.fromPersistence(dto)) {
+			assertNotNull(localBuffer.peek());
+		}
+	}
+
+	@Test
 	public void testConcurrentAddRemove() {
 		for (int i = 0; i < 100; i++) {
 			buffer.add(new Chunk(new byte[0], "", 1));
 			assertNotNull(buffer.peek());
 			assertNotNull(buffer.next());
+		}
+	}
+
+	@Test
+	public void testFailingWrite() throws IOException {
+		Stream stream = new Stream();
+		stream.setUrl("url1");
+		stream.setStreamType(Stream.StreamType.live);
+
+		File dir = new File(getDataDir(), "test.bson");
+		final BufferPersistenceDTO dto = new BufferPersistenceDTO(100, 20,
+				dir, 99, 0, 0, stream, false, false);
+
+		// create a directory so that writing the buffer-file fails
+		File bufferFile = new File(dir, "AudioBuffer-5.bson");
+		assertTrue(bufferFile.mkdirs());
+		bufferFile = new File(dir, "AudioBuffer-25.bson");
+		assertTrue(bufferFile.mkdirs());
+
+		try (DiskBasedBlockingSeekableRingBuffer localBuffer = DiskBasedBlockingSeekableRingBuffer.fromPersistence(dto)) {
+			for (int i = 0; i < 150; i++) {
+				try {
+					localBuffer.add(new Chunk(new byte[0], "", 1));
+				} catch (IllegalStateException e) {
+					assertTrue("Had: " + ExceptionUtils.getStackTrace(e),
+							e.getCause() instanceof FileNotFoundException);
+					assertTrue("Had: " + ExceptionUtils.getStackTrace(e),
+							e.getMessage().contains("Could not update current buffers for writing at position") ||
+							e.getMessage().contains("Could not fetch buffer for reading at position"));
+					assertTrue("Had: " + ExceptionUtils.getStackTrace(e),
+							e.getMessage().contains("position 5 ") ||
+							e.getMessage().contains("position 10 ") ||
+							e.getMessage().contains("position 25") ||
+							e.getMessage().contains("position 30"));
+				}
+			}
 		}
 	}
 }
