@@ -1,8 +1,11 @@
 package org.dstadler.audio.buffer;
 
+import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.testing.TestHelpers;
 import org.dstadler.commons.testing.ThreadTestHelper;
 import org.junit.Test;
+
+import java.util.logging.Logger;
 
 import static org.dstadler.audio.buffer.CountingSeekableRingBufferImpl.DEFAULT_CHUNKS_PER_SECOND;
 import static org.junit.Assert.assertEquals;
@@ -10,6 +13,8 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekableRingBufferTester {
+    private final static Logger log = LoggerFactory.make();
+
     private static final int NUMBER_OF_THREADS = 10;
     private static final int NUMBER_OF_TESTS = 10000;
 
@@ -86,7 +91,7 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
 
         assertTrue(Double.isInfinite(getBuffer().getChunksWrittenPerSecond()));
         final double expected = 4 / ((double) (end - start)) * 1000;
-        System.out.println(
+        log.info(
                 "Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer() +
                         "\n" + expected +
                         "\n" + getBuffer().getChunksReadPerSecond());

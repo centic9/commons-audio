@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dstadler.audio.stream.Stream;
 import org.dstadler.commons.http.NanoHTTPD;
+import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.dstadler.commons.testing.TestHelpers;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
 import static org.junit.Assert.assertArrayEquals;
@@ -32,6 +34,8 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class RangeDownloadingBufferTest {
+    private final static Logger log = LoggerFactory.make();
+
     // just a sample file which should usually be available
     private static final String SAMPLE_URL = "https://www.dstadler.org/DominikStadler2013.png";
 
@@ -533,15 +537,15 @@ public class RangeDownloadingBufferTest {
     @Test
     public void testSlowStartBenchmark() throws IOException, InterruptedException {
         long start = System.currentTimeMillis();
-        System.out.println("Starting download: " + (System.currentTimeMillis() - start));
+        log.info("Starting download: " + (System.currentTimeMillis() - start));
         try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("https://loopstream01.apa.at/?channel=fm4&id=2020-03-22_0959_tl_54_7DaysSun6_95352.mp3",
                 "", null, 500, CHUNK_SIZE, percentage -> Pair.of("", 0L))) {
-            System.out.println("After startup: " + (System.currentTimeMillis() - start));
+            log.info("After startup: " + (System.currentTimeMillis() - start));
 
             for (int i = 0; i < 20; i++) {
                 buffer.next();
 
-                System.out.println("After next: " + (System.currentTimeMillis() - start));
+                log.info("After next: " + (System.currentTimeMillis() - start));
 
                 Thread.sleep(1000);
             }
@@ -549,7 +553,7 @@ public class RangeDownloadingBufferTest {
             buffer.fillupBuffer(15, expectedChunks - 2);
         }
 
-        System.out.println("After fillup: " + (System.currentTimeMillis() - start));
+        log.info("After fillup: " + (System.currentTimeMillis() - start));
     }
 
     @Test

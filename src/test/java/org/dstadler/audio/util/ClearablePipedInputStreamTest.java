@@ -1,6 +1,7 @@
 package org.dstadler.audio.util;
 
 import org.apache.commons.lang3.RandomUtils;
+import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.testing.TestHelpers;
 import org.dstadler.commons.testing.ThreadTestHelper;
 import org.dstadler.commons.util.ThreadDump;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.io.PipedOutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
 import static org.junit.Assert.assertEquals;
@@ -19,6 +21,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class ClearablePipedInputStreamTest {
+    private final static Logger log = LoggerFactory.make();
+
     private final PipedOutputStream out = new PipedOutputStream();
     private ClearablePipedInputStream in;
 
@@ -180,7 +184,7 @@ public class ClearablePipedInputStreamTest {
                     return;
                 }
 
-                System.out.println(threadDumpStr);
+                log.info(threadDumpStr);
 
                 throw new IllegalStateException("Failed for thread " + Thread.currentThread() + ": " + threadNum, e);
             }

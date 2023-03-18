@@ -11,6 +11,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.util.EntityUtils;
 import org.dstadler.commons.http.HttpClientWrapper;
+import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.net.UrlUtils;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.junit.Ignore;
@@ -23,6 +24,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
 import static org.junit.Assert.assertEquals;
@@ -32,6 +34,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class FM4Test {
+    private final static Logger log = LoggerFactory.make();
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final FM4 fm4 = new FM4();
@@ -155,7 +159,7 @@ public class FM4Test {
                     IOUtils.read(entity.getContent(), bytes);
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     HexDump.dump(bytes, 0, stream, 0);
-                    System.out.println(stream.toString("UTF-8"));
+                    log.info(stream.toString(StandardCharsets.UTF_8));
 
                     assertEquals("Could not find any loopchannels",
                             new String(bytes, 0, 31, StandardCharsets.UTF_8));
