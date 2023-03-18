@@ -17,6 +17,8 @@ import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
  * A thread which fetches data from the buffer and populates
  * a PipedInputStream that is always filled to let the actual
  * audio-player take data whenever needed.
+ *
+ * This is part of the simple example audio player.
  */
 class AudioWriter implements Runnable {
     private final static Logger log = LoggerFactory.make();
@@ -29,7 +31,7 @@ class AudioWriter implements Runnable {
     private ClearablePipedInputStream in;
     private PlayerThread player;
 
-    public AudioWriter(SeekableRingBuffer buffer, Runnable stopper, BooleanSupplier shouldStop) throws IOException {
+    public AudioWriter(SeekableRingBuffer<Chunk> buffer, Runnable stopper, BooleanSupplier shouldStop) throws IOException {
         this.buffer = buffer;
         this.stopper = stopper;
         this.shouldStop = shouldStop;

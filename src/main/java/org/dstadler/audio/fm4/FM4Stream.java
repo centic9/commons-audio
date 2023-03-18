@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Object holding information about one stream which
+ * is available from the FM4 online stream service.
+ */
 public class FM4Stream {
     private final static Logger log = LoggerFactory.make();
 

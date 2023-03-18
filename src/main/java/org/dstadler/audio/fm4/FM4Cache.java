@@ -24,12 +24,14 @@ import java.util.logging.Logger;
  * Simple cache for FM4 shows to avoid delays when switching
  * between shows.
  *
- * Automatically refreshes itself in the background.
+ * The getters() return the currently cached data without performing
+ * requests to the actual source for FM4 show information.
+ *
+ * Automatically refreshes itself in the background every 5
+ * minutes.
  *
  * The cache-data is not held in static members, so keep the instance
  * available where it is used.
- *
- * The cache is refreshed automatically every 5 minutes.
  */
 public class FM4Cache implements AutoCloseable {
     private final static Logger log = LoggerFactory.make();
@@ -54,6 +56,8 @@ public class FM4Cache implements AutoCloseable {
     private final FM4 fm4;
 
     /**
+     * Construct up the cache and start periodic background
+     * refreshes.
      *
      * @param fm4 An instance of the FM4 access helper.
      *            This is passed in to facilitate testing.
@@ -230,6 +234,9 @@ public class FM4Cache implements AutoCloseable {
      *
      * Expiry is done by the cache so that non-refreshed
      * items are removed from the cache after some time.
+     *
+     * Usually there is no need to call this as it is
+     * called automatically every 5 minutes.
      */
     public void refresh() {
         try {

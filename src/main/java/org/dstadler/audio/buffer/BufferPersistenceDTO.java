@@ -139,16 +139,6 @@ public class BufferPersistenceDTO {
 		return dataDir;
 	}
 
-	/*@Override
-    public String toString() {
-        return "BufferPersistenceDTO{" +
-                ", nextDownloadPosition=" + nextDownloadPosition +
-                ", stream=" + stream +
-                ", playing=" + playing +
-                ", downloadWhilePaused=" + downloadWhilePaused +
-                '}';
-    }*/
-
 	@Override
 	public String toString() {
 		return "BufferPersistenceDTO{" +

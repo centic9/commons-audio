@@ -31,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
 public class RangeDownloadingBufferTest {
@@ -512,8 +513,10 @@ public class RangeDownloadingBufferTest {
         try (MockRESTServer server = new MockRESTServer("404", "text/html", "")) {
             buffer.close();
 
-            new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
-                    "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L));
+            try (RangeDownloadingBuffer ignores = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
+                    "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L))) {
+                fail("Should catch exception");
+            }
         }
     }
 

@@ -34,6 +34,8 @@ import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
  * {@link SeekableRingBuffer}, handling the ShoutCast
  * protocol for reading audio data together with metadata
  * if provided by the stream.
+ *
+ * This is part of the example audio player.
  */
 public class StreamReader implements AutoCloseable {
     private final static Logger log = LoggerFactory.make();

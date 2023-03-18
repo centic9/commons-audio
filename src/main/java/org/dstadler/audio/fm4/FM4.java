@@ -17,10 +17,14 @@ import java.util.stream.Collectors;
 
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
 
+/**
+ * Fetch information about which streams are currently
+ * available on the FM4 streaming service and allow
+ * to download data to local files.
+ */
 public class FM4 {
     private final static Logger log = LoggerFactory.make();
 
-    // Broken: http://mp3stream1.apasf.apa.at:8000
     public static final String FM4_STREAM_URL = "https://orf-live.ors-shoutcast.at/fm4-q2a";
 
     public static final String FM4_API_URL = "https://audioapi.orf.at/fm4/json/4.0/broadcasts?_o=fm4.orf.at";

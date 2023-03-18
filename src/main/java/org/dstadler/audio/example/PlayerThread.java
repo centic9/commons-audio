@@ -14,8 +14,10 @@ import java.util.logging.Logger;
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
 
 /**
- * The audio-system in Java needs a thread for actually
- * running the player
+ * Runnable for a thread which runs the audio-player of the
+ * Java audio-system in the example player implementation.
+ *
+ * Also automatically tries to restart playing
  */
 public class PlayerThread implements Runnable {
     private final static Logger log = LoggerFactory.make();
