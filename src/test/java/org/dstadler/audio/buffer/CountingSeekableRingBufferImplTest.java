@@ -111,9 +111,9 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
         for(int i = 0; i < 100;i++) {
             buffer.add(new Chunk(new byte[0], "", 500*i));
         }
-        assertEquals(2.0202, getBuffer().getChunksWrittenPerSecond(), 0.01);
+        assertEquals(2.0408163, getBuffer().getChunksWrittenPerSecond(), 0.01);
         assertEquals(0, getBuffer().getChunksReadPerSecond(), 0);
-        assertEquals(2.0202, getBuffer().getChunksPerSecond(), 0.01);
+        assertEquals(2.0408163, getBuffer().getChunksPerSecond(), 0.01);
     }
 
     @Test

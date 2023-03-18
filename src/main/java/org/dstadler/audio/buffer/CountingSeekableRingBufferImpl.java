@@ -28,7 +28,7 @@ public class CountingSeekableRingBufferImpl implements CountingSeekableRingBuffe
     private final AtomicLong chunksReadOverall = new AtomicLong();
 
     // record timestamps of the last 300 chunks so we can compute how many we do per second
-    private static final int MOVING_WINDOW = 300;
+    private static final int MOVING_WINDOW = 50;
     private final MovingAverage chunksWrittenPerSecond = new MovingAverage(MOVING_WINDOW);
     private final MovingAverage chunksReadPerSecond = new MovingAverage(MOVING_WINDOW);
 
@@ -224,16 +224,20 @@ public class CountingSeekableRingBufferImpl implements CountingSeekableRingBuffe
     @Override
     public String toString() {
         //long time = System.currentTimeMillis() - start;
-        return
-                "Start: " + start + /*", time: " + time + "/" + (double)time / 1000 +*/ ", " +
-                "Written: " + bytesWrittenOverall.get() + " bytes/" + chunksWrittenOverall.get() + " chunks, " +
-					String.format("%.2f", getPerSecond(bytesWrittenOverall)) + " bytes/s, " +
-					String.format("%.2f", getPerSecond(chunksWrittenOverall)) + " chunks/s" +
-
-				", Read: " + bytesReadOverall.get() + " bytes/" + chunksReadOverall.get() + " chunks, " +
-					String.format("%.2f", getPerSecond(bytesReadOverall)) + " bytes/s," +
-					String.format("%.2f", getPerSecond(chunksReadOverall)) + " chunks/s" +
-
-				", " + delegate.toString();
+        /*", time: " + time + "/" + (double)time / 1000 +*/
+        return String.format("Start: %d, " +
+            "CPS: %.2f, " +
+            "CPSRead: %.2f, " +
+            "CPSWritten: %.2f, " +
+            "Written: %d bytes/%d chunks, %.2f bytes/s, %.2f chunks/s, " +
+            "Read: %d bytes/%d chunks, %.2f bytes/s, %.2f chunks/s, " +
+            "%s",
+            start,
+            getChunksPerSecond(),
+            getChunksReadPerSecond(),
+            getChunksWrittenPerSecond(),
+            bytesWrittenOverall.get(), chunksWrittenOverall.get(), getPerSecond(bytesWrittenOverall), getPerSecond(chunksWrittenOverall),
+            bytesReadOverall.get(), chunksReadOverall.get(), getPerSecond(bytesReadOverall), getPerSecond(chunksReadOverall),
+            delegate.toString());
     }
 }
