@@ -28,13 +28,37 @@ public class CountingSeekableRingBufferImpl implements CountingSeekableRingBuffe
     private final AtomicLong chunksReadOverall = new AtomicLong();
 
     // record timestamps of the last 300 chunks so we can compute how many we do per second
-    private static final int MOVING_WINDOW = 50;
-    private final MovingAverage chunksWrittenPerSecond = new MovingAverage(MOVING_WINDOW);
-    private final MovingAverage chunksReadPerSecond = new MovingAverage(MOVING_WINDOW);
+    private static final int DEFAULT_MOVING_WINDOW = 50;
+    private final MovingAverage chunksWrittenPerSecond;
+    private final MovingAverage chunksReadPerSecond;
 
+    /**
+     * Construct the buffer with the given buffer-instance
+     * and a default moving window for computing the
+     * chunks-per-second
+     *
+     * @param delegate The instance to use for actual buffering
+     */
     public CountingSeekableRingBufferImpl(@Nonnull SeekableRingBuffer<Chunk> delegate) {
+        this(delegate, DEFAULT_MOVING_WINDOW);
+    }
+
+    /**
+     * Construct the buffer with the given buffer-instance
+     * and the given number of how many timestamps of read
+     * and write operations are kept for calculating the
+     * rate of chunks per second.
+     *
+     * @param delegate The instance to use for actual buffering
+     * @param movingWindow How many read or written chunks are used for computing
+     *                     the average rate of chunks per second
+     */
+    public CountingSeekableRingBufferImpl(@Nonnull SeekableRingBuffer<Chunk> delegate, int movingWindow) {
         Preconditions.checkNotNull(delegate, "Buffer cannot be null");
         this.delegate = delegate;
+
+        chunksWrittenPerSecond = new MovingAverage(movingWindow);
+        chunksReadPerSecond = new MovingAverage(movingWindow);
     }
 
     @Override

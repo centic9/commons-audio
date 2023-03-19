@@ -117,6 +117,20 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
     }
 
     @Test
+    public void testGetChunksWrittenPerSecCustomWindow() {
+        try (CountingSeekableRingBufferImpl lBuffer =
+                     new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10), 100)) {
+            // add two chunks per second
+            for (int i = 0; i < 100; i++) {
+                lBuffer.add(new Chunk(new byte[0], "", 500 * i));
+            }
+            assertEquals(2.0202020, lBuffer.getChunksWrittenPerSecond(), 0.01);
+            assertEquals(0, lBuffer.getChunksReadPerSecond(), 0);
+            assertEquals(2.0202020, lBuffer.getChunksPerSecond(), 0.01);
+        }
+    }
+
+    @Test
     public void testGetChunksWrittenPerSecTimeJump() {
         assertEquals(0, getBuffer().getChunksWrittenPerSecond(), 0);
 
