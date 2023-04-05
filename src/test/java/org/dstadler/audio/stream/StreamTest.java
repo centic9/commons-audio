@@ -8,7 +8,6 @@ import org.junit.Assume;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.function.Function;
 
@@ -111,7 +110,7 @@ public class StreamTest {
     }
 
     @Test
-    public void testCredentials() throws IOException {
+    public void testCredentials() {
         Stream stream = new Stream();
 
         stream.setUser("someuser");
