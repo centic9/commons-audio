@@ -1,11 +1,13 @@
 package org.dstadler.audio.stream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dstadler.audio.player.TempoStrategy;
 import org.dstadler.commons.testing.TestHelpers;
 import org.junit.Assume;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.function.Function;
@@ -13,6 +15,8 @@ import java.util.function.Function;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class StreamTest {
@@ -115,10 +119,35 @@ public class StreamTest {
             assertNull(stream.getPassword());
 
             TestHelpers.ToStringTest(stream);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             Assume.assumeNoException("Credentials file not available, cannot test for password",
                     e);
         }
+    }
+
+    @Test
+    public void testCredentialsDummyFile() throws IOException {
+		final File credentialsFile = new File("credentials.properties");
+		Assume.assumeFalse("Can only run this test when no credentials.properties exists before",
+				credentialsFile.exists());
+
+        Stream stream = new Stream();
+        stream.setUser("someuser");
+
+		// expect a FileNotFoundException
+		assertThrows(IOException.class,
+				stream::getPassword);
+
+		try {
+			FileUtils.writeStringToFile(credentialsFile, "password.someuser=pass1", "UTF-8");
+
+			assertEquals("Should be able to read password now",
+					"pass1", stream.getPassword());
+		} finally {
+			assertTrue(credentialsFile.delete());
+		}
+
+		TestHelpers.ToStringTest(stream);
     }
 
     @Test

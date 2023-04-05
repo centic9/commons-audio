@@ -108,10 +108,13 @@ public class Stream {
         }
 
         Properties properties = new Properties();
-        try (FileReader reader = new FileReader(new File("credentials.properties"))) {
+        try (FileReader reader = new FileReader("credentials.properties")) {
             properties.load(reader);
             return properties.getProperty("password." + getUser());
-        }
+        } catch (IOException e) {
+			throw new IOException("Could not read password '" +  "password." + getUser() + "' for user '" + getUser() +
+					"' from file 'credentials.properties'", e);
+		}
     }
 
     public void setStartTimestamp(long startTimestamp) {
