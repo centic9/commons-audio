@@ -42,8 +42,8 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.12.0'
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'org.apache.httpcomponents:httpclient:4.5.14'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.1'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation 'com.google.guava:guava:31.1-jre'
 
@@ -64,7 +64,7 @@ dependencies {
     // don't include it in the jar-file
     runtimeOnly files('src/runtime/resources')
 
-    testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.2'
+    testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.3'
     testImplementation 'org.dstadler:commons-test:1.0.0.20'
 }
 
@@ -87,7 +87,7 @@ test {
 }
 
 jacoco {
-    toolVersion = '0.8.8'
+    toolVersion = '0.8.10'
 }
 
 jacocoTestReport {
