@@ -64,7 +64,7 @@ dependencies {
     // don't include it in the jar-file
     runtimeOnly files('src/runtime/resources')
 
-    testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.3'
+    testImplementation 'org.junit.vintage:junit-vintage-engine:5.10.0'
     testImplementation 'org.dstadler:commons-test:1.0.0.20'
 }
 
