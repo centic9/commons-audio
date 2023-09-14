@@ -1,5 +1,6 @@
 package org.dstadler.audio.buffer;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.dstadler.commons.http.NanoHTTPD;
 import org.dstadler.commons.testing.MockRESTServer;
@@ -32,10 +33,7 @@ public class MockHTTPTest {
             if(fail.get()) {
                 return new NanoHTTPD.Response("404", "application/binary", "");
             } else {
-                NanoHTTPD.Response response = new NanoHTTPD.Response("200", "application/binary", "");
-                response.addHeader("Accept-Ranges", "0-20000");
-                response.addHeader("Content-Length", "20000");
-                return response;
+                return acceptRangeResponse();
             }
         })) {
             try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
@@ -55,6 +53,67 @@ public class MockHTTPTest {
                 10 + 1, httpCalls.get());
     }
 
+    @Test
+    public void testDownloadInvalidContentType() throws IOException {
+        AtomicInteger httpCalls = new AtomicInteger();
+        AtomicBoolean secondCall = new AtomicBoolean();
+        try (MockRESTServer server = new MockRESTServer(() -> {
+            httpCalls.incrementAndGet();
+
+            if(secondCall.get()) {
+                // FM4 servers return HTTP 200 and a HTML-page if the show was removed after 7 days...
+                return new NanoHTTPD.Response("200", "text/html; charset=utf-8", "abcdefghijklmnopqrstuvw");
+            } else {
+                return acceptRangeResponse();
+            }
+        })) {
+            try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
+                    "", null, 100, Chunk.CHUNK_SIZE, null)) {
+                // use a very short retry-sleep to speed up this test
+                buffer.RETRY_SLEEP_TIME = 1;
+
+                // make the HTTP server return a failure
+                secondCall.set(true);
+
+                // expect no data available any more for "text/html" content-type
+                assertEquals(0, buffer.fillupBuffer(-1, 50));
+            }
+        }
+
+        assertEquals("Expecting one call initially and one call to fetch data",
+                1 + 1, httpCalls.get());
+    }
+
+    @Test
+    public void testDownloadSucceeds() throws IOException {
+        AtomicInteger httpCalls = new AtomicInteger();
+        AtomicBoolean secondCall = new AtomicBoolean();
+        try (MockRESTServer server = new MockRESTServer(() -> {
+            httpCalls.incrementAndGet();
+
+            if(secondCall.get()) {
+                return new NanoHTTPD.Response("200", "audio/mpeg", RandomStringUtils.random(100));
+            } else {
+                return acceptRangeResponse();
+            }
+        })) {
+            try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
+                    "", null, 100, Chunk.CHUNK_SIZE, null)) {
+                // use a very short retry-sleep to speed up this test
+                buffer.RETRY_SLEEP_TIME = 1;
+
+                // make the HTTP server return a failure
+                secondCall.set(true);
+
+                // expect some chunks back
+                assertEquals(2, buffer.fillupBuffer(-1, 50));
+            }
+        }
+
+        assertEquals("Expecting one call initially and one call to fetch data",
+                1 + 1, httpCalls.get());
+    }
+
     @Ignore("URL is only temporary")
     @Test
     public void testFM4Stream() throws IOException {
@@ -66,6 +125,13 @@ public class MockHTTPTest {
 
             buffer.seek(5016);
         }
+    }
+
+    private static NanoHTTPD.Response acceptRangeResponse() {
+        NanoHTTPD.Response response = new NanoHTTPD.Response("200", "application/binary", "");
+        response.addHeader("Accept-Ranges", "0-20000");
+        response.addHeader("Content-Length", "20000");
+        return response;
     }
 
     private static final int NUMBER_OF_THREADS = 10;
@@ -101,6 +167,7 @@ public class MockHTTPTest {
             this.buffer = buffer;
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void run(int threadNum, int itNum) throws Exception {
             int rnd = RandomUtils.nextInt(0, 17);
@@ -240,10 +307,7 @@ public class MockHTTPTest {
             if(fail.get()) {
                 return new NanoHTTPD.Response("404", "application/binary", "");
             } else {
-                NanoHTTPD.Response response = new NanoHTTPD.Response("200", "application/binary", "");
-                response.addHeader("Accept-Ranges", "0-20000");
-                response.addHeader("Content-Length", "20000");
-                return response;
+                return acceptRangeResponse();
             }
         })) {
             try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),

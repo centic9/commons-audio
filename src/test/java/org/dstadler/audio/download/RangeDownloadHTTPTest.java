@@ -24,10 +24,10 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class RangeDownloadHTTPTest {
-
     private static final String SAMPLE_URL = "https://www.dstadler.org/DominikStadler2013.png";
     private static final long EXPECTED_LENGTH = 841641;
 
@@ -67,6 +67,14 @@ public class RangeDownloadHTTPTest {
         verifier.addObject(download);
 
         download.readRange(0, 1);
+    }
+
+    @Test
+    public void testReadRangeDstadlerOrg() {
+        //noinspection resource
+        assertThrows("Expect an exception because the endpoint does not support Accept-Range",
+                IllegalStateException.class,
+                () -> new RangeDownloadHTTP("https://www.dstadler.org/", "", null));
     }
 
     @Test

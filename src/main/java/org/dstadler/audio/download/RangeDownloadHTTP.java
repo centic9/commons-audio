@@ -127,6 +127,13 @@ public class RangeDownloadHTTP implements RangeDownload {
         try (CloseableHttpResponse response = httpClient.getHttpClient().execute(httpGet)) {
             HttpEntity entity = HttpClientWrapper.checkAndFetch(response, url);
             try {
+                // The FM4 server returns a text/html response if the show was removed after 7 days
+                // we should detect this and stop the download in this case
+                if (entity.getContentType().getValue().startsWith("text/html")) {
+                    // returning empty signals that no more data can be loaded
+                    return new byte[0];
+                }
+
                 byte[] bytes = new byte[size];
                 IOUtils.read(entity.getContent(), bytes);
                 return bytes;
