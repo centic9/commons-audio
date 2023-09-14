@@ -100,8 +100,8 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
      *            to download at least this many chunks
      * @param max If -1, fill the buffer completely, otherwise
      *            download up to max chunks into the buffer.
-     * @return The number of chunks downloaded, 0 if the thread was interrupted
-     *          while sleeping for retries
+     * @return The number of chunks downloaded, 0 if the end of the download
+     *          was reached or the thread was interrupted while sleeping for retries
      * @throws IOException If downloading fails
      */
     public int fillupBuffer(int min, int max) throws IOException {
@@ -137,7 +137,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
     // only synchronize the actual reading and adding to the buffer and adjusting nextDownloadPos
     // to not hold the lock while sleeping during retries
-    private  int downloadChunksSync(int min, int max) throws IOException {
+    private int downloadChunksSync(int min, int max) throws IOException {
         // we need to avoid synchronizing the actual HTTP download,
         // so we extract some variables in a synchronized block and
         // check afterwards if the buffer changed while we download data
