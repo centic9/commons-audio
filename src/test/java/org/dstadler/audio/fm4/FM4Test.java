@@ -6,6 +6,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.HexDump;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -25,6 +27,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -45,6 +48,25 @@ public class FM4Test {
     @Test
     public void testFetch() throws IOException, ParseException {
         List<FM4Stream> fm4Streams = fm4.fetchStreams();
+
+        assertNotNull(fm4Streams);
+        assertFalse(fm4Streams.isEmpty());
+
+        // check resulting streams are sane
+        for (FM4Stream stream : fm4Streams) {
+            assertTrue(stream.getDuration() > 60_000);
+            assertTrue(stream.getStart() > System.currentTimeMillis() - (35L*24*60*60*1000));
+            assertNotNull(stream.getProgramKey());
+            assertNotNull(stream.getTitle());
+            assertNotNull(stream.getShortTime());
+            assertNotNull(DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(stream.getShortTime()));
+        }
+    }
+
+    @Test
+    public void testFetchForDate() throws IOException, ParseException {
+        String date = FastDateFormat.getInstance("yyyyMMdd").format(DateUtils.addDays(new Date(), -3));
+        List<FM4Stream> fm4Streams = fm4.fetchStreams(date);
 
         assertNotNull(fm4Streams);
         assertFalse(fm4Streams.isEmpty());

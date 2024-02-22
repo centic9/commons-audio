@@ -32,28 +32,46 @@ public class FM4 {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * Fetch default list of previous streams, usually returns data for the last 7 days
+     * @return A list of {@link FM4Stream}
+     * @throws IOException If fetching data via the FM4 REST API fails
+     */
     public List<FM4Stream> fetchStreams() throws IOException {
         return fetchStreams(FM4_API_URL, FM4_STREAM_URL_BASE);
     }
 
-    public List<FM4Stream> fetchStreams(String apiUrl, String streamUrlBase) throws IOException {
-        final String json;
-        try {
-            // fetch stream
-            json = HttpClientWrapper.retrieveData(apiUrl);
-        } catch (IOException e) {
-            throw new IOException("While reading from: " + apiUrl, e);
+    /**
+     * Fetch a list of previous streams for a given day.
+     *
+     * @param date A date in the form of yyyyMMdd, usually data is available for the last 30 days
+     * @return A list of {@link FM4Stream}
+     * @throws IOException If fetching data via the FM4 REST API fails
+     */
+    public List<FM4Stream> fetchStreams(String date) throws IOException {
+        // https://audioapi.orf.at/fm4/api/json/5.0/broadcasts/20240131?_o=sound.orf.at
+        String apiUrl = FM4_API_URL.replace("/broadcasts?", "/broadcasts/" + date + "?");
+
+        JsonNode jsonNode = parsAPI(apiUrl);
+
+        List<FM4Stream> streams = new ArrayList<>();
+        for (JsonNode node : jsonNode) {
+            streams.add(new FM4Stream(node, FM4_STREAM_URL_BASE));
         }
+        return streams;
+    }
 
-        JsonNode jsonNode = objectMapper.readTree(json).get("payload");
-
-        /*{
-      "dateOffset" : -3600000,
-      "broadcasts" : [
-         {
-            ...
-
-         */
+    /**
+     * Fetch default list of previous streams via the given REST API URLs.
+     * This usually returns data for the last 7 days
+     *
+     * @param apiUrl The REST API URL to use
+     * @param streamUrlBase The URL to use for downloading streams
+     * @return A list of {@link FM4Stream}
+     * @throws IOException If fetching data via the FM4 REST API fails
+     */
+    public List<FM4Stream> fetchStreams(String apiUrl, String streamUrlBase) throws IOException {
+        JsonNode jsonNode = parsAPI(apiUrl);
 
         List<FM4Stream> streams = new ArrayList<>();
         for (JsonNode node : jsonNode) {
@@ -64,6 +82,26 @@ public class FM4 {
         return streams;
     }
 
+    private static JsonNode parsAPI(String apiUrl) throws IOException {
+        final String json;
+        try {
+            // fetch stream
+            json = HttpClientWrapper.retrieveData(apiUrl);
+        } catch (IOException e) {
+            throw new IOException("While reading from: " + apiUrl, e);
+        }
+
+        return objectMapper.readTree(json).get("payload");
+    }
+
+    /**
+     * Fetch streams and filter them by the given programKey and also remove
+     * future instances of streams.
+     *
+     * @param programKey The FM4 program-key, e.g. "4MG"
+     * @return A list of {@link FM4Stream}
+     * @throws IOException If fetching data via the FM4 REST API fails
+     */
     public List<FM4Stream> filterStreams(String programKey) throws IOException {
         List<FM4Stream> streams = fetchStreams();
 
@@ -87,6 +125,13 @@ public class FM4 {
                 collect(Collectors.toList());
     }
 
+    /**
+     * Download the given stream to a MP3 file.
+     *
+     * @param stream The FM4 stream to download
+     * @param downloadDir Where to store the resulting file. It will be named after the title of the stream.
+     * @throws IOException If fetching data via the FM4 REST API fails
+     */
     public void downloadStream(FM4Stream stream, File downloadDir) throws IOException {
         int count = 0;
         for (String url : stream.getStreams()) {
