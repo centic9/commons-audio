@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -52,7 +53,7 @@ public class FM4CacheTest {
             assertNull(cache.get("NOT EXISTING"));
 
             assertNotNull(cache.allStreams());
-            assertTrue(cache.allStreams().size() > 0);
+            assertFalse(cache.allStreams().isEmpty());
 
             verifier.addObject(cache);
         }
@@ -84,8 +85,8 @@ public class FM4CacheTest {
             node.put("title", "");
             node.put("subtitle", "");
             node.put("href", "");
-            node.put("startISO", "");
-            node.put("start", Long.MAX_VALUE);
+            node.put("start", "2024-05-23T22:43:22.034Z");
+            node.put("duration", Long.MAX_VALUE);
             node.put("end", 1L);
 
             assertNull(cache.getNext(new FM4Stream(node, FM4_STREAM_URL_BASE)));
@@ -156,8 +157,8 @@ public class FM4CacheTest {
             node.put("title", "");
             node.put("subtitle", "");
             node.put("href", "");
-            node.put("startISO", "");
-            node.put("start", Long.MAX_VALUE);
+            node.put("start", "2024-05-23T22:43:22.034Z");
+            node.put("duration", Long.MAX_VALUE);
             node.put("end", 1L);
 
             assertNull(cache.getPrevious(new FM4Stream(node, FM4_STREAM_URL_BASE)));

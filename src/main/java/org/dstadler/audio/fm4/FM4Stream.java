@@ -2,7 +2,7 @@ package org.dstadler.audio.fm4;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.dstadler.commons.http.HttpClientWrapper;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 
@@ -22,6 +22,8 @@ public class FM4Stream {
     public static final String FM4_STREAM_URL_BASE = "https://loopstreamfm4.apa.at/?channel=fm4&id=";
     public static final String OOE_STREAM_URL_BASE = "https://loopstreamoe2o.apa.at/?channel=oe2o&id=";
 
+    public static final FastDateFormat DATETIME_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final String programKey;
@@ -39,9 +41,13 @@ public class FM4Stream {
         title = node.get("title").asText().trim();
         subtitle = node.get("subtitle").asText();
         href = node.get("href").asText();
-        time = node.get("startISO").asText();
-        start = node.get("start").asLong();
-        duration = node.get("end").asLong() - start;
+        time = node.get("start").asText();
+        try {
+            start = DATETIME_FORMAT.parse(time).getTime();
+        } catch (ParseException e) {
+            throw new IllegalStateException(e);
+        }
+        duration = node.get("duration").asLong();
 
         this.streamUrlBase = streamUrlBase;
     }
@@ -63,7 +69,7 @@ public class FM4Stream {
     }
 
     public String getTimeForREST() throws ParseException {
-        return DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.format(DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.parse(time));
+        return DATETIME_FORMAT.format(DATETIME_FORMAT.parse(time));
     }
 
     /**
@@ -103,7 +109,7 @@ public class FM4Stream {
     public List<String> getStreams() throws IOException {
         log.info("Fetching streams for " + programKey + ": " + href);
         String json = HttpClientWrapper.retrieveData(href);
-        JsonNode jsonNode = objectMapper.readTree(json);
+        JsonNode jsonNode = objectMapper.readTree(json).get("payload");
 
         List<String> streams = new ArrayList<>();
         for (JsonNode stream : jsonNode.get("streams")) {

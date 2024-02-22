@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.HexDump;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -41,11 +43,35 @@ public class FM4Test {
     private final FM4 fm4 = new FM4();
 
     @Test
-    public void testFetch() throws IOException {
+    public void testFetch() throws IOException, ParseException {
         List<FM4Stream> fm4Streams = fm4.fetchStreams();
 
         assertNotNull(fm4Streams);
         assertFalse(fm4Streams.isEmpty());
+
+        // check resulting streams are sane
+        for (FM4Stream stream : fm4Streams) {
+            assertTrue(stream.getDuration() > 60_000);
+            assertTrue(stream.getStart() > System.currentTimeMillis() - (35L*24*60*60*1000));
+            assertNotNull(stream.getProgramKey());
+            assertNotNull(stream.getTitle());
+            assertNotNull(stream.getShortTime());
+            assertNotNull(DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(stream.getShortTime()));
+        }
+    }
+
+    @Ignore("Fetches streams for all programs, this runs for some time, so disable for CI")
+    @Test
+    public void testFetchAllStreams() throws IOException {
+        List<FM4Stream> fm4Streams = fm4.fetchStreams();
+
+        assertNotNull(fm4Streams);
+        assertFalse(fm4Streams.isEmpty());
+
+        // check resulting streams are sane
+        for (FM4Stream stream : fm4Streams) {
+            assertNotNull(stream.getStreams());
+        }
     }
 
     @Test
@@ -97,9 +123,9 @@ public class FM4Test {
             "            \"program\" : \"4GP\"," +
             "            \"title\" : \"Worldwide Show\"," +
             "            \"href\" : \"$url\"," +
-            "            \"start\" : 1575820794000," +
-            "            \"end\" : 1575828040000," +
-            "            \"startISO\" : \"2019-12-08T16:59:54+01:00\"" +
+            "            \"duration\": 3607000," +
+            "            \"start\": \"2024-02-15T03:59:50.000Z\"," +
+            "            \"end\": \"2024-02-15T04:59:57.000Z\"" +
             "         }";
 
     // template for the download-url Stream with replace-url

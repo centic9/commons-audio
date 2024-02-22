@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
+import static org.dstadler.audio.fm4.FM4Stream.DATETIME_FORMAT;
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -38,7 +39,7 @@ public class FM4StreamTest {
         FM4Stream fm4Stream = fm4Streams.get(0);
         assertNotNull(fm4Stream.getTitle());
         assertNotNull(fm4Stream.getTime());
-        assertNotNull(DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.parse(fm4Stream.getTime()));
+        assertNotNull(DATETIME_FORMAT.parse(fm4Stream.getTime()));
         assertNotNull(fm4Stream.getTimeForREST());
         assertNotNull(fm4Stream.getProgramKey());
         assertNotNull(fm4Stream.getSubtitle());
@@ -79,8 +80,8 @@ public class FM4StreamTest {
         node.put("title", "");
         node.put("subtitle", "");
         node.put("href", "");
-        node.put("startISO", "");
-        node.put("start", 1L);
+        node.put("start", "2024-05-23T22:43:22.034Z");
+        node.put("duration", Long.MAX_VALUE);
         node.put("end", 1L);
 
         FM4Stream fm4 = new FM4Stream(node, FM4_STREAM_URL_BASE);
@@ -92,7 +93,7 @@ public class FM4StreamTest {
         TestHelpers.EqualsTest(fm4, equal, notEquals);
 
         node.put("programKey", "ABC");
-        node.put("start", 2L);
+        node.put("start", "2023-04-01T22:43:22.034Z");
         notEquals = new FM4Stream(node, FM4_STREAM_URL_BASE);
         TestHelpers.EqualsTest(fm4, equal, notEquals);
 

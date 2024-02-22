@@ -2,7 +2,6 @@ package org.dstadler.audio.fm4;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.dstadler.commons.http.HttpClientWrapper;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 
@@ -15,6 +14,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static org.dstadler.audio.fm4.FM4Stream.DATETIME_FORMAT;
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
 
 /**
@@ -27,8 +27,8 @@ public class FM4 {
 
     public static final String FM4_STREAM_URL = "https://orf-live.ors-shoutcast.at/fm4-q2a";
 
-    public static final String FM4_API_URL = "https://audioapi.orf.at/fm4/json/4.0/broadcasts?_o=fm4.orf.at";
-    public static final String OOE_API_URL = "https://audioapi.orf.at/ooe/json/4.0/broadcasts?_o=ooe.orf.at";
+    public static final String FM4_API_URL = "https://audioapi.orf.at/fm4/json/5.0/broadcasts?_o=fm4.orf.at";
+    public static final String OOE_API_URL = "https://audioapi.orf.at/ooe/json/5.0/broadcasts?_o=ooe.orf.at";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -45,7 +45,7 @@ public class FM4 {
             throw new IOException("While reading from: " + apiUrl, e);
         }
 
-        JsonNode jsonNode = objectMapper.readTree(json);
+        JsonNode jsonNode = objectMapper.readTree(json).get("payload");
 
         /*{
       "dateOffset" : -3600000,
@@ -71,7 +71,7 @@ public class FM4 {
                 // filter out future shows
                 filter(fm4Stream -> {
                     try {
-                        Date time = DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.parse(fm4Stream.getTime());
+                        Date time = DATETIME_FORMAT.parse(fm4Stream.getTime());
 
                         // exclude future shows
                         return time.before(new Date());
