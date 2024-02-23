@@ -2,6 +2,7 @@ package org.dstadler.audio.fm4;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.dstadler.commons.http.HttpClientWrapper;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
@@ -69,7 +70,9 @@ public class FM4Stream {
     }
 
     public String getTimeForREST() throws ParseException {
-        return DATETIME_FORMAT.format(DATETIME_FORMAT.parse(time));
+        // return the date-part
+        return DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.format(
+                DATETIME_FORMAT.parse(time));
     }
 
     /**
@@ -91,6 +94,7 @@ public class FM4Stream {
     }
 
     public String getShortTime() {
+        // return time-string up to minutes
         return getTime().substring(0, 16).
                 replace("T", " ");
     }
@@ -150,39 +154,4 @@ public class FM4Stream {
                 ", duration=" + duration +
                 '}';
     }
-
-    /*
-         {
-            "isOnDemand" : true,
-            "programKey" : "4GP",
-            "subtitle" : "<p>Die wöchentliche Radioshow von Gilles Peterson.<br/>FM4-News um 17 Uhr und 18 Uhr (englisch)</p>",
-            "id" : 15652,
-            "niceTime" : 1575820800000,
-            "endISO" : "2019-12-08T19:00:40+01:00",
-            "broadcastDay" : 20191208,
-            "scheduledStartOffset" : -3600000,
-            "niceTimeISO" : "2019-12-08T17:00:00+01:00",
-            "scheduledStart" : 1575820800000,
-            "niceTimeOffset" : -3600000,
-            "program" : "4GP",
-            "scheduledEnd" : 1575828000000,
-            "title" : "Worldwide Show",
-            "endOffset" : -3600000,
-            "scheduledStartISO" : "2019-12-08T17:00:00+01:00",
-            "scheduledEndISO" : "2019-12-08T19:00:00+01:00",
-            "href" : "https://audioapi.orf.at/fm4/api/json/4.0/broadcast/4GP/20191208",
-            "station" : "fm4",
-            "startOffset" : -3600000,
-            "start" : 1575820794000,
-            "scheduledEndOffset" : -3600000,
-            "ressort" : null,
-            "end" : 1575828040000,
-            "state" : "C",
-            "startISO" : "2019-12-08T16:59:54+01:00",
-            "isAdFree" : false,
-            "entity" : "Broadcast",
-            "isGeoProtected" : false
-         },
-
-     */
 }

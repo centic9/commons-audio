@@ -14,6 +14,7 @@ import java.util.List;
 
 import static org.dstadler.audio.fm4.FM4Stream.DATETIME_FORMAT;
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -41,11 +42,29 @@ public class FM4StreamTest {
         assertNotNull(fm4Stream.getTime());
         assertNotNull(DATETIME_FORMAT.parse(fm4Stream.getTime()));
         assertNotNull(fm4Stream.getTimeForREST());
+
+        assertTrue("Failed for " + fm4Stream.getTimeForREST(),
+                fm4Stream.getTimeForREST().matches("\\d{4}-\\d{2}-\\d{2}"));
+
+        String time = DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.format(
+                FM4Stream.DATETIME_FORMAT.parse(fm4Stream.getTime()));
+        assertEquals(time, fm4Stream.getTimeForREST());
+
         assertNotNull(fm4Stream.getProgramKey());
         assertNotNull(fm4Stream.getSubtitle());
+
         assertNotNull(fm4Stream.getShortSummary());
+        assertTrue(fm4Stream.getShortSummary().contains(fm4Stream.getProgramKey()));
+        assertTrue(fm4Stream.getShortSummary().contains(fm4Stream.getTitle()));
+
         assertNotNull(fm4Stream.getSummary());
+        assertTrue(fm4Stream.getSummary().contains(fm4Stream.getProgramKey()));
+        assertTrue(fm4Stream.getSummary().contains(fm4Stream.getShortTime()));
+        assertTrue(fm4Stream.getSummary().contains(fm4Stream.getTitle()));
+
         assertNotNull(fm4Stream.getShortTime());
+        assertTrue("Failed for " + fm4Stream.getShortTime(),
+                fm4Stream.getShortTime().matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"));
         assertNotNull(DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(fm4Stream.getShortTime()));
         assertTrue("Duration should be set, but had: " + fm4Stream.getDuration(),
                 fm4Stream.getDuration() > 0);
@@ -57,6 +76,8 @@ public class FM4StreamTest {
                 fm4Stream.getStart() > MIN_START_TIME);
 
         assertNotNull(fm4Stream.toString());
+
+        TestHelpers.ToStringTest(fm4Stream);
     }
 
     @Test
@@ -101,5 +122,8 @@ public class FM4StreamTest {
 
         assertNotNull(fm4.toString());
         assertNotNull(notEquals.toString());
+
+        TestHelpers.ToStringTest(fm4);
+        TestHelpers.ToStringTest(notEquals);
     }
 }
