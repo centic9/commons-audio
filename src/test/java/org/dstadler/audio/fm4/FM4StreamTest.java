@@ -35,7 +35,7 @@ public class FM4StreamTest {
 
     @Test
     public void testFM4Stream() throws IOException, ParseException {
-        List<FM4Stream> fm4Streams = fm4.fetchStreams();
+        List<FM4Stream> fm4Streams = fm4.fetchStreams(7);
 
         FM4Stream fm4Stream = fm4Streams.get(0);
         assertNotNull(fm4Stream.getTitle());
@@ -83,7 +83,7 @@ public class FM4StreamTest {
     @Test
     public void testStreams() throws IOException {
         FM4 fm4 = new FM4();
-        List<FM4Stream> fm4Streams = fm4.fetchStreams();
+        List<FM4Stream> fm4Streams = fm4.fetchStreams(7);
 
         Assume.assumeFalse("Should get some streams", fm4Streams.isEmpty());
 
@@ -92,6 +92,15 @@ public class FM4StreamTest {
         assertNotNull(streams);
         assertFalse(streams.isEmpty());
         assertNotNull(streams.get(0));
+    }
+
+    @Test
+    public void testStreamsMoreDays() throws IOException {
+        FM4 fm4 = new FM4();
+        List<FM4Stream> fm4Streams7 = fm4.fetchStreams(7);
+        List<FM4Stream> fm4Streams14 = fm4.fetchStreams(14);
+
+        assertTrue(fm4Streams14.size() > fm4Streams7.size());
     }
 
     @Test

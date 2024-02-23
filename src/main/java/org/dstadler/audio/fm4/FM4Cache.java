@@ -54,6 +54,7 @@ public class FM4Cache implements AutoCloseable {
                     .build());
 
     private final FM4 fm4;
+    private final int days;
 
     /**
      * Construct up the cache and start periodic background
@@ -61,9 +62,12 @@ public class FM4Cache implements AutoCloseable {
      *
      * @param fm4 An instance of the FM4 access helper.
      *            This is passed in to facilitate testing.
+     * @param days The number of days to cache. Should be between
+     *             7 and 30 for FM4
      */
-    public FM4Cache(FM4 fm4) {
+    public FM4Cache(FM4 fm4, int days) {
         this.fm4 = fm4;
+        this.days = days;
         executor.scheduleAtFixedRate(this::refresh, 0, 5, TimeUnit.MINUTES);
     }
 
@@ -242,7 +246,7 @@ public class FM4Cache implements AutoCloseable {
         try {
             // first get all streams by programKey
             Multimap<String, FM4Stream> streams = ArrayListMultimap.create();
-            for (FM4Stream stream : fm4.fetchStreams()) {
+            for (FM4Stream stream : fm4.fetchStreams(days)) {
                 streams.put(stream.getProgramKey(), stream);
             }
 

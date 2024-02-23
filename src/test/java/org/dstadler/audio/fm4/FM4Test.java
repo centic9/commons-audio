@@ -28,7 +28,9 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
@@ -36,6 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class FM4Test {
@@ -47,7 +50,7 @@ public class FM4Test {
 
     @Test
     public void testFetch() throws IOException, ParseException {
-        List<FM4Stream> fm4Streams = fm4.fetchStreams();
+        List<FM4Stream> fm4Streams = fm4.fetchStreams(7);
 
         assertNotNull(fm4Streams);
         assertFalse(fm4Streams.isEmpty());
@@ -61,6 +64,22 @@ public class FM4Test {
             assertNotNull(stream.getShortTime());
             assertNotNull(DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(stream.getShortTime()));
         }
+    }
+
+    @Test
+    public void testFetchNoDuplicates() throws IOException {
+        List<FM4Stream> fm4Streams = fm4.fetchStreams(14);
+        Set<String> seenStreams = new HashSet<>();
+        for (FM4Stream stream : fm4Streams) {
+            assertTrue("Had duplicate for " + stream,
+                    seenStreams.add(stream.getShortTime()));
+        }
+    }
+
+    @Test
+    public void testFetchTooManyDays() {
+        assertThrows(IOException.class,
+                () -> fm4.fetchStreams(90));
     }
 
     @Test
@@ -85,7 +104,7 @@ public class FM4Test {
     @Ignore("Fetches streams for all programs, this runs for some time, so disable for CI")
     @Test
     public void testFetchAllStreams() throws IOException {
-        List<FM4Stream> fm4Streams = fm4.fetchStreams();
+        List<FM4Stream> fm4Streams = fm4.fetchStreams(14);
 
         assertNotNull(fm4Streams);
         assertFalse(fm4Streams.isEmpty());

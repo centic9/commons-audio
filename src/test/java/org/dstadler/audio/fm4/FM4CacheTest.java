@@ -40,7 +40,7 @@ public class FM4CacheTest {
 
     @Test
     public void testCache() {
-        try (FM4Cache cache = new FM4Cache(new FM4())) {
+        try (FM4Cache cache = new FM4Cache(new FM4(), 7)) {
             assertEquals(0, cache.size());
 
             cache.refresh();
@@ -59,7 +59,7 @@ public class FM4CacheTest {
         }
 
         // cache itself is not static, so size should be zero again now
-        try (FM4Cache cache = new FM4Cache(new FM4())) {
+        try (FM4Cache cache = new FM4Cache(new FM4(), 7)) {
             assertEquals(0, cache.size());
 
             verifier.addObject(cache);
@@ -70,12 +70,12 @@ public class FM4CacheTest {
     public void testGetNextNotFound() {
         try (FM4Cache cache = new FM4Cache(new FM4() {
             @Override
-            public List<FM4Stream> fetchStreams() throws IOException {
+            public List<FM4Stream> fetchStreams(int days) throws IOException {
                 // only load two shows to make testing quick
-                List<FM4Stream> fm4Streams = super.fetchStreams();
+                List<FM4Stream> fm4Streams = super.fetchStreams(days);
                 return fm4Streams.subList(0, Math.min(2, fm4Streams.size()));
             }
-        })) {
+        }, 7)) {
             cache.refresh();
 
             assertNull(cache.getNext(null));
@@ -99,12 +99,12 @@ public class FM4CacheTest {
     public void testGetNextFound() {
         try (FM4Cache cache = new FM4Cache(new FM4() {
             @Override
-            public List<FM4Stream> fetchStreams() throws IOException {
+            public List<FM4Stream> fetchStreams(int days) throws IOException {
                 // only load two shows to make testing quick
-                List<FM4Stream> fm4Streams = super.fetchStreams();
+                List<FM4Stream> fm4Streams = super.fetchStreams(days);
                 return fm4Streams.subList(0, Math.min(2, fm4Streams.size()));
             }
-        })) {
+        }, 7)) {
             cache.refresh();
 
             Collection<FM4Stream> fm4Streams = cache.allStreams();
@@ -142,12 +142,12 @@ public class FM4CacheTest {
     public void testGetPreviousNotFound() {
         try (FM4Cache cache = new FM4Cache(new FM4() {
             @Override
-            public List<FM4Stream> fetchStreams() throws IOException {
+            public List<FM4Stream> fetchStreams(int days) throws IOException {
                 // only load two shows to make testing quick
-                List<FM4Stream> fm4Streams = super.fetchStreams();
+                List<FM4Stream> fm4Streams = super.fetchStreams(days);
                 return fm4Streams.subList(0, Math.min(2, fm4Streams.size()));
             }
-        })) {
+        }, 7)) {
             cache.refresh();
 
             assertNull(cache.getNext(null));
@@ -171,12 +171,12 @@ public class FM4CacheTest {
     public void testGetPreviousFound() {
         try (FM4Cache cache = new FM4Cache(new FM4() {
             @Override
-            public List<FM4Stream> fetchStreams() throws IOException {
+            public List<FM4Stream> fetchStreams(int days) throws IOException {
                 // only load two shows to make testing quick
-                List<FM4Stream> fm4Streams = super.fetchStreams();
+                List<FM4Stream> fm4Streams = super.fetchStreams(days);
                 return fm4Streams.subList(0, Math.min(2, fm4Streams.size()));
             }
-        })) {
+        }, 7)) {
             cache.refresh();
 
             Collection<FM4Stream> fm4Streams = cache.allStreams();
@@ -214,12 +214,12 @@ public class FM4CacheTest {
     public void testGetNextByStreamURLNotFound() throws IOException {
         try (FM4Cache cache = new FM4Cache(new FM4() {
             @Override
-            public List<FM4Stream> fetchStreams() throws IOException {
+            public List<FM4Stream> fetchStreams(int days) throws IOException {
                 // only load two shows to make testing quick
-                List<FM4Stream> fm4Streams = super.fetchStreams();
+                List<FM4Stream> fm4Streams = super.fetchStreams(days);
                 return fm4Streams.subList(0, Math.min(2, fm4Streams.size()));
             }
-        })) {
+        }, 7)) {
             cache.refresh();
 
             assertNull(cache.getNextByStreamURL(null));
@@ -234,12 +234,12 @@ public class FM4CacheTest {
     public void testGetNextByStreamURLFound() throws IOException {
         try (FM4Cache cache = new FM4Cache(new FM4() {
             @Override
-            public List<FM4Stream> fetchStreams() throws IOException {
+            public List<FM4Stream> fetchStreams(int days) throws IOException {
                 // only load two shows to make testing quick
-                List<FM4Stream> fm4Streams = super.fetchStreams();
+                List<FM4Stream> fm4Streams = super.fetchStreams(days);
                 return fm4Streams.subList(0, Math.min(2, fm4Streams.size()));
             }
-        })) {
+        }, 7)) {
             cache.refresh();
 
             Collection<FM4Stream> fm4Streams = cache.allStreams();
@@ -279,10 +279,10 @@ public class FM4CacheTest {
     public void testIOException() {
         try (FM4Cache cache = new FM4Cache(new FM4() {
             @Override
-            public List<FM4Stream> fetchStreams() throws IOException {
+            public List<FM4Stream> fetchStreams(int days) throws IOException {
                 throw new IOException("Test-exception");
             }
-        })) {
+        }, 7)) {
             verifier.addObject(cache);
 
             cache.refresh();
@@ -291,7 +291,7 @@ public class FM4CacheTest {
 
     @Test
     public void testThread() throws InterruptedException {
-        try (FM4Cache cache = new FM4Cache(new FM4())) {
+        try (FM4Cache cache = new FM4Cache(new FM4(), 7)) {
             // wait for the thread be started
             for (int i = 0; i < 10; i++) {
                 if (ExecutorUtil.lookupThread("FM4Cache") != null) {

@@ -2,6 +2,8 @@ package org.dstadler.audio.fm4;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.dstadler.commons.http.HttpClientWrapper;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 
@@ -37,8 +39,21 @@ public class FM4 {
      * @return A list of {@link FM4Stream}
      * @throws IOException If fetching data via the FM4 REST API fails
      */
-    public List<FM4Stream> fetchStreams() throws IOException {
-        return fetchStreams(FM4_API_URL, FM4_STREAM_URL_BASE);
+    public List<FM4Stream> fetchStreams(int days) throws IOException {
+        // 7 days minimum
+        if (days < 7) {
+            days = 7;
+        }
+
+        List<FM4Stream> streams = new ArrayList<>();
+        for (int day = days; day > 7; day--) {
+            String date = FastDateFormat.getInstance("yyyyMMdd").format(DateUtils.addDays(new Date(), (-1)*day));
+            streams.addAll(fetchStreams(date));
+        }
+
+        streams.addAll(fetchStreams(FM4_API_URL, FM4_STREAM_URL_BASE));
+
+        return streams;
     }
 
     /**
@@ -103,7 +118,7 @@ public class FM4 {
      * @throws IOException If fetching data via the FM4 REST API fails
      */
     public List<FM4Stream> filterStreams(String programKey) throws IOException {
-        List<FM4Stream> streams = fetchStreams();
+        List<FM4Stream> streams = fetchStreams(14);
 
         return streams.stream().
                 // filter out future shows
