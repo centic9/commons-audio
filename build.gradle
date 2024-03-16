@@ -133,7 +133,7 @@ publishing {
             from components.java
 
             pom {
-                name = 'Common Autio Utilities'
+                name = 'Common Audio Utilities'
                 description = 'Common utilities I find useful when developing audio-related projects.'
                 url = 'https://github.com/centic9/commons-audio'
                 licenses {
