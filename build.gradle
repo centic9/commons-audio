@@ -19,7 +19,12 @@ apply plugin: 'de.thetaphi.forbiddenapis'
 apply plugin: 'jacoco'
 apply plugin: 'signing'
 
-sourceCompatibility = JavaVersion.VERSION_11
+java {
+	  toolchain {
+		  sourceCompatibility = JavaVersion.VERSION_11
+	  }
+}
+
 group = 'org.dstadler'
 archivesBaseName = 'commons-audio'
 
@@ -58,14 +63,15 @@ dependencies {
     implementation fileTree(dir: 'lib', include: ['*.jar'])
 
     // binary serialization of data during shutdown
-    implementation 'de.undercouch:bson4jackson:2.13.1'
+    implementation 'de.undercouch:bson4jackson:2.15.1'
 
     // provide a logging.properties only when running the example, but
     // don't include it in the jar-file
     runtimeOnly files('src/runtime/resources')
 
-    testImplementation 'org.junit.vintage:junit-vintage-engine:5.10.2'
+    testImplementation 'org.junit.vintage:junit-vintage-engine:5.10.3'
     testImplementation 'org.dstadler:commons-test:1.0.0.21'
+	testImplementation 'org.apache.commons:commons-rng-simple:1.6'
 }
 
 wrapper {
