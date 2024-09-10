@@ -36,13 +36,14 @@ public class TarsosDSPPlayer implements AudioPlayer {
     @Override
     public void setOptions(String options) {
         if(StringUtils.isNotEmpty(options)) {
+            float prevTempo = tempo;
             tempo = Float.parseFloat(options);
             Preconditions.checkState(tempo > 0,
                     "Cannot play at speed zero or less, but had: %s",
                     tempo);
 
             // if already playing, pass on the new parameters to allow to change tempo at runtime
-            if (wsola != null) {
+            if (wsola != null && prevTempo != tempo) {
                 wsola.setDispatcher(dispatcher);
                 wsola.setParameters(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, sampleRate));
             }
