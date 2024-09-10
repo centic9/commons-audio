@@ -37,9 +37,11 @@ public class DataPipeTest {
         assertFalse(pipe.clearBuffer());
         pipe.waitAllConsumed();
         TestHelpers.ToStringTest(pipe);
+		assertEquals(0, pipe.available());
 
         pipe.close();
         TestHelpers.ToStringTest(pipe);
+		assertEquals(0, pipe.available());
     }
 
     @Test
@@ -53,21 +55,26 @@ public class DataPipeTest {
         assertNotNull(pipe.getInput());
         assertTrue(pipe.clearBuffer());
         pipe.waitAllConsumed();
+		assertEquals(0, pipe.available());
 
         pipe.write(new byte[] {0});
+		assertEquals(1, pipe.available());
+
         pipe.close();
+		assertEquals(0, pipe.available());
 
         assertFalse(pipe.isRunning());
         assertNull(pipe.getInput());
         assertThrows(NullPointerException.class, () -> pipe.write(new byte[0]));
         assertFalse(pipe.clearBuffer());
         pipe.waitAllConsumed();
+		assertEquals(0, pipe.available());
 
         TestHelpers.ToStringTest(pipe);
     }
 
-    private static final int NUMBER_OF_THREADS = 10;
-    private static final int NUMBER_OF_TESTS = 2000;
+    private static final int NUMBER_OF_THREADS = 20;
+    private static final int NUMBER_OF_TESTS = 3000;
 
 	@Test
     public void testMultipleThreads() throws Throwable {
@@ -79,7 +86,7 @@ public class DataPipeTest {
 					new ThreadTestHelper(NUMBER_OF_THREADS, NUMBER_OF_TESTS);
 
 			helper.executeTest((threadNum, itNum) -> {
-				int rnd = RNG.nextInt(0, 6);
+				int rnd = RNG.nextInt(0, 7);
 
 				switch (rnd) {
 					case 0:
@@ -101,6 +108,9 @@ public class DataPipeTest {
 						synchronized (pipe) {
 							TestHelpers.ToStringTest(pipe);
 						}
+						break;
+					case 6:
+						pipe.available();
 						break;
 					// close is not called to always be "running"
 					// however createPipe will re-create the pipe frequently

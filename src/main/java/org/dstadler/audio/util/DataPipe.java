@@ -128,6 +128,24 @@ public class DataPipe implements AutoCloseable {
     }
 
     /**
+     * Returns the number of bytes that can be read from this input
+     * stream without blocking.
+     *
+     * @return the number of bytes that can be read from this input stream
+     *         without blocking, or {@code 0} if this input stream has been
+     *         closed by invoking its {@link #close()} method.
+     *
+     * @throws IOException  if an I/O error occurs.
+     */
+    public int available() throws IOException {
+        if (pipedIn == null) {
+            return 0;
+        }
+
+        return pipedIn.available();
+    }
+
+    /**
      * Close both sides of the pipe.
      *
      * @throws IOException If closing fails
