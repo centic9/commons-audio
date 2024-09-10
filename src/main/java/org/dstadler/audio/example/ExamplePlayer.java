@@ -19,6 +19,10 @@ import java.util.logging.Logger;
 public class ExamplePlayer {
     private final static Logger log = LoggerFactory.make();
 
+    // test-options, set to true to enable some features below
+    private final static boolean SEEK = false;
+    private final static boolean TEMPO_ADJUST = false;
+
     private static volatile boolean shouldStop = false;
 
     @SuppressForbidden(reason = "Uses System.exit()")
@@ -47,7 +51,8 @@ public class ExamplePlayer {
         Thread writer = new Thread(audioWriter, "Writer thread");
         writer.start();
 
-        //int seeked = -1;
+        int seeked = -1;
+        int count = 0;
 
         // then read and populate the buffer until we have read everything
         while (!buffer.empty() && !shouldStop) {
@@ -62,13 +67,23 @@ public class ExamplePlayer {
 
                 Thread.sleep(1000);
 
-                /* just for testing seeking
-                if (seeked == -1) {
+                // just for testing seeking
+                if (SEEK && seeked == -1) {
                     seeked = seek(buffer, audioWriter, 0.95);
-                }*/
+                }
+
+                // for testing adjust tempo on the fly
+                if (TEMPO_ADJUST && count % 5 == 0) {
+                    // for testing use tempo between 0.6 and 1.5
+                    float tempo = 0.6f + ((count % 4) * 0.3f);
+                    log.info("Adjusting tempo to " + tempo);
+                    audioWriter.setTempo(tempo);
+                }
             } catch (/*IOException |*/ InterruptedException e) {
                 log.log(Level.WARNING, "Caught unexpected exception", e);
             }
+
+            count++;
         }
 
         // indicate that no more data is read and thus playing should stop

@@ -8,12 +8,26 @@ import java.io.IOException;
  * of audio playback functionality.
  *
  * The implementations will usually receive a link to the
- * audio-data as part construction, the methods in this
+ * audio-data during construction, the methods in this
  * interface are just used to start and stop playing
- * via play() and close()
+ * via play() and close().
+ *
+ * Some implementations may support setting options,
+ * both initially and at runtime to adjust audio playback
  */
 public interface AudioPlayer extends AutoCloseable {
-
+    /**
+     * Allows to set options which are usually
+     * specific for the current implementation.
+     *
+     * Some implementations also allow to adjust
+     * options at runtime by calling this method
+     * with changed options while the player keeps
+     * playing audio.
+     *
+     * @param options A string with options specific
+     *                for the current implementation
+     */
     void setOptions(String options);
 
     /**

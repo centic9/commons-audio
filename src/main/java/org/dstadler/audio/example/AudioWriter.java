@@ -31,6 +31,8 @@ class AudioWriter implements Runnable {
     private ClearablePipedInputStream in;
     private PlayerThread player;
 
+    private String options = "";
+
     public AudioWriter(SeekableRingBuffer<Chunk> buffer, Runnable stopper, BooleanSupplier shouldStop) throws IOException {
         this.buffer = buffer;
         this.stopper = stopper;
@@ -48,9 +50,9 @@ class AudioWriter implements Runnable {
     @Override
     public void run() {
         try {
-            //player.setOptions("");
-
             player = new PlayerThread(in, stopper);
+            player.setOptions(options);
+
             Thread playerThread = new Thread(player, "Player thread");
             playerThread.setDaemon(true);
             playerThread.start();
@@ -92,6 +94,15 @@ class AudioWriter implements Runnable {
         return chunks;
     }
 
+    /**
+     * Allows to empty out current buffers.
+     *
+     * This is usually used to remove chunks in the queue so a shutdown
+     * is performed quickly.
+     *
+     * @throws IOException If clearing buffers or re-creating internal
+     * data-structures fails
+     */
     public void clearBuffer() throws IOException {
         in.clearBuffer();
 
@@ -104,5 +115,27 @@ class AudioWriter implements Runnable {
             // playing data from the new position
             player.triggerRestart(in);
         }
+    }
+
+    /**
+     * Allow to set speed of audio playback for the current
+     * implementation of the audio player.
+     *
+     * If the player is already running, the
+     * changed speed is passed to the
+     * current instance.
+     *
+     * If the used implementation of the audio player does not
+     * support tempo-adjustment, nothing happens.
+     *
+     * @param tempo The adjusted tempo in terms of multiplay of real-time playback,
+     *              1.0f for real-time playback, e.g. 1.5f for fairly fast playback
+     */
+    public void setTempo(float tempo) {
+        if (player != null) {
+            player.setOptions(Float.toString(tempo));
+        }
+
+        options = Float.toString(tempo);
     }
 }

@@ -27,6 +27,7 @@ public class PlayerThread implements Runnable {
     private final Runnable stopper;
     private volatile boolean restart = true;
     private AudioPlayer player;
+    private String options = "";
 
     public PlayerThread(PipedInputStream in, Runnable stopper) {
         // some Audio classes try to use mark()/reset(), thus we use a wrapping BufferedInputStream()
@@ -43,6 +44,7 @@ public class PlayerThread implements Runnable {
                 restart = false;
 
                 player = createPlayer(inputStream);
+                player.setOptions(options);
 
                 //player.setOptions("");
 
@@ -72,5 +74,24 @@ public class PlayerThread implements Runnable {
         return new TarsosDSPPlayer(inputStream);
 //            return new AudioSPIPlayer(inputStream);
 //            return new JLayerPlayer(inputStream);
+    }
+
+    /**
+     * Allow to set custom options for the current
+     * implementation of the audio player.
+     *
+     * If the player is already running, the
+     * changed options are passed to the
+     * current instance.
+     *
+     * @param options The options to set, possible values
+     *                depend on the used player implementation
+     */
+    public void setOptions(String options) {
+        if (player != null) {
+            player.setOptions(options);
+        }
+
+        this.options = options;
     }
 }

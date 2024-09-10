@@ -26,6 +26,9 @@ public class TarsosDSPPlayer implements AudioPlayer {
     private AudioDispatcher dispatcher;
     private float tempo = 1.0f;
 
+    private WaveformSimilarityBasedOverlapAdd wsola;
+    private float sampleRate;
+
     public TarsosDSPPlayer(InputStream stream) {
         this.stream = stream;
     }
@@ -37,6 +40,12 @@ public class TarsosDSPPlayer implements AudioPlayer {
             Preconditions.checkState(tempo > 0,
                     "Cannot play at speed zero or less, but had: %s",
                     tempo);
+
+            // if already playing, pass on the new parameters to allow to change tempo at runtime
+            if (wsola != null) {
+                wsola.setDispatcher(dispatcher);
+                wsola.setParameters(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, sampleRate));
+            }
         }
     }
 
@@ -52,25 +61,22 @@ public class TarsosDSPPlayer implements AudioPlayer {
             // transform the stream to mono as TarsosDSP can only process Mono currently
             AudioInputStream monoStream = AudioUtils.convertToMono(ain);
 
-            // if we should speed up or slow down audio playback, add the WSOLA time stretcher
-            if(tempo != 1.0f) {
-                AudioFormat monoFormat = monoStream.getFormat();
+            TarsosDSPAudioInputStream audioStream = new JVMAudioInputStream(monoStream);
 
-                // then define the time stretching step
-                WaveformSimilarityBasedOverlapAdd wsola = new WaveformSimilarityBasedOverlapAdd(
-                        WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, monoFormat.getSampleRate()));
+            // in order to be able to speed up or slow down audio playback, add the WSOLA time stretcher
+            AudioFormat monoFormat = monoStream.getFormat();
 
-                // then start up the TarsosDSP audio system
-                TarsosDSPAudioInputStream audioStream = new JVMAudioInputStream(monoStream);
-                dispatcher = new AudioDispatcher(audioStream,
-                        wsola.getInputBufferSize() * monoFormat.getChannels(),
-                        wsola.getOverlap() * monoFormat.getChannels());
+            // then define the time stretching step
+            sampleRate = monoFormat.getSampleRate();
+            wsola = new WaveformSimilarityBasedOverlapAdd(
+                    WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, sampleRate));
 
-                dispatcher.addAudioProcessor(wsola);
-            } else {
-                TarsosDSPAudioInputStream audioStream = new JVMAudioInputStream(monoStream);
-                dispatcher = new AudioDispatcher(audioStream, 1024, 512);
-            }
+            // then start up the TarsosDSP audio system
+            dispatcher = new AudioDispatcher(audioStream,
+                    wsola.getInputBufferSize() * monoFormat.getChannels(),
+                    wsola.getOverlap() * monoFormat.getChannels());
+
+            dispatcher.addAudioProcessor(wsola);
 
             //  the audio-output processor provides the actual audio playback in the pipeline
             dispatcher.addAudioProcessor(new be.tarsos.dsp.io.jvm.AudioPlayer(dispatcher.getFormat()));
@@ -98,5 +104,7 @@ public class TarsosDSPPlayer implements AudioPlayer {
         if(stream != null) {
             stream.close();
         }
+
+        wsola = null;
     }
 }
