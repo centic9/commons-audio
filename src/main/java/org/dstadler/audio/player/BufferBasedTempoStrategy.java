@@ -37,12 +37,12 @@ public class BufferBasedTempoStrategy implements TempoStrategy {
     private final static Logger log = LoggerFactory.make();
 
     /**
-     * By default slow down until there is 5 minute "buffer"
+     * By default, slow down until there is 5 minute "buffer"
      */
     public static final int DEFAULT_KEEP_AREA_SECONDS = 300;
 
     /**
-     * By default slow down in steps of 5%
+     * By default, slow down in steps of 5%
      */
     public static final float DEFAULT_SPEED_STEP = 0.05f;
 
@@ -82,19 +82,24 @@ public class BufferBasedTempoStrategy implements TempoStrategy {
         double limit = ((double) fill)/4/chunksPerSecond;
 
         // no computation if the area is not very large due to small buffer size
+        // with default 300, this is at 200
         if(limit < ((double) keepAreaSeconds / 1.5 )) {
             // start adjusting tempo a bit to "swing in" and not have a large tempo drop
-            // when the limit is reached
+            // as soon as there is enough data available
 
             // use steps of 0.05 from 1.0 down to 0.85, with 200 0.80 will be used
             // by the calculation below
             if(limit < (double) keepAreaSeconds / 6) {
+                // with default 300, this is at 50
                 return 1.0f;
             } else if (limit < (double) keepAreaSeconds / 3) {
+                // with default 300, this is at 100
                 return 1.0f - speedStep;
             } else  if (limit < (double) keepAreaSeconds / 2) {
+                // with default 300, this is at 150
                 return 1.0f - 2* speedStep;
             } else if (limit < (double) keepAreaSeconds / 1.5) {
+                // with default 300, this is at 200
                 return 1.0f - 3* speedStep;
             }
         }
@@ -121,7 +126,7 @@ public class BufferBasedTempoStrategy implements TempoStrategy {
                     ", step: " + stepSize);
         }
         if(maxSecondsBackwards < limit) {
-            // not enough buffer backwards => play a bit faster to build up more buffer
+            // not enough buffer backwards => play a bit faster to build up buffer for seeking backwards
             if(maxSecondsBackwards < stepSize) {
                 return 1.0f + 4*speedStep;
             } else if(maxSecondsBackwards < 2*stepSize) {
@@ -132,7 +137,7 @@ public class BufferBasedTempoStrategy implements TempoStrategy {
                 return 1.0f + speedStep;
             }
         } else {
-            // not enough buffer forwards => play a bit slower to build up more buffer
+            // not enough buffer forwards => play a bit slower to build up buffer for seeking forward
             if(maxSecondsForward < stepSize) {
                 return 1.0f - 4*speedStep;
             } else if(maxSecondsForward < 2*stepSize) {
