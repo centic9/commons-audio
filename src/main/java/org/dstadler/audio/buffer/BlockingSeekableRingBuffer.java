@@ -41,6 +41,14 @@ public class BlockingSeekableRingBuffer implements SeekableRingBuffer<Chunk>, Pe
      */
     private int nextAdd = 0;
 
+    /**
+     * indicates how many elements in the buffer
+     * are populated.
+     *
+     * This will increase when items are added until
+     * it has reached "numberOfChunks - 1" where
+     * it stays
+     */
     private int fill = 0;
 
     /**

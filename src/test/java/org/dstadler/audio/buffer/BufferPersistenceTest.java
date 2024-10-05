@@ -117,55 +117,55 @@ public class BufferPersistenceTest {
         File file = File.createTempFile("BufferPersistence", ".bson");
         assertTrue(file.delete());
         try {
-            BlockingSeekableRingBuffer buffer = new BlockingSeekableRingBuffer(5000);
+            try (BlockingSeekableRingBuffer buffer = new BlockingSeekableRingBuffer(5000)) {
 
-            log.info("Creating data structure");
-            for(int i = 0;i < 5000;i++) {
-                byte[] data = new byte[CHUNK_SIZE];
-                for(int d = 0;d < CHUNK_SIZE;d++) {
-                    data[d] = (byte)d;
+                log.info("Creating data structure");
+                for (int i = 0; i < 5000; i++) {
+                    byte[] data = new byte[CHUNK_SIZE];
+                    for (int d = 0; d < CHUNK_SIZE; d++) {
+                        data[d] = (byte) d;
+                    }
+                    buffer.add(new Chunk(data, "meta data", System.currentTimeMillis()));
                 }
-                buffer.add(new Chunk(data, "meta data", System.currentTimeMillis()));
+                assertEquals(4999, buffer.fill());
+
+                for (int i = 0; i < 5; i++) {
+                    log.info("Start run " + i);
+
+                    Stream stream = new Stream();
+                    stream.setUrl("url1");
+                    stream.setStreamType(Stream.StreamType.live);
+
+                    long start = System.currentTimeMillis();
+                    BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false, false));
+                    log.info("Writing for run " + i + " took " + (System.currentTimeMillis() - start) + "ms");
+
+                    assertTrue(BufferPersistence.hasBufferOnDisk(file));
+
+                    start = System.currentTimeMillis();
+                    final BufferPersistenceDTO dto = BufferPersistence.readBufferFromDisk(file);
+                    assertEquals("url1", dto.getStream().getUrl());
+                    assertEquals(Stream.StreamType.live, dto.getStream().getStreamType());
+                    assertFalse(dto.isPlaying());
+                    assertFalse(dto.isDownloadWhilePaused());
+
+                    try (BlockingSeekableRingBuffer back = BlockingSeekableRingBuffer.fromPersistence(dto)) {
+                        log.info("Reading for run " + i + " took " + (System.currentTimeMillis() - start) + "ms");
+
+                        assertTrue(BufferPersistence.hasBufferOnDisk(file));
+                        assertEquals(4999, back.fill());
+                        assertEquals(4999, back.size());
+                    }
+                }
+
+                assertTrue(file.exists());
+                assertTrue(file.delete());
             }
-            assertEquals(4999, buffer.fill());
-
-            for(int i = 0;i < 5;i++) {
-                log.info("Start run " + i);
-
-                Stream stream = new Stream();
-                stream.setUrl("url1");
-                stream.setStreamType(Stream.StreamType.live);
-
-                long start = System.currentTimeMillis();
-                BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false, false));
-                log.info("Writing for run " + i + " took " + (System.currentTimeMillis() - start) + "ms");
-
-                assertTrue(BufferPersistence.hasBufferOnDisk(file));
-
-                start = System.currentTimeMillis();
-                final BufferPersistenceDTO dto = BufferPersistence.readBufferFromDisk(file);
-                assertEquals("url1", dto.getStream().getUrl());
-                assertEquals(Stream.StreamType.live, dto.getStream().getStreamType());
-                assertFalse(dto.isPlaying());
-                assertFalse(dto.isDownloadWhilePaused());
-
-                BlockingSeekableRingBuffer back = BlockingSeekableRingBuffer.fromPersistence(dto);
-                log.info("Reading for run " + i + " took " + (System.currentTimeMillis() - start) + "ms");
-
-                assertTrue(BufferPersistence.hasBufferOnDisk(file));
-                assertEquals(4999, back.fill());
-                assertEquals(4999, back.size());
-            }
-
-            assertTrue(file.exists());
-            assertTrue(file.delete());
         } finally {
             // make sure to clean up even on exception
             assertTrue(!file.exists() || file.delete());
         }
     }
-
-
 
     @Test
     public void testInvalidStartPosition() throws IOException {
@@ -202,5 +202,11 @@ public class BufferPersistenceTest {
         } finally {
             assertTrue(!tempPersist.exists() || tempPersist.delete());
         }
+    }
+
+    // helper method to get coverage of the unused constructor
+    @Test
+    public void testPrivateConstructor() throws Exception {
+        org.dstadler.commons.testing.PrivateConstructorCoverage.executePrivateConstructor(BufferPersistence.class);
     }
 }

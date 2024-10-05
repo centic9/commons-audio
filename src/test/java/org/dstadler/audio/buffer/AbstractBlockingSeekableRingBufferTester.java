@@ -66,22 +66,27 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
     public void buffered() {
         assertEquals(0, buffer.bufferedForward());
         assertEquals(0, buffer.bufferedBackward());
+        assertEquals(0, buffer.fill());
 
         buffer.add(CHUNK_1);
         assertEquals(1, buffer.bufferedForward());
         assertEquals(0, buffer.bufferedBackward());
+        assertEquals(1, buffer.fill());
 
         buffer.add(CHUNK_2);
         assertEquals(2, buffer.bufferedForward());
         assertEquals(0, buffer.bufferedBackward());
+        assertEquals(2, buffer.fill());
 
         assertArrayEquals(CHUNK_1.getData(), buffer.next().getData());
         assertEquals(1, buffer.bufferedForward());
         assertEquals(1, buffer.bufferedBackward());
+        assertEquals(2, buffer.fill());
 
         assertArrayEquals(CHUNK_2.getData(), buffer.next().getData());
         assertEquals(0, buffer.bufferedForward());
         assertEquals(2, buffer.bufferedBackward());
+        assertEquals(2, buffer.fill());
 
         buffer.add(CHUNK_1);
         buffer.add(CHUNK_1);
@@ -92,26 +97,32 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
         buffer.add(CHUNK_1);
         assertEquals(7, buffer.bufferedForward());
         assertEquals(2, buffer.bufferedBackward());
+        assertEquals(9, buffer.fill());
 
         buffer.add(CHUNK_1);
         assertEquals(8, buffer.bufferedForward());
         assertEquals(1, buffer.bufferedBackward());
+        assertEquals(9, buffer.fill());
 
         buffer.add(CHUNK_1);
         assertEquals(9, buffer.bufferedForward());
         assertEquals(0, buffer.bufferedBackward());
+        assertEquals(9, buffer.fill());
 
         buffer.add(CHUNK_1);
         assertEquals(9, buffer.bufferedForward());
         assertEquals(0, buffer.bufferedBackward());
+        assertEquals(9, buffer.fill());
 
         assertNotNull(buffer.next());
         assertEquals(8, buffer.bufferedForward());
         assertEquals(1, buffer.bufferedBackward());
+        assertEquals(9, buffer.fill());
 
         assertNotNull(buffer.next());
         assertEquals(7, buffer.bufferedForward());
         assertEquals(2, buffer.bufferedBackward());
+        assertEquals(9, buffer.fill());
 
         assertNotNull(buffer.next());
         assertNotNull(buffer.next());
@@ -121,10 +132,12 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
         assertNotNull(buffer.next());
         assertEquals(1, buffer.bufferedForward());
         assertEquals(8, buffer.bufferedBackward());
+        assertEquals(9, buffer.fill());
 
         assertNotNull(buffer.next());
         assertEquals(0, buffer.bufferedForward());
         assertEquals(9, buffer.bufferedBackward());
+        assertEquals(9, buffer.fill());
     }
 
     @Test
@@ -250,10 +263,10 @@ public abstract class AbstractBlockingSeekableRingBufferTester {
                         buffer.reset();
                         break;
                     case 4:
-                        buffer.seek(RandomUtils.nextInt(0, 20));
+                        buffer.seek(RandomUtils.insecure().randomInt(0, 20));
                         break;
                     case 5:
-                        buffer.seek(RandomUtils.nextInt(0, 20)* (-1));
+                        buffer.seek(RandomUtils.insecure().randomInt(0, 20) * (-1));
                         break;
                 }
             }
