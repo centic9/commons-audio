@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'de.thetaphi:forbiddenapis:3.7'
+        classpath 'de.thetaphi:forbiddenapis:3.8'
     }
 }
 
@@ -48,10 +48,10 @@ forbiddenApisMain {
 dependencies {
     implementation 'org.dstadler:commons-dost:1.3.4'
     implementation 'org.apache.commons:commons-lang3:3.17.0'
-    implementation 'commons-io:commons-io:2.17.0'
+    implementation 'commons-io:commons-io:2.18.0'
     implementation 'org.apache.httpcomponents:httpclient:4.5.14'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.17.2'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.18.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.1'
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation 'com.google.guava:guava:33.3.1-jre'
 
@@ -72,7 +72,7 @@ dependencies {
     // don't include it in the jar-file
     runtimeOnly files('src/runtime/resources')
 
-    testImplementation 'org.junit.vintage:junit-vintage-engine:5.11.0'
+    testImplementation 'org.junit.vintage:junit-vintage-engine:5.11.3'
     testImplementation 'org.dstadler:commons-test:1.0.0.21'
 	testImplementation 'org.apache.commons:commons-rng-simple:1.6'
 }
@@ -96,7 +96,7 @@ test {
 }
 
 jacoco {
-    toolVersion = '0.8.11'
+    toolVersion = '0.8.12'
 }
 
 jacocoTestReport {
