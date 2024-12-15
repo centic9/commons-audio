@@ -1,8 +1,8 @@
 package org.dstadler.audio.player;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -22,7 +22,7 @@ public class JLayerPlayerTest {
                 player.setOptions("1.0");
             } catch (IOException e) {
                 if(ExceptionUtils.getStackTrace(e).contains("Cannot create AudioDevice")) {
-                    Assume.assumeNoException("No audio-device available", e);
+                    Assumptions.abort("No audio-device available\n" + ExceptionUtils.getStackTrace(e));
                 }
 
                 throw e;
@@ -37,7 +37,7 @@ public class JLayerPlayerTest {
                 player.play();
             } catch (IOException e) {
                 if(ExceptionUtils.getStackTrace(e).contains("Cannot create AudioDevice")) {
-                    Assume.assumeNoException("No audio-device available", e);
+                    Assumptions.abort("No audio-device available\n" + ExceptionUtils.getStackTrace(e));
                 }
 
                 throw e;
@@ -54,7 +54,7 @@ public class JLayerPlayerTest {
                 player.close();
             } catch (IOException e) {
                 if(ExceptionUtils.getStackTrace(e).contains("Cannot create AudioDevice")) {
-                    Assume.assumeNoException("No audio-device available", e);
+                    Assumptions.abort("No audio-device available\n" + ExceptionUtils.getStackTrace(e));
                 }
 
                 throw e;
@@ -69,7 +69,7 @@ public class JLayerPlayerTest {
             player.play();
         } catch (IOException e) {
             if(ExceptionUtils.getStackTrace(e).contains("Cannot create AudioDevice")) {
-                Assume.assumeNoException("No audio-device available", e);
+                Assumptions.abort(("No audio-device available\n" + ExceptionUtils.getStackTrace(e)));
             }
 
             throw e;

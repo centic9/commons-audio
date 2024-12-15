@@ -2,15 +2,14 @@ package org.dstadler.audio.download;
 
 import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.TestHelpers;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RangeDownloadFileTest {
     private static final File SAMPLE_FILE = new File("src/test/resources/test.bin");
@@ -19,7 +18,7 @@ public class RangeDownloadFileTest {
 
     private final MemoryLeakVerifier verifier = new MemoryLeakVerifier();
 
-    @After
+    @AfterEach
     public void tearDown() {
         verifier.assertGarbageCollected();
     }
@@ -43,14 +42,14 @@ public class RangeDownloadFileTest {
         verifier.addObject(download);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testClosed() throws IOException {
         RangeDownload download = new RangeDownloadFile(SAMPLE_FILE);
         download.close();
 
         verifier.addObject(download);
 
-        download.readRange(0, 1);
+        assertThrows(IllegalStateException.class, () -> download.readRange(0, 1));
     }
 
     @Test
@@ -69,19 +68,19 @@ public class RangeDownloadFileTest {
         try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
             TestHelpers.ToStringTest(download);
 
-            assertTrue("Expected " + EXPECTED_LENGTH + ", but had: " + download,
-                    download.toString().contains(Long.toString(EXPECTED_LENGTH)));
+            assertTrue(download.toString().contains(Long.toString(EXPECTED_LENGTH)),
+                    "Expected " + EXPECTED_LENGTH + ", but had: " + download);
 
             verifier.addObject(download);
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void readWithStartBeyondLength() throws IOException {
         try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
             verifier.addObject(download);
 
-            download.readRange(99999999L, 200);
+            assertThrows(IllegalArgumentException.class, () -> download.readRange(99999999L, 200));
         }
     }
 
@@ -95,30 +94,30 @@ public class RangeDownloadFileTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void readWithInvalidSizeAt0() throws IOException {
         try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
             verifier.addObject(download);
 
-            download.readRange(0, 0);
+            assertThrows(IllegalArgumentException.class, () -> download.readRange(0, 0));
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void readWithInvalidSizeAt100() throws IOException {
         try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
             verifier.addObject(download);
 
-            download.readRange(100, 0);
+            assertThrows(IllegalArgumentException.class, () -> download.readRange(100, 0));
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void readWithInvalidSizeAtMinus100() throws IOException {
         try (RangeDownload download = new RangeDownloadFile(SAMPLE_FILE)) {
             verifier.addObject(download);
 
-            download.readRange(-100, 10);
+            assertThrows(IllegalArgumentException.class, () -> download.readRange(-100, 10));
         }
     }
 }

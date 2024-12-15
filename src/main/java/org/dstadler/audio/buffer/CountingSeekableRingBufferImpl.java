@@ -249,19 +249,19 @@ public class CountingSeekableRingBufferImpl implements CountingSeekableRingBuffe
     public String toString() {
         //long time = System.currentTimeMillis() - start;
         /*", time: " + time + "/" + (double)time / 1000 +*/
-        return String.format("Start: %d, " +
-            "CPS: %.2f, " +
-            "CPSRead: %.2f, " +
-            "CPSWritten: %.2f, " +
-            "Written: %d bytes/%d chunks, %.2f bytes/s, %.2f chunks/s, " +
-            "Read: %d bytes/%d chunks, %.2f bytes/s, %.2f chunks/s, " +
-            "%s",
-            start,
-            getChunksPerSecond(),
-            getChunksReadPerSecond(),
-            getChunksWrittenPerSecond(),
-            bytesWrittenOverall.get(), chunksWrittenOverall.get(), getPerSecond(bytesWrittenOverall), getPerSecond(chunksWrittenOverall),
-            bytesReadOverall.get(), chunksReadOverall.get(), getPerSecond(bytesReadOverall), getPerSecond(chunksReadOverall),
-            delegate.toString());
+        return ("Start: %d, " +
+                "CPS: %.2f, " +
+                "CPSRead: %.2f, " +
+                "CPSWritten: %.2f, " +
+                "Written: %d bytes/%d chunks, %.2f bytes/s, %.2f chunks/s, " +
+                "Read: %d bytes/%d chunks, %.2f bytes/s, %.2f chunks/s, " +
+                "%s").formatted(
+                start,
+                getChunksPerSecond(),
+                getChunksReadPerSecond(),
+                getChunksWrittenPerSecond(),
+                bytesWrittenOverall.get(), chunksWrittenOverall.get(), getPerSecond(bytesWrittenOverall), getPerSecond(chunksWrittenOverall),
+                bytesReadOverall.get(), chunksReadOverall.get(), getPerSecond(bytesReadOverall), getPerSecond(chunksReadOverall),
+                delegate.toString());
     }
 }

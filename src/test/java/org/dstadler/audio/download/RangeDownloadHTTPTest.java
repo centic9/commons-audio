@@ -12,20 +12,15 @@ import org.dstadler.commons.http.NanoHTTPD;
 import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.dstadler.commons.testing.TestHelpers;
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RangeDownloadHTTPTest {
     private static final String SAMPLE_URL = "https://www.dstadler.org/DominikStadler2013.png";
@@ -35,7 +30,7 @@ public class RangeDownloadHTTPTest {
 
     private final MemoryLeakVerifier verifier = new MemoryLeakVerifier();
 
-    @After
+    @AfterEach
     public void tearDown() {
         verifier.assertGarbageCollected();
     }
@@ -59,22 +54,22 @@ public class RangeDownloadHTTPTest {
         verifier.addObject(download);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testClosed() throws IOException {
         RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null);
         download.close();
 
         verifier.addObject(download);
 
-        download.readRange(0, 1);
+        assertThrows(IllegalStateException.class, () -> download.readRange(0, 1));
     }
 
     @Test
     public void testReadRangeDstadlerOrg() {
         //noinspection resource
-        assertThrows("Expect an exception because the endpoint does not support Accept-Range",
-                IllegalStateException.class,
-                () -> new RangeDownloadHTTP("https://www.dstadler.org/", "", null));
+        assertThrows(IllegalStateException.class,
+                () -> new RangeDownloadHTTP("https://www.dstadler.org/", "", null),
+                "Expect an exception because the endpoint does not support Accept-Range");
     }
 
     @Test
@@ -88,7 +83,7 @@ public class RangeDownloadHTTPTest {
         }
     }
 
-    @Ignore("Depends on an URL that will become unavailable")
+    @Disabled("Depends on an URL that will become unavailable")
     @Test
     public void testFM4() throws Exception {
         try (RangeDownload download = new RangeDownloadHTTP(FM4_URL, "", null)) {
@@ -106,7 +101,7 @@ public class RangeDownloadHTTPTest {
         }
     }
 
-    @Ignore("Download URL will become unavailable soon")
+    @Disabled("Download URL will become unavailable soon")
     @Test
     public void testFM4Download() throws IOException {
         assertNotNull(Thread.currentThread().getContextClassLoader().getResource("log4j.properties"));
@@ -118,7 +113,7 @@ public class RangeDownloadHTTPTest {
         assertTrue(destination.exists());
     }
 
-    @Ignore("Download URL will become unavailable soon")
+    @Disabled("Download URL will become unavailable soon")
     @Test
     public void testFM4DownloadRange() throws IOException {
         File destination = new File("/tmp/FM4.mp3");
@@ -142,7 +137,7 @@ public class RangeDownloadHTTPTest {
         assertTrue(destination.exists());
     }
 
-    @Ignore("Download URL will become unavailable soon")
+    @Disabled("Download URL will become unavailable soon")
     @Test
     public void testDownloadFM4Hangs() throws IOException {
         String url = FM4_URL;
@@ -172,7 +167,7 @@ public class RangeDownloadHTTPTest {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
             TestHelpers.ToStringTest(download);
 
-            assertTrue("Had: " + download, download.toString().contains(Long.toString(EXPECTED_LENGTH)));
+            assertTrue(download.toString().contains(Long.toString(EXPECTED_LENGTH)), "Had: " + download);
 
             verifier.addObject(download);
         }
@@ -196,12 +191,12 @@ public class RangeDownloadHTTPTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void readWithStartBeyondLength() throws IOException {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
             verifier.addObject(download);
 
-            download.readRange(99999999L, 200);
+            assertThrows(IllegalArgumentException.class, () -> download.readRange(99999999L, 200));
         }
     }
 
@@ -215,30 +210,30 @@ public class RangeDownloadHTTPTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void readWithInvalidSizeAt0() throws IOException {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
             verifier.addObject(download);
 
-            download.readRange(0, 0);
+            assertThrows(IllegalArgumentException.class, () -> download.readRange(0, 0));
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void readWithInvalidSizeAt100() throws IOException {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
             verifier.addObject(download);
 
-            download.readRange(100, 0);
+            assertThrows(IllegalArgumentException.class, () -> download.readRange(100, 0));
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void readWithInvalidSizeAtMinus100() throws IOException {
         try (RangeDownload download = new RangeDownloadHTTP(SAMPLE_URL, "", null)) {
             verifier.addObject(download);
 
-            download.readRange(-100, 10);
+            assertThrows(IllegalArgumentException.class, () -> download.readRange(-100, 10));
         }
     }
 }

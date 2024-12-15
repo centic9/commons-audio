@@ -5,8 +5,8 @@ import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.testing.TestHelpers;
 import org.dstadler.commons.testing.ThreadTestHelper;
 import org.dstadler.commons.util.ThreadDump;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.PipedOutputStream;
@@ -15,10 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ClearablePipedInputStreamTest {
     private final static Logger log = LoggerFactory.make();
@@ -26,7 +23,7 @@ public class ClearablePipedInputStreamTest {
     private final PipedOutputStream out = new PipedOutputStream();
     private ClearablePipedInputStream in;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
          in = new ClearablePipedInputStream(out, 5 * CHUNK_SIZE);
     }
@@ -195,7 +192,7 @@ public class ClearablePipedInputStreamTest {
 
         stop.set(true);
         th.join();
-        assertNull("Expected no exception, but had: " + exc.get(),
-                exc.get());
+        assertNull(exc.get(),
+                "Expected no exception, but had: " + exc.get());
     }
 }

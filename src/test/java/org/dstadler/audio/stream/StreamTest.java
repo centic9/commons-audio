@@ -1,22 +1,18 @@
 package org.dstadler.audio.stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dstadler.audio.player.TempoStrategy;
 import org.dstadler.commons.testing.TestHelpers;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.function.Function;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class StreamTest {
     @Test
@@ -47,7 +43,7 @@ public class StreamTest {
         TestHelpers.ToStringTest(stream);
 
         assertEquals("url1", stream.getUrl());
-        assertEquals("Always lowercase", "default", stream.getTempoStrategy());
+        assertEquals("default", stream.getTempoStrategy(), "Always lowercase");
         assertEquals(1, stream.getTempo(), 0);
         assertNull(stream.getImageUrl());
         assertNull(stream.getName());
@@ -63,7 +59,7 @@ public class StreamTest {
         stream.setUser("test");
 
         assertEquals("url1", stream.getUrl());
-        assertEquals("Always lowercase", TempoStrategy.CONSTANT, stream.getTempoStrategy());
+        assertEquals(TempoStrategy.CONSTANT, stream.getTempoStrategy(), "Always lowercase");
         assertEquals(1, stream.getTempo(), 0);
         assertEquals("imageUrl", stream.getImageUrl());
         assertEquals("name1", stream.getName());
@@ -74,7 +70,7 @@ public class StreamTest {
         stream.validate();
 
         assertEquals("url1", stream.getUrl());
-        assertEquals("Always lowercase", TempoStrategy.CONSTANT, stream.getTempoStrategy());
+        assertEquals(TempoStrategy.CONSTANT, stream.getTempoStrategy(), "Always lowercase");
         assertEquals(1, stream.getTempo(), 0);
         assertEquals("imageUrl", stream.getImageUrl());
         assertEquals("name1", stream.getName());
@@ -119,16 +115,16 @@ public class StreamTest {
 
             TestHelpers.ToStringTest(stream);
         } catch (IOException e) {
-            Assume.assumeNoException("Credentials file not available, cannot test for password",
-                    e);
+            Assumptions.abort("Credentials file not available, cannot test for password\n" +
+                    ExceptionUtils.getStackTrace(e));
         }
     }
 
     @Test
     public void testCredentialsDummyFile() throws IOException {
 		final File credentialsFile = new File("credentials.properties");
-		Assume.assumeFalse("Can only run this test when no credentials.properties exists before",
-				credentialsFile.exists());
+		Assumptions.assumeFalse(credentialsFile.exists(),
+				"Can only run this test when no credentials.properties exists before");
 
         Stream stream = new Stream();
         stream.setUser("someuser");
@@ -140,8 +136,7 @@ public class StreamTest {
 		try {
 			FileUtils.writeStringToFile(credentialsFile, "password.someuser=pass1", "UTF-8");
 
-			assertEquals("Should be able to read password now",
-					"pass1", stream.getPassword());
+			assertEquals("pass1", stream.getPassword(), "Should be able to read password now");
 		} finally {
 			assertTrue(credentialsFile.delete());
 		}

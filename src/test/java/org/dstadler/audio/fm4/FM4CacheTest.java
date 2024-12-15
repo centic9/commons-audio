@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.ThreadTestHelper;
 import org.dstadler.commons.util.ExecutorUtil;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -16,19 +16,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FM4CacheTest {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final MemoryLeakVerifier verifier = new MemoryLeakVerifier();
 
-    @After
+    @AfterEach
     public void tearDown() throws InterruptedException {
         // ensure no threads are left
         ThreadTestHelper.waitForThreadToFinishSubstring("FM4", 1_000);
@@ -44,12 +39,12 @@ public class FM4CacheTest {
             assertEquals(0, cache.size());
 
             cache.refresh();
-            assertTrue("Cache should not be empty now, check stdout for error messages while fetching the data",
-                    cache.size() > 0);
+            assertTrue(cache.size() > 0,
+                    "Cache should not be empty now, check stdout for error messages while fetching the data");
 
-            assertTrue("Did not get FM4 session with code '4SS' or '4LB', having: " +
-                    cache.allStreams().stream().map(FM4Stream::getProgramKey).collect(Collectors.joining(",")),
-                    cache.get("4SS") != null || cache.get("4LB") != null);
+            assertTrue(cache.get("4SS") != null || cache.get("4LB") != null,
+                    "Did not get FM4 session with code '4SS' or '4LB', having: " +
+                    cache.allStreams().stream().map(FM4Stream::getProgramKey).collect(Collectors.joining(",")));
             assertNull(cache.get("NOT EXISTING"));
 
             assertNotNull(cache.allStreams());
@@ -109,8 +104,8 @@ public class FM4CacheTest {
 
             Collection<FM4Stream> fm4Streams = cache.allStreams();
 
-            Assume.assumeTrue("Expecting some streams, but had: " + cache.allStreams(),
-                    cache.allStreams().size() >= 2);
+            Assumptions.assumeTrue(cache.allStreams().size() >= 2,
+                    "Expecting some streams, but had: " + cache.allStreams());
 
             Iterator<FM4Stream> it = fm4Streams.iterator();
 
@@ -123,15 +118,15 @@ public class FM4CacheTest {
                 assertNotNull(next);
                 assertEquals(stream1.getProgramKey(), next.getProgramKey());
 
-                assertNull("Stream 1 should be the last one, had: " + fm4Streams,
-                        cache.getNext(stream1));
+                assertNull(cache.getNext(stream1),
+                        "Stream 1 should be the last one, had: " + fm4Streams);
             } else {
                 FM4Stream next = cache.getNext(stream1);
                 assertNotNull(next);
                 assertEquals(stream2.getProgramKey(), next.getProgramKey());
 
-                assertNull("Stream 2 should be the last one, had: " + fm4Streams,
-                        cache.getNext(stream2));
+                assertNull(cache.getNext(stream2),
+                        "Stream 2 should be the last one, had: " + fm4Streams);
             }
 
             verifier.addObject(cache);
@@ -181,8 +176,8 @@ public class FM4CacheTest {
 
             Collection<FM4Stream> fm4Streams = cache.allStreams();
 
-            Assume.assumeTrue("Expecting some streams, but had: " + cache.allStreams(),
-                    cache.allStreams().size() >= 2);
+            Assumptions.assumeTrue(cache.allStreams().size() >= 2,
+                    "Expecting some streams, but had: " + cache.allStreams());
 
             Iterator<FM4Stream> it = fm4Streams.iterator();
 
@@ -195,15 +190,15 @@ public class FM4CacheTest {
                 assertNotNull(previous);
                 assertEquals(stream1.getProgramKey(), previous.getProgramKey());
 
-                assertNull("Stream 1 should be the first one, had: " + fm4Streams,
-                        cache.getPrevious(stream1));
+                assertNull(cache.getPrevious(stream1),
+                        "Stream 1 should be the first one, had: " + fm4Streams);
             } else {
                 FM4Stream previous = cache.getPrevious(stream1);
                 assertNotNull(previous);
                 assertEquals(stream2.getProgramKey(), previous.getProgramKey());
 
-                assertNull("Stream 2 should be the first one, had: " + fm4Streams,
-                        cache.getPrevious(stream2));
+                assertNull(cache.getPrevious(stream2),
+                        "Stream 2 should be the first one, had: " + fm4Streams);
             }
 
             verifier.addObject(cache);
@@ -244,8 +239,8 @@ public class FM4CacheTest {
 
             Collection<FM4Stream> fm4Streams = cache.allStreams();
 
-            Assume.assumeTrue("Expecting some streams, but had: " + cache.allStreams(),
-                    cache.allStreams().size() >= 2);
+            Assumptions.assumeTrue(cache.allStreams().size() >= 2,
+                    "Expecting some streams, but had: " + cache.allStreams());
 
             Iterator<FM4Stream> it = fm4Streams.iterator();
 
@@ -260,15 +255,15 @@ public class FM4CacheTest {
                 assertNotNull(next);
                 assertEquals(stream1.getProgramKey(), next.getProgramKey());
 
-                assertNull("Stream 1 should be the last one, had: " + fm4Streams,
-                        cache.getNextByStreamURL(url1));
+                assertNull(cache.getNextByStreamURL(url1),
+                        "Stream 1 should be the last one, had: " + fm4Streams);
             } else {
                 FM4Stream next = cache.getNextByStreamURL(url1);
                 assertNotNull(next);
                 assertEquals(stream2.getProgramKey(), next.getProgramKey());
 
-                assertNull("Stream 2 should be the last one, had: " + fm4Streams,
-                        cache.getNextByStreamURL(url2));
+                assertNull(cache.getNextByStreamURL(url2),
+                        "Stream 2 should be the last one, had: " + fm4Streams);
             }
 
             verifier.addObject(cache);
@@ -301,8 +296,8 @@ public class FM4CacheTest {
             }
 
             // we should have the thread started now
-            assertNotNull("Need a thread names 'FM4Cache' to be running now",
-                    ExecutorUtil.lookupThread("FM4Cache"));
+            assertNotNull(ExecutorUtil.lookupThread("FM4Cache"),
+                    "Need a thread names 'FM4Cache' to be running now");
 
             assertNotNull(cache);
 

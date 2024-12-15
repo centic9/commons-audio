@@ -8,12 +8,10 @@ import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.dstadler.commons.testing.TestHelpers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,16 +22,8 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(Parameterized.class)
 public class RangeDownloadingBufferTest {
     private final static Logger log = LoggerFactory.make();
 
@@ -53,7 +43,6 @@ public class RangeDownloadingBufferTest {
 
     private RangeDownloadingBuffer buffer;
 
-    @Parameterized.Parameters(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { SAMPLE_URL, 52, 841640, 841590, Pair.of("", 100L) },
@@ -75,19 +64,7 @@ public class RangeDownloadingBufferTest {
         });
     }
 
-    @Parameterized.Parameter
-    public String sample;
-    @Parameterized.Parameter(1)
-    public int expectedChunks;
-    @Parameterized.Parameter(2)
-    public int fileSize;
-    @Parameterized.Parameter(3)
-    public int fileSize2;
-    @Parameterized.Parameter(4)
-    public Pair<String, Long> metaData;
-
-    @Before
-    public void setUp() {
+    public void setUp(String sample, Pair<String, Long> metaData) {
         try {
             buffer = new RangeDownloadingBuffer(sample, "", null, 10, CHUNK_SIZE, p -> metaData);
             verifier.addObject(buffer);
@@ -96,7 +73,7 @@ public class RangeDownloadingBufferTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if(buffer != null) {
             TestHelpers.ToStringTest(buffer);
@@ -110,8 +87,10 @@ public class RangeDownloadingBufferTest {
         verifier.assertGarbageCollected();
     }
 
-    @Test
-    public void testBuffered() {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testBuffered(String sample, int expectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) {
+        setUp(sample, metaData);
         assertEquals(expectedChunks, buffer.fill());
         assertEquals(expectedChunks, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
@@ -160,14 +139,15 @@ public class RangeDownloadingBufferTest {
             assertEquals(10, buffer.bufferedBackward());
 
             assertNotNull(buffer.next());
-            assertEquals("Having: " + buffer, 9, buffer.bufferedForward());
-            assertEquals("internal buffer only stores 19 elements, thus one is already removed by adding 10 more",
-                    10, buffer.bufferedBackward());
+            assertEquals(9, buffer.bufferedForward(), "Having: " + buffer);
+            assertEquals(10, buffer.bufferedBackward(), "internal buffer only stores 19 elements, thus one is already removed by adding 10 more");
         }
     }
 
-    @Test
-    public void testInitialSize() {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testInitialSize(String sample, int expectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) {
+        setUp(sample, metaData);
         TestHelpers.ToStringTest(buffer);
 
         if (fileSize == 0) {
@@ -181,8 +161,10 @@ public class RangeDownloadingBufferTest {
         assertEquals(expectedChunks, buffer.fill());
     }
 
-    @Test
-    public void testFillupBuffer() throws Exception {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testFillupBuffer(String sample, int expectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) throws Exception {
+        setUp(sample, metaData);
         if (fileSize == 0) {
             assertEquals(0, buffer.fillupBuffer(-1, -1));
             assertTrue(buffer.empty());
@@ -208,8 +190,10 @@ public class RangeDownloadingBufferTest {
         assertEquals(expectedChunks, buffer.fill());
     }
 
-    @Test
-    public void testFillupBufferMin() throws Exception {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testFillupBufferMin(String sample, int expectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) throws Exception {
+        setUp(sample, metaData);
         assertEquals(0, buffer.fillupBuffer(1000, 10));
 
         if (fileSize == 0) {
@@ -236,15 +220,17 @@ public class RangeDownloadingBufferTest {
         assertEquals(expectedChunks, buffer.fill());
     }
 
-    @Test
-    public void testFillupBufferWithBufferData() throws Exception {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testFillupBufferWithBufferData(String sample, int expectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) throws Exception {
+        setUp(sample, metaData);
         // not useful for buffer without data
         if (fileSize == 0) {
             return;
         }
 
         for(int i = 0;i < 20;i++) {
-            assertNotNull("Having: " + buffer, buffer.next());
+            assertNotNull(buffer.next(), "Having: " + buffer);
         }
 
         assertEquals(fileSize/CHUNK_SIZE + 1 - 20, buffer.size());
@@ -268,8 +254,10 @@ public class RangeDownloadingBufferTest {
         assertEquals(10, buffer.fillupBuffer(-1, -1));
     }
 
-    @Test
-    public void testPeek() {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testPeek(String sample, int ignoredExpectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) {
+        setUp(sample, metaData);
         Chunk peek = buffer.peek();
         if (fileSize == 0) {
             assertNull(peek);
@@ -292,8 +280,10 @@ public class RangeDownloadingBufferTest {
         }
     }
 
-    @Test
-    public void testPeekIOException() throws IOException {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testPeekIOException(String sample, int ignoredExpectedChunks, int ignoredFileSize, int ignoredFileSize2, Pair<String, Long> metaData) throws IOException {
+        setUp(sample, metaData);
         final AtomicInteger calls = new AtomicInteger(0);
         try (MockRESTServer server = new MockRESTServer(() -> {
             if (calls.incrementAndGet() == 1) {
@@ -312,15 +302,17 @@ public class RangeDownloadingBufferTest {
 
             buffer.RETRY_SLEEP_TIME = 1;
 
-            assertNull("Should return null because fetching data fails internall", buffer.peek());
+            assertNull(buffer.peek(), "Should return null because fetching data fails internall");
 
             assertThrows(IllegalStateException.class,
                     () -> buffer.next());
         }
     }
 
-    @Test
-    public void testReadAtEnd() {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testReadAtEnd(String sample, int expectedChunks, int ignoredFileSize, int ignoredFileSize2, Pair<String, Long> metaData) {
+        setUp(sample, metaData);
         assertEquals(expectedChunks, buffer.seek(999999));
 
         assertNull(buffer.peek());
@@ -332,8 +324,10 @@ public class RangeDownloadingBufferTest {
         assertTrue(buffer.empty());
     }
 
-    @Test
-    public void testEmpty() throws IOException {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testEmpty(String sample, int expectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) throws IOException {
+        setUp(sample, metaData);
         // not useful for buffer without data
         if (fileSize == 0) {
             return;
@@ -352,8 +346,10 @@ public class RangeDownloadingBufferTest {
         assertFalse(buffer.empty());
     }
 
-    @Test
-    public void testReadChunkAndSeek() {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testReadChunkAndSeek(String sample, int expectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) {
+        setUp(sample, metaData);
         Chunk chunk = buffer.next();
         if (fileSize == 0) {
             assertNull(chunk);
@@ -375,8 +371,10 @@ public class RangeDownloadingBufferTest {
         assertEquals(expectedChunks, buffer.fill());
     }
 
-    @Test
-    public void testSeekOutside() {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testSeekOutside(String sample, int expectedChunks, int ignoredFileSize, int ignoredFileSize2, Pair<String, Long> metaData) {
+        setUp(sample, metaData);
         assertEquals(expectedChunks, buffer.size());
         assertEquals(expectedChunks, buffer.capacity());
         assertEquals(expectedChunks, buffer.fill());
@@ -384,8 +382,10 @@ public class RangeDownloadingBufferTest {
         assertEquals(expectedChunks, buffer.seek(5000));
     }
 
-    @Test
-    public void testSeekBackwards() throws IOException {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testSeekBackwards(String sample, int expectedChunks, int fileSize, int fileSize2, Pair<String, Long> metaData) throws IOException {
+        setUp(sample, metaData);
         // initialize with a chunk-size of 1 to have exact chunk-counts in the tests below
         buffer = new RangeDownloadingBuffer(sample, "", null, 10, 1, percentage -> Pair.of("", 0L));
 
@@ -428,21 +428,26 @@ public class RangeDownloadingBufferTest {
         }
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void addFails() {
-        buffer.add(null);
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void addFails(String sample, int ignoredExpectedChunks, int ignoredFileSize, int ignoredFileSize2, Pair<String, Long> metaData) {
+        setUp(sample, metaData);
+        assertThrows(UnsupportedOperationException.class, () ->
+            buffer.add(null));
     }
 
-    @Test
-    public void testPersistence() throws IOException {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testPersistence(String sample, int expectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) throws IOException {
+        setUp(sample, metaData);
         buffer.next();
 
         if (fileSize == 0) {
-            assertTrue("Had: " + buffer, buffer.empty());
+            assertTrue(buffer.empty(), "Had: " + buffer);
         } else {
-            assertFalse("Had: " + buffer, buffer.empty());
+            assertFalse(buffer.empty(), "Had: " + buffer);
         }
-        assertTrue("Had: " + buffer, buffer.full());
+        assertTrue(buffer.full(), "Had: " + buffer);
         if (fileSize == 0) {
             assertEquals(0, buffer.size());
         } else {
@@ -503,25 +508,34 @@ public class RangeDownloadingBufferTest {
                 .replaceAll("size=\\d+", "");
     }
 
-    @Test
-    public void testWithUser() throws IOException {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testWithUser(String sample, int ignoredExpectedChunks, int ignoredFileSize, int ignoredFileSize2, Pair<String, Long> metaData) throws IOException {
+        setUp(sample, metaData);
         buffer = new RangeDownloadingBuffer(sample, "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L));
     }
 
-    @Test(expected = IOException.class)
-    public void testWithUserAndAuthResponse() throws IOException {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testWithUserAndAuthResponse(String sample, int ignoredExpectedChunks, int ignoredFileSize, int ignoredFileSize2, Pair<String, Long> metaData) throws IOException {
+        setUp(sample, metaData);
+
         try (MockRESTServer server = new MockRESTServer("404", "text/html", "")) {
             buffer.close();
 
-            try (RangeDownloadingBuffer ignores = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
-                    "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L))) {
-                fail("Should catch exception");
-            }
+            assertThrows(IOException.class, () -> {
+                try (RangeDownloadingBuffer ignores = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
+                        "testuser", "testpass", 10, CHUNK_SIZE, percentage -> Pair.of("", 0L))) {
+                    fail("Should catch exception");
+                }
+            });
         }
     }
 
-    @Test
-    public void testToString() {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testToString(String sample, int ignoredExpectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) {
+        setUp(sample, metaData);
         TestHelpers.ToStringTest(buffer);
         if (fileSize == 0) {
             assertNull(buffer.next());
@@ -530,15 +544,17 @@ public class RangeDownloadingBufferTest {
         }
         TestHelpers.ToStringTest(buffer);
 
-        assertTrue("Had: " + buffer,
-                buffer.toString().contains("empty=" + (buffer.empty() ? "true" : "false")));
-        assertTrue("Had: " + buffer,
-                buffer.toString().contains("full=" + (buffer.full() ? "true" : "false")));
+        assertTrue(buffer.toString().contains("empty=" + (buffer.empty() ? "true" : "false")),
+                "Had: " + buffer);
+        assertTrue(buffer.toString().contains("full=" + (buffer.full() ? "true" : "false")),
+                "Had: " + buffer);
     }
 
-    @Ignore("Just used for testing download speed")
-    @Test
-    public void testSlowStartBenchmark() throws IOException, InterruptedException {
+    @Disabled("Just used for testing download speed")
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testSlowStartBenchmark(String sample, int expectedChunks, int ignoredFileSize, int ignoredFileSize2, Pair<String, Long> metaData) throws IOException, InterruptedException {
+        setUp(sample, metaData);
         long start = System.currentTimeMillis();
         log.info("Starting download: " + (System.currentTimeMillis() - start));
         try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("https://loopstream01.apa.at/?channel=fm4&id=2020-03-22_0959_tl_54_7DaysSun6_95352.mp3",
@@ -559,34 +575,36 @@ public class RangeDownloadingBufferTest {
         log.info("After fillup: " + (System.currentTimeMillis() - start));
     }
 
-    @Test
-    public void testSeekNotEmpty() throws IOException {
+    @MethodSource("data")
+    @ParameterizedTest(name = "Sample: {0}, Chunks: {1}, Size: {2}/{3}, Meta: {4}")
+    public void testSeekNotEmpty(String sample, int ignoredExpectedChunks, int fileSize, int ignoredFileSize2, Pair<String, Long> metaData) throws IOException {
+        setUp(sample, metaData);
         if (fileSize == 0) {
-            assertTrue("Empty at the beginning", buffer.empty());
-            assertEquals("Not able to read 10 chunks", 0, buffer.fillupBuffer(0, 10));
+            assertTrue(buffer.empty(), "Empty at the beginning");
+            assertEquals(0, buffer.fillupBuffer(0, 10), "Not able to read 10 chunks");
 
-            assertTrue("Still empty after initial fill-up", buffer.empty());
+            assertTrue(buffer.empty(), "Still empty after initial fill-up");
 
-            assertEquals("Not able to seek 20 chunks", 0, buffer.seek(20));
+            assertEquals(0, buffer.seek(20), "Not able to seek 20 chunks");
 
-            assertTrue("Still empty after seeking", buffer.empty());
+            assertTrue(buffer.empty(), "Still empty after seeking");
         } else {
-            assertFalse("Not empty at the beginning", buffer.empty());
-            assertEquals("Load 10 chunks", 10, buffer.fillupBuffer(0, 10));
+            assertFalse(buffer.empty(), "Not empty at the beginning");
+            assertEquals(10, buffer.fillupBuffer(0, 10), "Load 10 chunks");
 
-            assertFalse("Not empty after initial fill-up", buffer.empty());
+            assertFalse(buffer.empty(), "Not empty after initial fill-up");
 
-            assertEquals("Able to seek 20 chunks", 20, buffer.seek(20));
+            assertEquals(20, buffer.seek(20), "Able to seek 20 chunks");
 
-            assertFalse("Not empty after seeking", buffer.empty());
+            assertFalse(buffer.empty(), "Not empty after seeking");
         }
 
         int seeked = buffer.seek(300);
         if (fileSize == 0) {
-            assertEquals("Had: " + seeked, 0, seeked);
+            assertEquals(0, seeked, "Had: " + seeked);
         } else {
-            assertTrue("Had: " + seeked, seeked >= 10);
+            assertTrue(seeked >= 10, "Had: " + seeked);
         }
-        assertTrue("Should be at the end now", buffer.empty());
+        assertTrue(buffer.empty(), "Should be at the end now");
     }
 }

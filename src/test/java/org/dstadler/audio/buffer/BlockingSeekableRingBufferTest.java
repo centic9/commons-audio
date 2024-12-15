@@ -1,16 +1,11 @@
 package org.dstadler.audio.buffer;
 
 import org.dstadler.audio.stream.Stream;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRingBufferTester {
     @Override
@@ -71,10 +66,10 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
         try (BlockingSeekableRingBuffer localBuffer = new BlockingSeekableRingBuffer(10)) {
             assertTrue(localBuffer.empty());
             assertFalse(localBuffer.full());
-            assertTrue("Had: " + localBuffer,
-                    localBuffer.toString().contains("empty=true"));
-            assertTrue("Had: " + localBuffer,
-                    localBuffer.toString().contains("full=false"));
+            assertTrue(localBuffer.toString().contains("empty=true"),
+                    "Had: " + localBuffer);
+            assertTrue(localBuffer.toString().contains("full=false"),
+                    "Had: " + localBuffer);
 
             for (byte i = 0; i < 15; i++) {
                 localBuffer.add(new Chunk(new byte[]{i}, "", 0));
@@ -82,10 +77,10 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
 
             assertFalse(localBuffer.empty());
             assertTrue(localBuffer.full());
-            assertTrue("Had: " + localBuffer,
-                    localBuffer.toString().contains("empty=false"));
-            assertTrue("Had: " + localBuffer,
-                    localBuffer.toString().contains("full=true"));
+            assertTrue(localBuffer.toString().contains("empty=false"),
+                    "Had: " + localBuffer);
+            assertTrue(localBuffer.toString().contains("full=true"),
+                    "Had: " + localBuffer);
         }
     }
 

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.dstadler.commons.testing.TestHelpers;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -14,10 +14,7 @@ import java.util.List;
 
 import static org.dstadler.audio.fm4.FM4Stream.DATETIME_FORMAT;
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FM4StreamTest {
     public static long MIN_START_TIME;
@@ -43,8 +40,8 @@ public class FM4StreamTest {
         assertNotNull(DATETIME_FORMAT.parse(fm4Stream.getTime()));
         assertNotNull(fm4Stream.getTimeForREST());
 
-        assertTrue("Failed for " + fm4Stream.getTimeForREST(),
-                fm4Stream.getTimeForREST().matches("\\d{4}-\\d{2}-\\d{2}"));
+        assertTrue(fm4Stream.getTimeForREST().matches("\\d{4}-\\d{2}-\\d{2}"),
+                "Failed for " + fm4Stream.getTimeForREST());
 
         String time = DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.format(
                 FM4Stream.DATETIME_FORMAT.parse(fm4Stream.getTime()));
@@ -63,17 +60,17 @@ public class FM4StreamTest {
         assertTrue(fm4Stream.getSummary().contains(fm4Stream.getTitle()));
 
         assertNotNull(fm4Stream.getShortTime());
-        assertTrue("Failed for " + fm4Stream.getShortTime(),
-                fm4Stream.getShortTime().matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"));
+        assertTrue(fm4Stream.getShortTime().matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"),
+                "Failed for " + fm4Stream.getShortTime());
         assertNotNull(DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(fm4Stream.getShortTime()));
-        assertTrue("Duration should be set, but had: " + fm4Stream.getDuration(),
-                fm4Stream.getDuration() > 0);
-        assertTrue("Duration should be below one day, but had: " + fm4Stream.getDuration(),
-                fm4Stream.getDuration() < 24*60*60*1000);
-        assertTrue("Start should be set, but had: " + fm4Stream.getStart(),
-                fm4Stream.getStart() > 0);
-        assertTrue("Start should be after 2019, but had: " + fm4Stream.getStart(),
-                fm4Stream.getStart() > MIN_START_TIME);
+        assertTrue(fm4Stream.getDuration() > 0,
+                "Duration should be set, but had: " + fm4Stream.getDuration());
+        assertTrue(fm4Stream.getDuration() < 24*60*60*1000,
+                "Duration should be below one day, but had: " + fm4Stream.getDuration());
+        assertTrue(fm4Stream.getStart() > 0,
+                "Start should be set, but had: " + fm4Stream.getStart());
+        assertTrue(fm4Stream.getStart() > MIN_START_TIME,
+                "Start should be after 2019, but had: " + fm4Stream.getStart());
 
         assertNotNull(fm4Stream.toString());
 
@@ -85,7 +82,7 @@ public class FM4StreamTest {
         FM4 fm4 = new FM4();
         List<FM4Stream> fm4Streams = fm4.fetchStreams(7);
 
-        Assume.assumeFalse("Should get some streams", fm4Streams.isEmpty());
+        Assumptions.assumeFalse(fm4Streams.isEmpty(), "Should get some streams");
 
         List<String> streams = fm4Streams.get(0).getStreams();
 

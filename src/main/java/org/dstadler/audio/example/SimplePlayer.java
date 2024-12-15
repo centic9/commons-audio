@@ -9,7 +9,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +40,7 @@ public class SimplePlayer {
     private static void run(String file) {
         log.info("Playing file " + file);
 
-        try (final InputStream input = new BufferedInputStream(Files.newInputStream(Paths.get(file)), CHUNK_SIZE)) {
+        try (final InputStream input = new BufferedInputStream(Files.newInputStream(Path.of(file)), CHUNK_SIZE)) {
             AudioPlayer player = createPlayer(input);
 
             //player.setOptions("");

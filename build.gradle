@@ -72,7 +72,9 @@ dependencies {
     // don't include it in the jar-file
     runtimeOnly files('src/runtime/resources')
 
-    testImplementation 'org.junit.vintage:junit-vintage-engine:5.11.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.3'
     testImplementation 'org.dstadler:commons-test:1.0.0.21'
 	testImplementation 'org.apache.commons:commons-rng-simple:1.6'
 }
@@ -93,6 +95,7 @@ test {
 
     // avoid failures because Gradle provides it's own version of JNA in the system properties
     systemProperties['jna.boot.library.path'] = null
+    useJUnitPlatform()
 }
 
 jacoco {

@@ -115,8 +115,8 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
                     throw e;
                 }
 
-                log.warning(String.format("Retry %,d: Failed to download, buffer: %,d bytes, chunkSize: %,d, bufferedChunks: %,d, " +
-                                "min: %,d, max: %,d from position %,d: length: %,d: %s",
+                log.warning(("Retry %,d: Failed to download, buffer: %,d bytes, chunkSize: %,d, bufferedChunks: %,d, " +
+                        "min: %,d, max: %,d from position %,d: length: %,d: %s").formatted(
                         retries, buffer.size(), chunkSize, bufferedChunks, min, max, nextDownloadPos,
                         download.getLength(), e));
 
@@ -173,7 +173,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
                         toDownload, bufferedChunks, buffer.size());
 
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine(String.format("Downloading %,d chunks at download-position %,d from %s",
+                    log.fine("Downloading %,d chunks at download-position %,d from %s".formatted(
                             toDownload, nextDownloadPos, download));
                 }
 
@@ -232,10 +232,10 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         // empty() indicates that we cannot fetch more data any more
         if(buffer.empty() && !empty()) {
             try {
-                log.info(String.format("Filling buffer for next() with download-position at %,d, length %,d, buffer: %s",
+                log.info("Filling buffer for next() with download-position at %,d, length %,d, buffer: %s".formatted(
                         nextDownloadPos, download.getLength(), buffer));
                 int chunks = fillupBuffer(-1, 10);
-                log.info(String.format("Downloaded %,d chunks, now at download-position %,d, length %,d, buffer: %s",
+                log.info("Downloaded %,d chunks, now at download-position %,d, length %,d, buffer: %s".formatted(
                         chunks, nextDownloadPos, download.getLength(), buffer));
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to fill-up buffer", e);
@@ -256,15 +256,15 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         // empty() indicates that we cannot fetch more data any more
         if(buffer.empty() && !empty()) {
             try {
-                log.info(String.format("Filling buffer for peek() with download-position at %,d, length %,d, buffer: %s",
+                log.info("Filling buffer for peek() with download-position at %,d, length %,d, buffer: %s".formatted(
                         nextDownloadPos, download.getLength(), buffer));
                 int chunks = fillupBuffer(-1, 10);
-                log.info(String.format("Downloaded %,d chunks, now at download-position %,d, length %,d, buffer: %s",
+                log.info("Downloaded %,d chunks, now at download-position %,d, length %,d, buffer: %s".formatted(
                         chunks, nextDownloadPos, download.getLength(), buffer));
             } catch (IOException e) {
                 log.log(Level.WARNING,
-                        String.format("Failed to fill-up buffer for peek, now at download-position %,d, length %,d, buffer: %s",
-                        nextDownloadPos, download.getLength(), buffer), e);
+                        "Failed to fill-up buffer for peek, now at download-position %,d, length %,d, buffer: %s".formatted(
+                                nextDownloadPos, download.getLength(), buffer), e);
                 return null;
             }
         }
@@ -408,7 +408,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         long startPosition = nextDownloadPos - (long) buffer.size() * chunkSize;
 
         if(startPosition < 0) {
-            log.warning(String.format("Found invalid startPosition: %,d with next download-position at %,d and buffer-size of %,d, resetting to 0",
+            log.warning("Found invalid startPosition: %,d with next download-position at %,d and buffer-size of %,d, resetting to 0".formatted(
                     startPosition, nextDownloadPos, buffer.size() * chunkSize));
             startPosition = 0;
         }

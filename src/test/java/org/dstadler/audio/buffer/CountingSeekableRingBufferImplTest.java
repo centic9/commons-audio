@@ -3,14 +3,12 @@ package org.dstadler.audio.buffer;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.testing.TestHelpers;
 import org.dstadler.commons.testing.ThreadTestHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.logging.Logger;
 
 import static org.dstadler.audio.buffer.CountingSeekableRingBufferImpl.DEFAULT_CHUNKS_PER_SECOND;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekableRingBufferTester {
     private final static Logger log = LoggerFactory.make();
@@ -73,7 +71,7 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
         getBuffer().add(new Chunk(new byte[] { 1 }, "", tms));
 
         final double writtenPerSecond = getBuffer().getChunksWrittenPerSecond();
-        assertTrue("Had: " + writtenPerSecond, Double.isInfinite(writtenPerSecond));
+        assertTrue(Double.isInfinite(writtenPerSecond), "Had: " + writtenPerSecond);
         assertEquals(0, getBuffer().getChunksReadPerSecond(), 0);
         assertEquals(DEFAULT_CHUNKS_PER_SECOND, getBuffer().getChunksPerSecond(), 0.01);
 
@@ -96,13 +94,10 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
                         "\n" + expected +
                         "\n" + getBuffer().getChunksReadPerSecond());
 
-        assertEquals("Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer(),
-                expected, getBuffer().getChunksReadPerSecond(), 0.01);
-        assertEquals("Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer(),
-                expected, getBuffer().getChunksPerSecond(), 0.01);
+        assertEquals(expected, getBuffer().getChunksReadPerSecond(), 0.01, "Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer());
+        assertEquals(expected, getBuffer().getChunksPerSecond(), 0.01, "Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer());
 
-        assertEquals("Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer(),
-                4, ((CountingSeekableRingBufferImpl)getBuffer()).getChunksReadOverall());
+        assertEquals(4, ((CountingSeekableRingBufferImpl)getBuffer()).getChunksReadOverall(), "Having time: " + start + " - " + end + ": " + (end - start) + ": " + getBuffer());
     }
 
     @Test

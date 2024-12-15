@@ -2,8 +2,8 @@ package org.dstadler.audio.buffer;
 
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.testing.ThreadTestHelper;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,7 +21,7 @@ public class SynchronizingTest {
     private static volatile boolean shouldStop = false;
     private final AtomicReference<Exception> exc = new AtomicReference<>();
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (exc.get() != null) {
             throw exc.get();
@@ -62,7 +62,7 @@ public class SynchronizingTest {
                     int fill = buffer.fill();
                     float maxChunksBackwards = (fill - size);
                     if (maxChunksBackwards < 0) {
-                        exc.set(new Exception(String.format("Had higher size '%d' than fill '%d' in the buffer, but this should not be possible: %s",
+                        exc.set(new Exception("Had higher size '%d' than fill '%d' in the buffer, but this should not be possible: %s".formatted(
                                 size, fill, buffer)));
                     }
                 }

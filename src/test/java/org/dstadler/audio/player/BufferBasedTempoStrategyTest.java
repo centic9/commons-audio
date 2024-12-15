@@ -3,13 +3,13 @@ package org.dstadler.audio.player;
 import org.dstadler.audio.buffer.BlockingSeekableRingBuffer;
 import org.dstadler.audio.buffer.CountingSeekableRingBuffer;
 import org.dstadler.audio.buffer.CountingSeekableRingBufferImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.dstadler.audio.player.BufferBasedTempoStrategy.DEFAULT_KEEP_AREA_SECONDS;
 import static org.dstadler.audio.player.BufferBasedTempoStrategy.DEFAULT_SPEED_STEP;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BufferBasedTempoStrategyTest {
     private final AtomicInteger fill = new AtomicInteger();
@@ -196,8 +196,7 @@ public class BufferBasedTempoStrategyTest {
         try (CountingSeekableRingBuffer buffer = new TestBufferImpl()) {
             BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, 600, DEFAULT_SPEED_STEP);
 
-            assertEquals("With larger keep area we should not apply any change in tempo here and thus should get back 1.0f",
-                    1f, strategy.calculateTempo(), 0.01);
+            assertEquals(1f, strategy.calculateTempo(), 0.01, "With larger keep area we should not apply any change in tempo here and thus should get back 1.0f");
         }
     }
 
@@ -207,8 +206,7 @@ public class BufferBasedTempoStrategyTest {
         try (CountingSeekableRingBuffer buffer = new TestBufferImpl()) {
             BufferBasedTempoStrategy strategy = new BufferBasedTempoStrategy(() -> buffer, DEFAULT_KEEP_AREA_SECONDS, 0.01f);
 
-            assertEquals("With smaller speedStep we should get back a smaller slowdown value of 0.99f instead of default 0.95f",
-                    0.99f, strategy.calculateTempo(), 0.01);
+            assertEquals(0.99f, strategy.calculateTempo(), 0.01, "With smaller speedStep we should get back a smaller slowdown value of 0.99f instead of default 0.95f");
         }
     }
 

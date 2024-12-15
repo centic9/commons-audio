@@ -5,13 +5,13 @@ import org.apache.commons.rng.UniformRandomProvider;
 import org.apache.commons.rng.simple.RandomSource;
 import org.dstadler.commons.testing.TestHelpers;
 import org.dstadler.commons.testing.ThreadTestHelper;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("BusyWait")
 public class DataPipeTest {
@@ -20,7 +20,7 @@ public class DataPipeTest {
 	private final AtomicReference<IOException> exc = new AtomicReference<>();
 	private final AtomicReference<Long> lastWrite = new AtomicReference<>(System.currentTimeMillis());
 
-	@After
+	@AfterEach
 	public void tearDown() throws IOException {
 		if (exc.get() != null) {
 			throw exc.get();
@@ -131,8 +131,7 @@ public class DataPipeTest {
             Thread reader = new Thread(() -> {
                 for (int i = 0; i < 100000; i++) {
                     try {
-                        assertEquals("Failed at index " + i,
-                                i % 256, pipe.getInput().read());
+                        assertEquals(i % 256, pipe.getInput().read(), "Failed at index " + i);
                     } catch (IOException e) {
                         exc.set(e);
                     }

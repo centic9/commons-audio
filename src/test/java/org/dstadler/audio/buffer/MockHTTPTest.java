@@ -5,8 +5,8 @@ import org.apache.commons.lang3.RandomUtils;
 import org.dstadler.commons.http.NanoHTTPD;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.dstadler.commons.testing.ThreadTestHelper;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,10 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MockHTTPTest {
     @Test
@@ -49,8 +46,7 @@ public class MockHTTPTest {
             }
         }
 
-        assertEquals("Expecting one call initially and 10 retries",
-                10 + 1, httpCalls.get());
+        assertEquals(10 + 1, httpCalls.get(), "Expecting one call initially and 10 retries");
     }
 
     @Test
@@ -80,8 +76,7 @@ public class MockHTTPTest {
             }
         }
 
-        assertEquals("Expecting one call initially and one call to fetch data",
-                1 + 1, httpCalls.get());
+        assertEquals(1 + 1, httpCalls.get(), "Expecting one call initially and one call to fetch data");
     }
 
     @Test
@@ -110,11 +105,10 @@ public class MockHTTPTest {
             }
         }
 
-        assertEquals("Expecting one call initially and one call to fetch data",
-                1 + 1, httpCalls.get());
+        assertEquals(1 + 1, httpCalls.get(), "Expecting one call initially and one call to fetch data");
     }
 
-    @Ignore("URL is only temporary")
+    @Disabled("URL is only temporary")
     @Test
     public void testFM4Stream() throws IOException {
         try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("https://loopstream01.apa.at/?channel=fm4&id=2020-11-30_1459_tl_54_7DaysMon12_109215.mp3",
@@ -201,9 +195,9 @@ public class MockHTTPTest {
                         capacity = buffer.capacity();
                     }
                     assertTrue(size >= 0);
-                    assertTrue("size: " + size + ", capacity: " + capacity + ", buffer: " + buffer,
+                    assertTrue(size <= (capacity + BUFFERED_CHUNKS),
                             // size can be a bit more as we compute it based on internal byte-position
-                            size <= (capacity + BUFFERED_CHUNKS));
+                            "size: " + size + ", capacity: " + capacity + ", buffer: " + buffer);
                     break;
                 }
                 case 5:
@@ -215,13 +209,13 @@ public class MockHTTPTest {
                     break;
                 case 7: {
                     int available = buffer.bufferedBackward();
-                    assertTrue("Had: " + available, available >= 0);
+                    assertTrue(available >= 0, "Had: " + available);
                     assertTrue(available <= buffer.capacity());
                     break;
                 }
                 case 8: {
                     int available = buffer.bufferedForward();
-                    assertTrue("Had: " + available, available >= 0);
+                    assertTrue(available >= 0, "Had: " + available);
                     assertTrue(available <= buffer.capacity());
                     break;
                 }
@@ -258,13 +252,13 @@ public class MockHTTPTest {
                 case 14: {
                     // another test of size without synchronized block
                     int size = buffer.size();
-                    assertTrue("Having size: " + size, size >= 0);
+                    assertTrue(size >= 0, "Having size: " + size);
                     break;
                 }
                 case 15:
                     // another test of capacity without synchronized block
                     int capacity = buffer.capacity();
-                    assertTrue("Having capacity: " + capacity, capacity >= 0);
+                    assertTrue(capacity >= 0, "Having capacity: " + capacity);
                     break;
                 case 16: {
                     final int fill;
@@ -366,7 +360,6 @@ public class MockHTTPTest {
             }
         }
 
-        assertEquals("Expecting one call initially and first try",
-                1 + 1, httpCalls.get());
+        assertEquals(1 + 1, httpCalls.get(), "Expecting one call initially and first try");
     }
 }

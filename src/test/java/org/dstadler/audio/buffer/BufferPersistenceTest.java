@@ -2,17 +2,14 @@ package org.dstadler.audio.buffer;
 
 import org.dstadler.audio.stream.Stream;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BufferPersistenceTest {
     private final static Logger log = LoggerFactory.make();
@@ -190,8 +187,7 @@ public class BufferPersistenceTest {
             BufferPersistenceDTO dtoBack = BufferPersistence.readBufferFromDisk(tempPersist);
 
             try (RangeDownloadingBuffer buffer = RangeDownloadingBuffer.fromPersistence(dtoBack, 100, Chunk.CHUNK_SIZE)) {
-                assertEquals("Zero expected here because we restored the buffer",
-                        0, buffer.bufferedBackward());
+                assertEquals(0, buffer.bufferedBackward(), "Zero expected here because we restored the buffer");
 
                 buffer.next();
 

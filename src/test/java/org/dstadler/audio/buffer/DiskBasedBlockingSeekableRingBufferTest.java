@@ -7,25 +7,25 @@ import org.dstadler.audio.stream.Stream;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.testing.TestHelpers;
 import org.dstadler.commons.testing.ThreadTestHelper;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSeekableRingBufferTester {
 	private static File DATA_DIR;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass() throws IOException {
 		LoggerFactory.initLogging();
 	}
 
-	@After
+	@AfterEach
 	public void tearDownDataDir() throws IOException {
 		FileUtils.deleteDirectory(getDataDir());
 	}
@@ -101,10 +101,10 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 
 			assertTrue(localBuffer.empty());
 			assertFalse(localBuffer.full());
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("empty=true"));
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("full=false"));
+			assertTrue(localBuffer.toString().contains("empty=true"),
+					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("full=false"),
+					"Had: " + localBuffer);
 
 			for (byte i = 0; i < 15; i++) {
 				localBuffer.add(new Chunk(new byte[] { i }, "", 0));
@@ -112,24 +112,24 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 
 			assertFalse(localBuffer.empty());
 			assertTrue(localBuffer.full());
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("empty=false"));
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("full=true"));
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("isDirty="));
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("diskBufferRead="));
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("diskBufferWrite="));
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("numberOfDiskChunks="));
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("diskBufferReadPosition="));
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("diskBufferWritePosition="));
-			assertTrue("Had: " + localBuffer,
-					localBuffer.toString().contains("dataDir="));
+			assertTrue(localBuffer.toString().contains("empty=false"),
+					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("full=true"),
+					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("isDirty="),
+					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("diskBufferRead="),
+					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("diskBufferWrite="),
+					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("numberOfDiskChunks="),
+					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("diskBufferReadPosition="),
+					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("diskBufferWritePosition="),
+					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("dataDir="),
+					"Had: " + localBuffer);
 		}
 	}
 
@@ -137,23 +137,20 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 	public void testAddDiskBuffer() throws IOException {
 		String[] list = getDataDir().list();
 		assertNotNull(list);
-		assertEquals("Should not have disk-files before",
-				0, list.length);
+		assertEquals(0, list.length, "Should not have disk-files before");
 
 		buffer.add(new Chunk(new byte[] { 1 }, "", 0));
 
 		list = getDataDir().list();
 		assertNotNull(list);
-		assertEquals("Should not have disk-files until first flush",
-				0, list.length);
+		assertEquals(0, list.length, "Should not have disk-files until first flush");
 
 		buffer.add(new Chunk(new byte[] { 2 }, "", 0));
 		buffer.add(new Chunk(new byte[] { 3 }, "", 0));
 
 		list = getDataDir().list();
 		assertNotNull(list);
-		assertEquals("Should have disk files now",
-				1, list.length);
+		assertEquals(1, list.length, "Should have disk files now");
 		assertTrue(list[0].startsWith(DiskBasedBlockingSeekableRingBuffer.FILE_PREFIX));
 
 		buffer.add(new Chunk(new byte[] { 4 }, "", 0));
@@ -162,8 +159,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 
 		list = getDataDir().list();
 		assertNotNull(list);
-		assertEquals("Should have disk files now",
-				2, list.length);
+		assertEquals(2, list.length, "Should have disk files now");
 		assertTrue(list[1].startsWith(DiskBasedBlockingSeekableRingBuffer.FILE_PREFIX));
 
 		buffer.add(new Chunk(new byte[] { 7 }, "", 0));
@@ -172,16 +168,14 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 
 		list = getDataDir().list();
 		assertNotNull(list);
-		assertEquals("Should have disk files now",
-				3, list.length);
+		assertEquals(3, list.length, "Should have disk files now");
 		assertTrue(list[2].startsWith(DiskBasedBlockingSeekableRingBuffer.FILE_PREFIX));
 
 		buffer.add(new Chunk(new byte[] { 10 }, "", 0));
 
 		list = getDataDir().list();
 		assertNotNull(list);
-		assertEquals("Should have disk files now",
-				4, list.length);
+		assertEquals(4, list.length, "Should have disk files now");
 		assertTrue(list[3].startsWith(DiskBasedBlockingSeekableRingBuffer.FILE_PREFIX));
 
 		buffer.add(new Chunk(new byte[] { 11 }, "", 0));
@@ -190,8 +184,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 
 		list = getDataDir().list();
 		assertNotNull(list);
-		assertEquals("Should have disk files now",
-				4, list.length);
+		assertEquals(4, list.length, "Should have disk files now");
 
 		buffer.add(new Chunk(new byte[] { 14 }, "", 0));
 		buffer.add(new Chunk(new byte[] { 15 }, "", 0));
@@ -199,8 +192,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 
 		list = getDataDir().list();
 		assertNotNull(list);
-		assertEquals("Should not end up with more disk files than 4",
-				4, list.length);
+		assertEquals(4, list.length, "Should not end up with more disk files than 4");
 	}
 
 	@Override
@@ -222,8 +214,8 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 
 				if (RandomUtils.nextBoolean()) {
 					int seek = localBuffer.seek(RandomUtils.nextInt(0, 5000) - 2500);
-					assertTrue("Had: " + seek + " with " + buffer,
-							seek > -1000 && seek < 1000);
+					assertTrue(seek > -1000 && seek < 1000,
+							"Had: " + seek + " with " + buffer);
 				}
 			}
 		}
@@ -326,16 +318,16 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 				try {
 					localBuffer.add(new Chunk(new byte[0], "", 1));
 				} catch (IllegalStateException e) {
-					assertTrue("Had: " + ExceptionUtils.getStackTrace(e),
-							e.getCause() instanceof FileNotFoundException);
-					assertTrue("Had: " + ExceptionUtils.getStackTrace(e),
-							e.getMessage().contains("Could not update current buffers for writing at position") ||
-							e.getMessage().contains("Could not fetch buffer for reading at position"));
-					assertTrue("Had: " + ExceptionUtils.getStackTrace(e),
-							e.getMessage().contains("position 5 ") ||
+					assertTrue(e.getCause() instanceof FileNotFoundException,
+							"Had: " + ExceptionUtils.getStackTrace(e));
+					assertTrue(e.getMessage().contains("Could not update current buffers for writing at position") ||
+							e.getMessage().contains("Could not fetch buffer for reading at position"),
+							"Had: " + ExceptionUtils.getStackTrace(e));
+					assertTrue(e.getMessage().contains("position 5 ") ||
 							e.getMessage().contains("position 10 ") ||
 							e.getMessage().contains("position 25") ||
-							e.getMessage().contains("position 30"));
+							e.getMessage().contains("position 30"),
+							"Had: " + ExceptionUtils.getStackTrace(e));
 				}
 			}
 		}

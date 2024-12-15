@@ -1,14 +1,16 @@
 package org.dstadler.audio.player;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AudioSPIPlayerTest {
     private static final File SAMPLE_FILE = new File("src/test/resources/1-second-of-silence.mp3");
@@ -32,7 +34,7 @@ public class AudioSPIPlayerTest {
             }
         } catch (IllegalArgumentException e) {
             if(ExceptionUtils.getStackTrace(e).contains("No line matching interface SourceDataLine supporting format")) {
-                Assume.assumeNoException("No audio-device available", e);
+                Assumptions.abort("No audio-device available\n" + ExceptionUtils.getStackTrace(e));
             }
 
             throw e;
@@ -50,10 +52,12 @@ public class AudioSPIPlayerTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testException() throws IOException {
-        try (AudioSPIPlayer player = new AudioSPIPlayer(new ByteArrayInputStream("test".getBytes()))) {
-            player.setOptions("-0.1");
-        }
+    @Test
+    public void testException() {
+        assertThrows(IOException.class, () -> {
+            try (AudioSPIPlayer player = new AudioSPIPlayer(new ByteArrayInputStream("test".getBytes()))) {
+                player.setOptions("-0.1");
+            }
+        });
     }
 }
