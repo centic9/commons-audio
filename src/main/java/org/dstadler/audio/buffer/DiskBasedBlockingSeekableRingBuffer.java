@@ -306,7 +306,8 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 				diskBufferRead = readBuffer(dataDir, diskBufferReadPosition, numberOfChunks);
 			} catch (IOException e) {
 				throw new IllegalStateException("Could not fetch buffer for reading at position " +
-						diskBufferReadPosition + " from " + dataDir, e);
+						diskBufferReadPosition + " from " + dataDir + " with nextGet: " + nextGet +
+						" and numberOfChunks " + numberOfChunks, e);
 			}
 		}
 	}

@@ -5,7 +5,6 @@ import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.dstadler.audio.stream.Stream;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
-import org.dstadler.commons.testing.TestHelpers;
 import org.dstadler.commons.testing.ThreadTestHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -205,15 +204,15 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		try (DiskBasedBlockingSeekableRingBuffer localBuffer = new DiskBasedBlockingSeekableRingBuffer(1000, 33, getDataDir())) {
 
 			for (int i = 0; i < 5000; i++) {
-				localBuffer.add(new Chunk(RandomUtils.nextBytes(1), "", 0));
+				localBuffer.add(new Chunk(RandomUtils.insecure().randomBytes(1), "", 0));
 
-				if (RandomUtils.nextBoolean()) {
+				if (RandomUtils.insecure().randomBoolean()) {
 					assertNotNull(localBuffer.peek());
 					assertNotNull(localBuffer.next());
 				}
 
-				if (RandomUtils.nextBoolean()) {
-					int seek = localBuffer.seek(RandomUtils.nextInt(0, 5000) - 2500);
+				if (RandomUtils.insecure().randomBoolean()) {
+					int seek = localBuffer.seek(RandomUtils.insecure().randomInt(0, 5000) - 2500);
 					assertTrue(seek > -1000 && seek < 1000,
 							"Had: " + seek + " with " + buffer);
 				}
@@ -318,8 +317,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 				try {
 					localBuffer.add(new Chunk(new byte[0], "", 1));
 				} catch (IllegalStateException e) {
-					assertTrue(e.getCause() instanceof FileNotFoundException,
-							"Had: " + ExceptionUtils.getStackTrace(e));
+                    assertInstanceOf(FileNotFoundException.class, e.getCause(), "Had: " + ExceptionUtils.getStackTrace(e));
 					assertTrue(e.getMessage().contains("Could not update current buffers for writing at position") ||
 							e.getMessage().contains("Could not fetch buffer for reading at position"),
 							"Had: " + ExceptionUtils.getStackTrace(e));
