@@ -13,6 +13,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,11 @@ public class FM4 {
 
     public static final String FM4_API_URL = "https://audioapi.orf.at/fm4/json/5.0/broadcasts?_o=fm4.orf.at";
     public static final String OOE_API_URL = "https://audioapi.orf.at/ooe/json/5.0/broadcasts?_o=ooe.orf.at";
+
+    public static final Set<String> RESPONSE_INVALID_STREAM = Set.of(
+            "Could not find any loop-channels",
+            "<!DOCTYPE html><html xm",
+            "<!DOCTYPE html><html xmlns=");
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

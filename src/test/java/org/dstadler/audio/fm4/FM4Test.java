@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import static org.dstadler.audio.fm4.FM4.RESPONSE_INVALID_STREAM;
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -225,8 +226,9 @@ public class FM4Test {
                     HexDump.dump(bytes, 0, stream, 0);
                     log.info(stream.toString(StandardCharsets.UTF_8));
 
-                    assertEquals("Could not find any loop-channels",
-                            new String(bytes, 0, 31, StandardCharsets.UTF_8));
+                    final String content = new String(bytes, 0, 31, StandardCharsets.UTF_8);
+                    assertTrue(RESPONSE_INVALID_STREAM.contains(content.replace("\n", "").replace("\r", "")),
+                            "Fetched " + url + ", had: " + content);
                 } finally {
                     // ensure all content is taken out to free resources
                     EntityUtils.consume(entity);
