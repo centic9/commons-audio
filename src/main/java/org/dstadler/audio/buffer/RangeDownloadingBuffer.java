@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Initial implementation of a special buffer-implementation for downloading chunks from files
@@ -31,6 +32,9 @@ import java.util.logging.Logger;
  */
 public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persistable {
     private final static Logger log = LoggerFactory.make();
+
+    private final static Pattern WINDOWS_FILE = Pattern.compile("file://[A-Z]:\\\\.*");
+    private final static Pattern WINDOWS_DRIVE = Pattern.compile("[A-Z]:\\\\.*");
 
     @VisibleForTesting
     int RETRY_SLEEP_TIME = 5000;
@@ -45,7 +49,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
     private long nextDownloadPos = 0;
 
     /**
-     * Create a buffer for downloading a audio-stream via the given URL.
+     * Create a buffer for downloading an audio-stream via the given URL.
      *
      * @param url The URL to fetch data from. Can be a local file-name or a file:// url.
      * @param user The user to use for authentication, can be empty or null to not use authentication
@@ -62,21 +66,25 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
      */
     public RangeDownloadingBuffer(String url, String user, String pwd, int bufferedChunks, int chunkSize,
                                   Function<Double, Pair<String, Long>> metaDataFun) throws IOException {
-        if(url.startsWith("file://") && !url.startsWith("file://C:\\")) {
+        if (WINDOWS_FILE.matcher(url).matches()) {
+            // file on Windows via file://C:\...
+            this.download = new RangeDownloadFile(new File(StringUtils.removeStart(url, "file://")));
+        } else if(url.startsWith("file://")) {
+            // files via file://...
 			try {
 				this.download = new RangeDownloadFile(new File(new URL(url).toURI()));
 			} catch (URISyntaxException | IllegalArgumentException e) {
 				throw new IOException("While handling url: " + url, e);
 			}
-		} else if (url.startsWith("file://C:\\")) {
-			this.download = new RangeDownloadFile(new File(StringUtils.removeStart(url, "file://")));
-		} else if (url.startsWith("/") || url.startsWith("\\") || url.startsWith("C:\\")) {
+		} else if (url.startsWith("/") || url.startsWith("\\") || WINDOWS_DRIVE.matcher(url).matches()) {
+            // files via / or \\ or C:\
             this.download = new RangeDownloadFile(new File(url));
         } else {
+            // everything else should be a URL
             this.download = new RangeDownloadHTTP(url, user, pwd);
         }
 
-        // make the buffer-capacity considerably larger to not fail on multi-threaded access
+        // make the buffer-capacity considerably larger to not fail on multithreaded access
         // which might add more chunks than expected sometimes due to "expected" race-conditions
         this.buffer = new BlockingSeekableRingBuffer(bufferedChunks*2);
 
@@ -86,7 +94,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
     }
 
     /**
-     * Ensure that the buffer is filled with chunks up to it's capacity.
+     * Ensure that the buffer is filled with chunks up to its capacity.
      *
      * Depending on parameters downloading can be skipped to not
      * fetch data too eagerly.
@@ -229,7 +237,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
     @Override
     public Chunk next() {
         // buffer.empty() indicates that we should fetch more data
-        // empty() indicates that we cannot fetch more data any more
+        // empty() indicates that we cannot fetch more data anymore
         if(buffer.empty() && !empty()) {
             try {
                 log.info("Filling buffer for next() with download-position at %,d, length %,d, buffer: %s".formatted(
@@ -253,7 +261,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
     @Override
     public Chunk peek() {
         // buffer.empty() indicates that we should fetch more data
-        // empty() indicates that we cannot fetch more data any more
+        // empty() indicates that we cannot fetch more data anymore
         if(buffer.empty() && !empty()) {
             try {
                 log.info("Filling buffer for peek() with download-position at %,d, length %,d, buffer: %s".formatted(
