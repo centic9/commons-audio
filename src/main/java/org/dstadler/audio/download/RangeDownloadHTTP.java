@@ -13,6 +13,7 @@ import org.dstadler.commons.http.HttpClientWrapper;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -60,6 +61,29 @@ public class RangeDownloadHTTP implements RangeDownload {
         }
 
         // initialize the length and verify that the range-download will work
+        length = getLengthWithRetry(url);
+
+        log.info("Prepared download of %s, length: %,d".formatted(url, length));
+    }
+
+    private long getLengthWithRetry(String url) throws IOException {
+        try {
+            return getStreamLength(url);
+        } catch (UnknownHostException e) {
+            log.warning("Could not fetch length for stream at " + url + ", retrying after 3 seconds, had: " + e);
+
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+
+            return getStreamLength(url);
+        }
+    }
+
+    private long getStreamLength(String url) throws IOException {
+        final long length;
         final HttpUriRequest httpHead = new HttpHead(url);
         try (CloseableHttpResponse response = httpClient.getHttpClient().execute(httpHead)) {
             HttpEntity entity = HttpClientWrapper.checkAndFetch(response, url);
@@ -88,8 +112,7 @@ public class RangeDownloadHTTP implements RangeDownload {
             //noinspection deprecation
             httpClient.getHttpClient().getConnectionManager().closeIdleConnections(0, TimeUnit.SECONDS);
         }
-
-        log.info("Prepared download of %s, length: %,d".formatted(url, length));
+        return length;
     }
 
     @Override

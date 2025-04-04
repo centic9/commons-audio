@@ -2,6 +2,7 @@ package org.dstadler.audio.download;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -18,12 +19,14 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RangeDownloadHTTPTest {
     private static final String SAMPLE_URL = "https://www.dstadler.org/DominikStadler2013.png";
+    private static final String SAMPLE_URL_INVALID = "https://www.notexisting.blabla/";
     private static final long EXPECTED_LENGTH = 841641;
 
     private static final String FM4_URL = "https://loopstreamfm4.apa.at/?channel=fm4&id=2019-12-21_2200_tl_54_7DaysSat20_90331.mp3";
@@ -42,6 +45,13 @@ public class RangeDownloadHTTPTest {
 
             verifier.addObject(download);
         }
+    }
+
+    @Test
+    public void testLengthInvalidHost() {
+        //noinspection resource
+        assertThrows(UnknownHostException.class,
+                () -> new RangeDownloadHTTP(SAMPLE_URL_INVALID, "", null));
     }
 
     @Test
@@ -177,7 +187,7 @@ public class RangeDownloadHTTPTest {
     public void testWithUserAndAuthResponse() throws IOException {
         try (MockRESTServer server = new MockRESTServer(() -> {
             NanoHTTPD.Response response = new NanoHTTPD.Response("200", "text/html",
-                    "");
+                    StringUtils.repeat(' ', 132));
             response.addHeader("Accept-Ranges", "bytes");
             response.addHeader("Content-Length", "132");
             return response;
@@ -186,8 +196,43 @@ public class RangeDownloadHTTPTest {
                     "user123", "pwd")) {
                 assertEquals(132, download.getLength());
 
+                assertEquals(0, download.readRange(0, 1).length);
+
                 verifier.addObject(download);
             }
+        }
+    }
+
+    @Test
+    public void testWithUserAndAuthResponseMissingContentLength() throws IOException {
+        try (MockRESTServer server = new MockRESTServer(() -> {
+            NanoHTTPD.Response response = new NanoHTTPD.Response("200", "text/html",
+                    "");
+            response.addHeader("Accept-Ranges", "bytes");
+            return response;
+        })) {
+            //noinspection resource
+            assertThrows(IllegalStateException.class,
+                    () -> new RangeDownloadHTTP("http://localhost:" + server.getPort(),
+                    "user123", "pwd"),
+                    "Should fail because header 'Content-Length' is missing");
+        }
+    }
+
+    @Test
+    public void testWithUserAndAuthResponseInvalidRange() throws IOException {
+        try (MockRESTServer server = new MockRESTServer(() -> {
+            NanoHTTPD.Response response = new NanoHTTPD.Response("200", "text/html",
+                    "");
+            response.addHeader("Accept-Ranges", "blabla");
+            response.addHeader("Content-Length", "132");
+            return response;
+        })) {
+            //noinspection resource
+            assertThrows(IllegalStateException.class,
+                    () -> new RangeDownloadHTTP("http://localhost:" + server.getPort(),
+                            "user123", "pwd"),
+                    "Should fail because header 'Accept-Ranges' is invalid");
         }
     }
 
