@@ -248,8 +248,8 @@ public class FM4CacheTest {
             FM4Stream stream2 = it.next();
             assertNotEquals(stream1.getStart(), stream2.getStart());
 
-            String url1 = stream1.getStreams().get(0);
-            String url2 = stream2.getStreams().get(0);
+            String url1 = stream1.getStreams().first();
+            String url2 = stream2.getStreams().first();
             if(stream1.getStart() > stream2.getStart()) {
                 FM4Stream next = cache.getNextByStreamURL(url2);
                 assertNotNull(next);

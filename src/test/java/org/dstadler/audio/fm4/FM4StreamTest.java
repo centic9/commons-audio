@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Set;
 
 import static org.dstadler.audio.fm4.FM4Stream.DATETIME_FORMAT;
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
@@ -84,11 +85,11 @@ public class FM4StreamTest {
 
         Assumptions.assumeFalse(fm4Streams.isEmpty(), "Should get some streams");
 
-        List<String> streams = fm4Streams.get(0).getStreams();
+        Set<String> streams = fm4Streams.get(0).getStreams();
 
         assertNotNull(streams);
         assertFalse(streams.isEmpty());
-        assertNotNull(streams.get(0));
+        assertNotNull(streams.iterator().next());
     }
 
     @Test

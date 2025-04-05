@@ -9,8 +9,8 @@ import org.dstadler.commons.logging.jdk.LoggerFactory;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 /**
@@ -110,12 +110,12 @@ public class FM4Stream {
                 " - " + getStreams();
     }
 
-    public List<String> getStreams() throws IOException {
+    public SortedSet<String> getStreams() throws IOException {
         log.info("Fetching streams for " + programKey + ": " + href);
         String json = HttpClientWrapper.retrieveData(href);
         JsonNode jsonNode = objectMapper.readTree(json).get("payload");
 
-        List<String> streams = new ArrayList<>();
+        SortedSet<String> streams = new TreeSet<>();
         for (JsonNode stream : jsonNode.get("streams")) {
             streams.add(streamUrlBase + stream.get("loopStreamId").asText());
         }
@@ -139,7 +139,7 @@ public class FM4Stream {
     @Override
     public int hashCode() {
         int result = programKey.hashCode();
-        result = 31 * result + (int) (start ^ (start >>> 32));
+        result = 31 * result + Long.hashCode(start);
         return result;
     }
 
