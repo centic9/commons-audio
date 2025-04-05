@@ -160,7 +160,7 @@ public class FM4 {
                     stream.getShortTime().replace(":", "_") + "_" + count + ".mp3");
 
             log.info("Downloading " + stream.getProgramKey() + " - " + stream.getShortTime() + " - " +
-                    stream.getTitle() + " to URL: " + url + " to " + destination);
+                    stream.getTitle() + " from URL: " + url + " to " + destination);
 
             HttpClientWrapper.downloadFile(url, destination, 120_000);
 
