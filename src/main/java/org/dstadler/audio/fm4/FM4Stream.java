@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.dstadler.commons.http.HttpClientWrapper;
+import org.dstadler.commons.http5.HttpClientWrapper5;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 
 import java.io.IOException;
@@ -112,7 +112,13 @@ public class FM4Stream {
 
     public SortedSet<String> getStreams() throws IOException {
         log.info("Fetching streams for " + programKey + ": " + href);
-        String json = HttpClientWrapper.retrieveData(href);
+
+        final String json;
+        try (HttpClientWrapper5 wrapper = new HttpClientWrapper5("", null, 10_000, true)) {
+            // fetch stream
+            json = wrapper.simpleGet(href);
+        }
+
         JsonNode jsonNode = objectMapper.readTree(json).get("payload");
 
         SortedSet<String> streams = new TreeSet<>();

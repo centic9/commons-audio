@@ -9,12 +9,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.util.EntityUtils;
-import org.dstadler.commons.http.HttpClientWrapper;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.dstadler.commons.http5.HttpClientWrapper5;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 import org.dstadler.commons.net.UrlUtils;
 import org.dstadler.commons.testing.MockRESTServer;
@@ -210,7 +210,7 @@ public class FM4Test {
      */
     @Test
     public void testNotFoundIsHTTP200PlusMessage() throws IOException {
-        try (HttpClientWrapper httpClient = new HttpClientWrapper(5_000)) {
+        try (HttpClientWrapper5 httpClient = new HttpClientWrapper5(5_000)) {
             String url = "https://loopstreamfm4.apa.at/?channel=fm4&id=2021-01-09_1659_tl_54_7DaysSat14_111346.mp3";
             final HttpUriRequest httpGet = new HttpGet(url);
 
@@ -218,7 +218,7 @@ public class FM4Test {
             httpGet.setHeader("Range", "bytes=0-40");
 
             try (CloseableHttpResponse response = httpClient.getHttpClient().execute(httpGet)) {
-                HttpEntity entity = HttpClientWrapper.checkAndFetch(response, url);
+                HttpEntity entity = HttpClientWrapper5.checkAndFetch(response, url);
                 try {
                     byte[] bytes = new byte[41];
                     IOUtils.read(entity.getContent(), bytes);

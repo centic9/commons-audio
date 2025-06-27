@@ -1,19 +1,22 @@
 package org.dstadler.audio.example;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.ProtocolVersion;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.util.Timeout;
 import org.dstadler.audio.buffer.Chunk;
 import org.dstadler.audio.buffer.SeekableRingBuffer;
-import org.dstadler.commons.http.HttpClientWrapper;
+import org.dstadler.commons.http5.HttpClientWrapper5;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 
 import java.io.IOException;
@@ -26,7 +29,6 @@ import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.apache.http.HttpVersion.HTTP_1_0;
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
 
 /**
@@ -48,9 +50,9 @@ public class StreamReader implements AutoCloseable {
 
     public StreamReader(int timeoutMs, BooleanSupplier shouldStop) {
         RequestConfig reqConfig = RequestConfig.custom()
-                .setSocketTimeout(timeoutMs)
-                .setConnectTimeout(timeoutMs)
-                .setConnectionRequestTimeout(timeoutMs)
+                //.setSocketTimeout(timeoutMs)
+                .setConnectTimeout(Timeout.ofMilliseconds(timeoutMs))
+                .setConnectionRequestTimeout(Timeout.ofMilliseconds(timeoutMs))
                 .build();
 
         HttpClientBuilder builder = HttpClients.custom();
@@ -83,7 +85,7 @@ public class StreamReader implements AutoCloseable {
 
         while(!shouldStop.getAsBoolean()) {
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
-                HttpEntity entity = HttpClientWrapper.checkAndFetch(response, strUrl);
+                HttpEntity entity = HttpClientWrapper5.checkAndFetch(response, strUrl);
                 try {
                     long chunks = 0;
                     InputStream content = entity.getContent();
@@ -131,7 +133,11 @@ public class StreamReader implements AutoCloseable {
 
     protected HttpGet buildHTTPHeader(String strUrl) {
         HttpGet httpGet = new HttpGet(strUrl);
-        httpGet.setProtocolVersion(HTTP_1_0);
+        try {
+            httpGet.setVersion(ProtocolVersion.parse("HTTP/1.0"));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         httpGet.addHeader("User-Agent", "Wget/1.17.1 (linux-gnu)");
         httpGet.addHeader("Accept", "*/*");
         httpGet.addHeader("Accept-Encoding", "identity");

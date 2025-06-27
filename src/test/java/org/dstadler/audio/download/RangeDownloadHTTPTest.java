@@ -3,12 +3,12 @@ package org.dstadler.audio.download;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.util.EntityUtils;
-import org.dstadler.commons.http.HttpClientWrapper;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.dstadler.commons.http5.HttpClientWrapper5;
 import org.dstadler.commons.http.NanoHTTPD;
 import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.MockRESTServer;
@@ -117,7 +117,7 @@ public class RangeDownloadHTTPTest {
         assertNotNull(Thread.currentThread().getContextClassLoader().getResource("log4j.properties"));
 
         File destination = new File("/tmp/FM4.mp3");
-        HttpClientWrapper.downloadFile(
+        HttpClientWrapper5.downloadFile(
                 FM4_URL,
                 destination, 60_000);
         assertTrue(destination.exists());
@@ -128,13 +128,13 @@ public class RangeDownloadHTTPTest {
     public void testFM4DownloadRange() throws IOException {
         File destination = new File("/tmp/FM4.mp3");
         String url = FM4_URL;
-        try (HttpClientWrapper client = new HttpClientWrapper(60_000)) {
+        try (HttpClientWrapper5 client = new HttpClientWrapper5(60_000)) {
             final HttpUriRequest httpGet = new HttpGet(url);
 
             httpGet.setHeader("Range", "bytes=0-199");
 
             try (CloseableHttpResponse response = client.getHttpClient().execute(httpGet)) {
-                HttpEntity entity = HttpClientWrapper.checkAndFetch(response, url);
+                HttpEntity entity = HttpClientWrapper5.checkAndFetch(response, url);
                 try {
                     FileUtils.copyInputStreamToFile(entity.getContent(), destination);
                 } finally {
@@ -158,9 +158,9 @@ public class RangeDownloadHTTPTest {
         //httpGet.setHeader("Range", "bytes=" + start + "-" + (start + size - 1));
         httpGet.setHeader("Range", "bytes=0-199");
 
-        try (HttpClientWrapper client = new HttpClientWrapper(60_000)) {
+        try (HttpClientWrapper5 client = new HttpClientWrapper5(60_000)) {
             try (CloseableHttpResponse response = client.getHttpClient().execute(httpGet)) {
-                HttpEntity entity = HttpClientWrapper.checkAndFetch(response, url);
+                HttpEntity entity = HttpClientWrapper5.checkAndFetch(response, url);
                 try {
                     byte[] bytes = new byte[200];
                     IOUtils.read(entity.getContent(), bytes);

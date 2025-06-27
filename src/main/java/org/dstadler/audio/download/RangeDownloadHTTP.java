@@ -3,19 +3,18 @@ package org.dstadler.audio.download;
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.util.EntityUtils;
-import org.dstadler.commons.http.HttpClientWrapper;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.dstadler.commons.http5.HttpClientWrapper5;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -35,7 +34,7 @@ public class RangeDownloadHTTP implements RangeDownload {
     private static final int TIMEOUT_MS = 60_000;
 
     private final String url;
-    private final HttpClientWrapper httpClient;
+    private final HttpClientWrapper5 httpClient;
 
     private final long length;
 
@@ -55,9 +54,9 @@ public class RangeDownloadHTTP implements RangeDownload {
         this.url = url;
 
         if(StringUtils.isEmpty(user)) {
-            this.httpClient = new HttpClientWrapper(TIMEOUT_MS);
+            this.httpClient = new HttpClientWrapper5(TIMEOUT_MS);
         } else {
-            this.httpClient = new HttpClientWrapper(user, pwd, TIMEOUT_MS);
+            this.httpClient = new HttpClientWrapper5(user, pwd, TIMEOUT_MS);
         }
 
         // initialize the length and verify that the range-download will work
@@ -86,9 +85,9 @@ public class RangeDownloadHTTP implements RangeDownload {
         final long length;
         final HttpUriRequest httpHead = new HttpHead(url);
         try (CloseableHttpResponse response = httpClient.getHttpClient().execute(httpHead)) {
-            HttpEntity entity = HttpClientWrapper.checkAndFetch(response, url);
+            HttpEntity entity = HttpClientWrapper5.checkAndFetch(response, url);
             try {
-                String headers = Arrays.toString(response.getAllHeaders());
+                String headers = Arrays.toString(response.getHeaders());
                 Preconditions.checkState(response.getFirstHeader("Accept-Ranges") != null,
                         "Need a HTTP response for 'Accept-Ranges' for %s, but got: %s",
                         url, headers);
@@ -109,8 +108,7 @@ public class RangeDownloadHTTP implements RangeDownload {
 
             // for some reason the connection to the URL might be stale now,
             // forcing to close the connections seems to help
-            //noinspection deprecation
-            httpClient.getHttpClient().getConnectionManager().closeIdleConnections(0, TimeUnit.SECONDS);
+            //httpClient.getHttpClient().getConnectionManager().closeIdleConnections(0, TimeUnit.SECONDS);
         }
         return length;
     }
@@ -148,11 +146,11 @@ public class RangeDownloadHTTP implements RangeDownload {
         httpGet.setHeader("Range", "bytes=" + start + "-" + end);
 
         try (CloseableHttpResponse response = httpClient.getHttpClient().execute(httpGet)) {
-            HttpEntity entity = HttpClientWrapper.checkAndFetch(response, url);
+            HttpEntity entity = HttpClientWrapper5.checkAndFetch(response, url);
             try {
                 // The FM4 server returns a text/html response if the show was removed after 7 days
                 // we should detect this and stop the download in this case
-                if (entity.getContentType().getValue().startsWith("text/html")) {
+                if (entity.getContentType().startsWith("text/html")) {
                     // returning empty signals that no more data can be loaded
                     return new byte[0];
                 }

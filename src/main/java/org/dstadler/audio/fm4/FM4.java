@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.dstadler.commons.http.HttpClientWrapper;
+import org.dstadler.commons.http5.HttpClientWrapper5;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 
 import java.io.File;
@@ -105,9 +105,9 @@ public class FM4 {
 
     private static JsonNode parsAPI(String apiUrl) throws IOException {
         final String json;
-        try {
+        try (HttpClientWrapper5 wrapper = new HttpClientWrapper5("", null, 10_000, true)) {
             // fetch stream
-            json = HttpClientWrapper.retrieveData(apiUrl);
+            json = wrapper.simpleGet(apiUrl);
         } catch (IOException e) {
             throw new IOException("While reading from: " + apiUrl, e);
         }
@@ -162,7 +162,7 @@ public class FM4 {
             log.info("Downloading " + stream.getProgramKey() + " - " + stream.getShortTime() + " - " +
                     stream.getTitle() + " from URL: " + url + " to " + destination);
 
-            HttpClientWrapper.downloadFile(url, destination, 120_000);
+            HttpClientWrapper5.downloadFile(url, destination, 120_000);
 
             count++;
         }
