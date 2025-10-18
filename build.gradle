@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'de.thetaphi:forbiddenapis:3.9'
+        classpath 'de.thetaphi:forbiddenapis:3.10'
     }
 }
 
@@ -11,7 +11,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     // https://github.com/researchgate/gradle-release
-    id 'net.researchgate.release' version '3.0.2'
+    id 'net.researchgate.release' version '3.1.0'
     id 'io.codearte.nexus-staging' version '0.30.0'
 
     // https://gradle-pitest-plugin.solidsoft.info/
@@ -41,7 +41,7 @@ forbiddenApis {
     suppressAnnotations = ['org.dstadler.commons.util.SuppressForbidden']
     // 'jdk-unsafe'
     bundledSignatures = [ 'jdk-system-out', 'jdk-non-portable', 'jdk-deprecated', 'jdk-reflection',
-        'commons-io-unsafe-2.18.0', 'jdk-internal' ]
+        'commons-io-unsafe-2.19.0', 'jdk-internal' ]
 }
 forbiddenApisMain {
     signaturesFiles += files('config/forbidden-apis/forbidden.signatures.txt')
@@ -49,13 +49,13 @@ forbiddenApisMain {
 
 dependencies {
     implementation 'org.dstadler:commons-dost:1.4.3'
-    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'org.apache.commons:commons-lang3:3.19.0'
     implementation 'commons-io:commons-io:2.20.0'
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.5'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.19.2'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.2'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.5.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.20.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.20.0'
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
-    implementation 'com.google.guava:guava:33.4.8-jre'
+    implementation 'com.google.guava:guava:33.5.0-jre'
 
     // MP3 SPI, used for playback
     implementation 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
@@ -74,10 +74,10 @@ dependencies {
     // don't include it in the jar-file
     runtimeOnly files('src/runtime/resources')
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.13.4'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.4'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:6.0.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:6.0.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:6.0.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.0'
 
     testImplementation 'org.dstadler:commons-test:1.0.0.22'
 	testImplementation 'org.apache.commons:commons-rng-simple:1.6'
@@ -103,7 +103,7 @@ test {
 }
 
 jacoco {
-    toolVersion = '0.8.13'
+    toolVersion = '0.8.14'
 }
 
 jacocoTestReport {
