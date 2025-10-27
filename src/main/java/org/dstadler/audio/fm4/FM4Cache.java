@@ -46,7 +46,7 @@ public class FM4Cache implements AutoCloseable {
 
     // we use a thread-pool with one entry to periodically refresh the cache
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
-            new BasicThreadFactory.Builder()
+            BasicThreadFactory.builder()
                     .daemon(true)
                     .namingPattern("FM4Cache-%d")
                     .uncaughtExceptionHandler((t, e) ->
