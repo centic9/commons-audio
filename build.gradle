@@ -81,6 +81,8 @@ dependencies {
 
     testImplementation 'org.dstadler:commons-test:1.0.0.22'
 	testImplementation 'org.apache.commons:commons-rng-simple:1.6'
+	// httpclient still uses slf4j-1.7, so keep this at pre-2.0 for now
+	testRuntimeOnly 'org.slf4j:slf4j-jdk14:1.7.36'
 }
 
 wrapper {
