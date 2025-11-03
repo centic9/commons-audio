@@ -15,6 +15,9 @@ import org.dstadler.audio.stream.Stream;
  * some more data that is not needed for serialization and
  * this separation shields against incompatibilities when new
  * fields are added to the actual ring-buffer implementation.
+ *
+ * Some additional information can be persisted to store
+ * additional information across restarts of the application
  */
 public class BufferPersistenceDTO {
     private final Chunk[] buffer;
@@ -32,67 +35,30 @@ public class BufferPersistenceDTO {
 	private final int numberOfDiskFiles;
 	private final File dataDir;
 
+    private final long chunkCount;
+
     // default constructor for persistence
-    @SuppressWarnings("unused")
-    private BufferPersistenceDTO() {
-		this.numberOfDiskChunks = 0;
-		this.numberOfDiskFiles = 0;
-		this.dataDir = null;
-        this.buffer = null;
-        this.nextGet = 0;
-        this.nextAdd = 0;
-        this.fill = 0;
-        this.stream = null;
-        this.nextDownloadPosition = 0;
-        this.playing = false;
-        this.downloadWhilePaused = false;
-    }
-
-    public BufferPersistenceDTO(long nextDownloadPosition, Stream stream, boolean playing, boolean downloadWhilePaused) {
-		this.numberOfDiskChunks = 0;
-		this.numberOfDiskFiles = 0;
-		this.dataDir = null;
-		this.buffer = null;
-        this.nextGet = 0;
-        this.nextAdd = 0;
-        this.fill = 0;
-        this.stream = stream;
-        this.nextDownloadPosition = nextDownloadPosition;
-        this.playing = playing;
-        this.downloadWhilePaused = downloadWhilePaused;
-    }
-
-	public BufferPersistenceDTO(Chunk[] buffer, int nextGet, int nextAdd, int fill, Stream stream, boolean playing,
-			boolean downloadWhilePaused) {
-		this.numberOfDiskChunks = 0;
-		this.numberOfDiskFiles = 0;
-		this.dataDir = null;
+	private BufferPersistenceDTO(Chunk[] buffer, int nextGet, int nextAdd, int fill, long nextDownloadPosition,
+            Stream stream, boolean playing, boolean downloadWhilePaused, int numberOfDiskChunks, int numberOfDiskFiles,
+            File dataDir, long chunkCount) {
 		// copy the array to be able to continue adding items to the buffer
 		// while the data is written
 		this.buffer = ArrayUtils.clone(buffer);
 		this.nextGet = nextGet;
 		this.nextAdd = nextAdd;
 		this.fill = fill;
-		this.stream = stream;
-		this.nextDownloadPosition = 0;
+
+        this.nextDownloadPosition = nextDownloadPosition;
+
+        this.stream = stream;
 		this.playing = playing;
 		this.downloadWhilePaused = downloadWhilePaused;
 
-	}
+        this.numberOfDiskChunks = numberOfDiskChunks;
+        this.numberOfDiskFiles = numberOfDiskFiles;
+        this.dataDir = dataDir;
 
-	public BufferPersistenceDTO(int numberOfDiskChunks, int numberOfDiskFiles, File dataDir, int nextGet, int nextAdd, int fill,
-			Stream stream, boolean playing, boolean downloadWhilePaused) {
-		this.numberOfDiskChunks = numberOfDiskChunks;
-		this.numberOfDiskFiles = numberOfDiskFiles;
-		this.dataDir = dataDir;
-		this.buffer = null;
-		this.nextGet = nextGet;
-		this.nextAdd = nextAdd;
-		this.fill = fill;
-		this.stream = stream;
-		this.nextDownloadPosition = 0;
-		this.playing = playing;
-		this.downloadWhilePaused = downloadWhilePaused;
+        this.chunkCount = chunkCount;
 	}
 
 	public Chunk[] getBuffer() {
@@ -139,6 +105,10 @@ public class BufferPersistenceDTO {
 		return dataDir;
 	}
 
+    public long getChunkCount() {
+        return chunkCount;
+    }
+
 	@Override
 	public String toString() {
 		return "BufferPersistenceDTO{" +
@@ -153,6 +123,75 @@ public class BufferPersistenceDTO {
 				(numberOfDiskChunks == 0 ? "" : ", numberOfDiskChunks=" + numberOfDiskChunks) +
 				(numberOfDiskFiles == 0 ? "" : ", numberOfDiskFiles=" + numberOfDiskFiles) +
 				(dataDir == null ? "" : ", dataDir=" + dataDir) +
+				", chunkCount=" + chunkCount +
 				'}';
 	}
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private Chunk[] buffer;
+        private int nextGet;
+        private int nextAdd;
+        private int fill;
+
+        private long nextDownloadPosition;
+
+        private Stream stream;
+        private boolean playing;
+        private boolean downloadWhilePaused;
+
+        private int numberOfDiskChunks;
+        private int numberOfDiskFiles;
+        private File dataDir;
+        private long chunkCount;
+
+        private Builder() {
+            // no-op
+        }
+
+        public Builder buffer(Chunk[] buffer, int nextGet, int nextAdd, int fill) {
+            this.buffer = buffer;
+            this.nextGet = nextGet;
+            this.nextAdd = nextAdd;
+            this.fill = fill;
+
+            return this;
+        }
+
+        public Builder nextDownloadPosition(long nextDownloadPosition) {
+            this.nextDownloadPosition = nextDownloadPosition;
+
+            return this;
+        }
+
+        public Builder stream(Stream stream, boolean playing, boolean downloadWhilePaused) {
+            this.stream = stream;
+            this.playing = playing;
+            this.downloadWhilePaused = downloadWhilePaused;
+
+            return this;
+        }
+
+        public Builder data(int numberOfDiskChunks, int numberOfDiskFiles, File dataDir) {
+            this.numberOfDiskChunks = numberOfDiskChunks;
+            this.numberOfDiskFiles = numberOfDiskFiles;
+            this.dataDir = dataDir;
+
+            return this;
+        }
+
+        public Builder chunkCount(long chunkCount) {
+            this.chunkCount = chunkCount;
+
+            return this;
+        }
+
+        public BufferPersistenceDTO build() {
+            return new BufferPersistenceDTO(buffer, nextGet, nextAdd, fill, nextDownloadPosition, stream,
+                    playing, downloadWhilePaused, numberOfDiskChunks, numberOfDiskFiles, dataDir, chunkCount);
+        }
+    }
 }

@@ -539,8 +539,11 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 		}
 
 		// only persist nextGet/nextAdd, we can re-create the positions and buffers from that
-		return new BufferPersistenceDTO(numberOfDiskChunks, numberOfDiskFiles, dataDir,
-				nextGet, nextAdd, fill, stream, playing, downloadWhilePaused);
+		return BufferPersistenceDTO.builder().
+            buffer(null, nextGet, nextAdd, fill).
+            stream(stream, playing, downloadWhilePaused).
+            data(numberOfDiskChunks, numberOfDiskFiles, dataDir).
+            build();
 	}
 
 	public static DiskBasedBlockingSeekableRingBuffer fromPersistence(BufferPersistenceDTO dto) throws IOException {

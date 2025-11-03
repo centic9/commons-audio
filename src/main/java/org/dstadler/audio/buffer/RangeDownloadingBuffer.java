@@ -423,7 +423,10 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
 
         log.fine("Persisting stream: " + stream + " at " + nextDownloadPos + "/" + startPosition);
 
-        return new BufferPersistenceDTO(startPosition, stream, playing, downloadWhilePaused);
+        return BufferPersistenceDTO.builder().
+                nextDownloadPosition(startPosition).
+                stream(stream, playing, downloadWhilePaused).
+                build();
     }
 
     public static RangeDownloadingBuffer fromPersistence(BufferPersistenceDTO dto, int bufferedChunks, int chunkSize) throws IOException {

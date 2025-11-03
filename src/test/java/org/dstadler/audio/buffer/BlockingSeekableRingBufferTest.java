@@ -86,8 +86,7 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
 
     @Test
     public void testFailedToRead() {
-        BufferPersistenceDTO dto = new BufferPersistenceDTO(
-                0, null, false, false);
+        BufferPersistenceDTO dto = BufferPersistenceDTO.builder().build();
         //noinspection resource
         assertThrows(IOException.class,
                 () -> BlockingSeekableRingBuffer.fromPersistence(dto));

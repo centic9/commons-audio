@@ -15,8 +15,11 @@ public class BufferPersistenceDTOTest {
         stream.setUrl("url1");
         stream.setStreamType(Stream.StreamType.live);
 
-        BufferPersistenceDTO dto = new BufferPersistenceDTO(new Chunk[] { new Chunk(new byte[] {1}, "meta", 123)},
-                0, 1, 2, stream, true, true);
+        BufferPersistenceDTO dto = BufferPersistenceDTO.builder().
+                buffer(new Chunk[] { new Chunk(new byte[] {1}, "meta", 123)},
+                        0, 1, 2).
+                stream(stream, true, true).
+                build();
         assertArrayEquals(new Chunk[] { new Chunk(new byte[] {1}, "meta", 123)}, dto.getBuffer());
         assertEquals(0, dto.getNextGet());
         assertEquals(1, dto.getNextAdd());
@@ -40,7 +43,10 @@ public class BufferPersistenceDTOTest {
         stream.setUrl("url1");
         stream.setStreamType(Stream.StreamType.download);
 
-        BufferPersistenceDTO dto = new BufferPersistenceDTO(3, stream, false, false);
+        BufferPersistenceDTO dto = BufferPersistenceDTO.builder().
+                nextDownloadPosition(3).
+                stream(stream, false, false).
+                build();
         assertNull(dto.getBuffer());
         assertEquals(0, dto.getNextGet());
         assertEquals(0, dto.getNextAdd());
@@ -57,15 +63,20 @@ public class BufferPersistenceDTOTest {
     @Test
     public void testToString() {
         Stream stream = new Stream();
-        BufferPersistenceDTO dto = new BufferPersistenceDTO(3, stream, false, false);
+        BufferPersistenceDTO dto = BufferPersistenceDTO.builder().
+                nextDownloadPosition(3).
+                stream(stream, false, false).
+                build();
         TestHelpers.ToStringTest(dto);
 
-        dto = new BufferPersistenceDTO(0, 0, null,
-                0, 0, 0, stream, false, false);
+        dto = BufferPersistenceDTO.builder().build();
         TestHelpers.ToStringTest(dto);
 
-        dto = new BufferPersistenceDTO(1, 1, new File("."),
-                1, 1, 1, stream, false, false);
+        dto = BufferPersistenceDTO.builder().
+                buffer(null, 1, 1, 1).
+                stream(stream, false, false).
+                data(1, 1, new File(".")).
+                build();
         TestHelpers.ToStringTest(dto);
 
         assertEquals(1, dto.getNumberOfDiskChunks());
@@ -73,9 +84,11 @@ public class BufferPersistenceDTOTest {
         assertEquals(new File("."), dto.getDataDir());
     }
 
-	// helper method to get coverage of the unused constructor
-	@Test
-	public void testPrivateConstructor() throws Exception {
-		org.dstadler.commons.testing.PrivateConstructorCoverage.executePrivateConstructor(BufferPersistenceDTO.class);
-	}
+    @Test
+    public void testChunkCount() {
+        BufferPersistenceDTO dto = BufferPersistenceDTO.builder().
+                chunkCount(2343).build();
+
+        assertEquals(2343, dto.getChunkCount());
+    }
 }

@@ -234,9 +234,11 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		stream.setUrl("url1");
 		stream.setStreamType(Stream.StreamType.live);
 
-		final BufferPersistenceDTO dto = new BufferPersistenceDTO(100, 20,
-				new File(getDataDir(), "test.bson"),
-				-1, -1, 0, stream, false, false);
+        final BufferPersistenceDTO dto = BufferPersistenceDTO.builder().
+                buffer(null, -1, -1, 0).
+                stream(stream, false, false).
+                data(100, 20, new File(getDataDir(), "test.bson")).
+                build();
 
 		//noinspection resource
 		assertThrows(IllegalArgumentException.class, () ->
@@ -249,8 +251,11 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		stream.setUrl("url1");
 		stream.setStreamType(Stream.StreamType.live);
 
-		final BufferPersistenceDTO dto = new BufferPersistenceDTO(100, 20,
-				null, 2, 1, 0, stream, false, false);
+        final BufferPersistenceDTO dto = BufferPersistenceDTO.builder().
+                buffer(null, 2, 1, 0).
+                stream(stream, false, false).
+                data(100, 20, null).
+                build();
 
 		//noinspection resource
 		assertThrows(IOException.class, () ->
@@ -263,9 +268,11 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		stream.setUrl("url1");
 		stream.setStreamType(Stream.StreamType.live);
 
-		final BufferPersistenceDTO dto = new BufferPersistenceDTO(100, 20,
-				new File(getDataDir(), "test.bson"),
-				2, 100, 0, stream, false, false);
+        final BufferPersistenceDTO dto = BufferPersistenceDTO.builder().
+                buffer(null, 2, 100, 0).
+                stream(stream, false, false).
+                data(100, 20, new File(getDataDir(), "test.bson")).
+                build();
 
 		//noinspection resource
 		assertThrows(IllegalArgumentException.class, () ->
@@ -278,9 +285,11 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		stream.setUrl("url1");
 		stream.setStreamType(Stream.StreamType.live);
 
-		final BufferPersistenceDTO dto = new BufferPersistenceDTO(100, 20,
-				new File(getDataDir(), "test.bson"),
-				2, 99, 0, stream, false, false);
+        final BufferPersistenceDTO dto = BufferPersistenceDTO.builder().
+                buffer(null, 2, 99, 0).
+                stream(stream, false, false).
+                data(100, 20, new File(getDataDir(), "test.bson")).
+                build();
 
 		try (DiskBasedBlockingSeekableRingBuffer localBuffer = DiskBasedBlockingSeekableRingBuffer.fromPersistence(dto)) {
 			assertNotNull(localBuffer.peek());
@@ -303,8 +312,11 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 		stream.setStreamType(Stream.StreamType.live);
 
 		File dir = new File(getDataDir(), "test.bson");
-		final BufferPersistenceDTO dto = new BufferPersistenceDTO(100, 20,
-				dir, 99, 0, 0, stream, false, false);
+        final BufferPersistenceDTO dto = BufferPersistenceDTO.builder().
+                buffer(null, 99, 0, 0).
+                stream(stream, false, false).
+                data(100, 20, dir).
+                build();
 
 		// create a directory so that writing the buffer-file fails
 		File bufferFile = new File(dir, "AudioBuffer-5.bson");
