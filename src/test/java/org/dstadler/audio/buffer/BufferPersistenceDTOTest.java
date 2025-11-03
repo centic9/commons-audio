@@ -91,4 +91,10 @@ public class BufferPersistenceDTOTest {
 
         assertEquals(2343, dto.getChunkCount());
     }
+
+    // helper method to get coverage of the unused constructor
+    @Test
+    public void testPrivateConstructor() throws Exception {
+        org.dstadler.commons.testing.PrivateConstructorCoverage.executePrivateConstructor(BufferPersistenceDTO.class);
+    }
 }

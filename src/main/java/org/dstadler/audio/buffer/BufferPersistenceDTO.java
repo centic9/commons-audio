@@ -19,6 +19,7 @@ import org.dstadler.audio.stream.Stream;
  * Some additional information can be persisted to store
  * additional information across restarts of the application
  */
+@SuppressWarnings("ClassCanBeRecord")
 public class BufferPersistenceDTO {
     private final Chunk[] buffer;
     private final int nextGet;
@@ -38,6 +39,26 @@ public class BufferPersistenceDTO {
     private final long chunkCount;
 
     // default constructor for persistence
+    @SuppressWarnings("unused")
+    private BufferPersistenceDTO() {
+        this.buffer = null;
+        this.nextGet = 0;
+        this.nextAdd = 0;
+        this.fill = 0;
+
+        this.nextDownloadPosition = 0;
+
+        this.stream = null;
+        this.playing = false;
+        this.downloadWhilePaused = false;
+
+        this.numberOfDiskChunks = 0;
+        this.numberOfDiskFiles = 0;
+        this.dataDir = null;
+
+        this.chunkCount = 0;
+    }
+
 	private BufferPersistenceDTO(Chunk[] buffer, int nextGet, int nextAdd, int fill, long nextDownloadPosition,
             Stream stream, boolean playing, boolean downloadWhilePaused, int numberOfDiskChunks, int numberOfDiskFiles,
             File dataDir, long chunkCount) {
