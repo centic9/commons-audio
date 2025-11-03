@@ -3,7 +3,7 @@ package org.dstadler.audio.buffer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dstadler.audio.download.RangeDownload;
 import org.dstadler.audio.download.RangeDownloadFile;
@@ -68,7 +68,7 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
                                   Function<Double, Pair<String, Long>> metaDataFun) throws IOException {
         if (WINDOWS_FILE.matcher(url).matches()) {
             // file on Windows via file://C:\...
-            this.download = new RangeDownloadFile(new File(StringUtils.removeStart(url, "file://")));
+            this.download = new RangeDownloadFile(new File(Strings.CS.removeStart(url, "file://")));
         } else if(url.startsWith("file://")) {
             // files via file://...
 			try {

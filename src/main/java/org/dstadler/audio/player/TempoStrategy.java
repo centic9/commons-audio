@@ -1,7 +1,7 @@
 package org.dstadler.audio.player;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.dstadler.audio.buffer.CountingSeekableRingBuffer;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
 
@@ -34,7 +34,7 @@ public interface TempoStrategy {
 
     static TempoStrategy create(@Nonnull String strategyAndTempo, Supplier<CountingSeekableRingBuffer> buffer) {
         if (strategyAndTempo.startsWith(CONSTANT_PREFIX)) {
-            return new ConstantTempoStrategy(Float.parseFloat(StringUtils.removeStart(strategyAndTempo, CONSTANT_PREFIX)));
+            return new ConstantTempoStrategy(Float.parseFloat(Strings.CS.removeStart(strategyAndTempo, CONSTANT_PREFIX)));
         }
 
         // unknown strategy?
@@ -44,7 +44,7 @@ public interface TempoStrategy {
 
         // read parameters of adaptive strategy
         if (strategyAndTempo.startsWith(ADAPTIVE_PREFIX) && !ADAPTIVE_PREFIX.equals(strategyAndTempo)) {
-            String params = StringUtils.removeStart(strategyAndTempo, ADAPTIVE_PREFIX);
+            String params = Strings.CS.removeStart(strategyAndTempo, ADAPTIVE_PREFIX);
 
             Matcher matcher = ADAPTIVE_PARAMS_PATTERN.matcher(params);
             if (!matcher.matches()) {
