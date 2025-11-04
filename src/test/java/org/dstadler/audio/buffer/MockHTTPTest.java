@@ -57,7 +57,7 @@ public class MockHTTPTest {
             httpCalls.incrementAndGet();
 
             if(secondCall.get()) {
-                // FM4 servers return HTTP 200 and a HTML-page if the show was removed after 7 days...
+                // FM4 servers return HTTP 200 and an HTML-page if the show was removed after 7 days...
                 return new NanoHTTPD.Response("200", "text/html; charset=utf-8", "abcdefghijklmnopqrstuvw");
             } else {
                 return acceptRangeResponse();
@@ -71,7 +71,7 @@ public class MockHTTPTest {
                 // make the HTTP server return a failure
                 secondCall.set(true);
 
-                // expect no data available any more for "text/html" content-type
+                // expect no data available anymore for "text/html" content-type
                 assertEquals(0, buffer.fillupBuffer(-1, 50));
             }
         }
@@ -87,7 +87,7 @@ public class MockHTTPTest {
             httpCalls.incrementAndGet();
 
             if(secondCall.get()) {
-                return new NanoHTTPD.Response("200", "audio/mpeg", RandomStringUtils.random(100));
+                return new NanoHTTPD.Response("200", "audio/mpeg", RandomStringUtils.insecure().next(100));
             } else {
                 return acceptRangeResponse();
             }
@@ -154,127 +154,121 @@ public class MockHTTPTest {
         }
     }
 
-    private static class TestRunnable implements ThreadTestHelper.TestRunnable {
-        private final RangeDownloadingBuffer buffer;
-
-        public TestRunnable(RangeDownloadingBuffer buffer) {
-            this.buffer = buffer;
-        }
-
+    private record TestRunnable(RangeDownloadingBuffer buffer) implements ThreadTestHelper.TestRunnable {
         @SuppressWarnings("deprecation")
-        @Override
-        public void run(int threadNum, int itNum) throws Exception {
-            int rnd = RandomUtils.nextInt(0, 17);
-            switch (rnd) {
-                case 0:
-                    buffer.peek();
-                    break;
-                case 1: {
-                    int nrOfChunks = RandomUtils.nextInt(0, 100) - 25;
-                    int seeked = buffer.seek(nrOfChunks);
-                    if (nrOfChunks >= 0) {
-                        assertTrue(seeked <= nrOfChunks);
-                    } else {
-                        assertTrue(seeked >= nrOfChunks);
+            @Override
+            public void run(int threadNum, int itNum) throws Exception {
+                int rnd = RandomUtils.nextInt(0, 17);
+                switch (rnd) {
+                    case 0:
+                        buffer.peek();
+                        break;
+                    case 1: {
+                        int nrOfChunks = RandomUtils.nextInt(0, 100) - 25;
+                        int seeked = buffer.seek(nrOfChunks);
+                        if (nrOfChunks >= 0) {
+                            assertTrue(seeked <= nrOfChunks);
+                        } else {
+                            assertTrue(seeked >= nrOfChunks);
+                        }
+                        break;
                     }
-                    break;
-                }
-                case 2:
-                    int fetched = buffer.fillupBuffer(-1, 10);
-                    assertTrue(fetched >= 0);
-                    assertTrue(fetched <= 10);
-                    break;
-                case 3:
-                    buffer.empty();
-                    break;
-                case 4: {
-                    final int size;
-                    final int capacity;
-                    synchronized (buffer) {
-                        size = buffer.size();
-                        capacity = buffer.capacity();
+                    case 2:
+                        int fetched = buffer.fillupBuffer(-1, 10);
+                        assertTrue(fetched >= 0);
+                        assertTrue(fetched <= 10);
+                        break;
+                    case 3:
+                        buffer.empty();
+                        break;
+                    case 4: {
+                        final int size;
+                        final int capacity;
+                        synchronized (buffer) {
+                            size = buffer.size();
+                            capacity = buffer.capacity();
+                        }
+                        assertTrue(size >= 0);
+                        assertTrue(size <= (capacity + BUFFERED_CHUNKS),
+                                // size can be a bit more as we compute it based on internal byte-position
+                                "size: " + size + ", capacity: " + capacity + ", buffer: " + buffer);
+                        break;
                     }
-                    assertTrue(size >= 0);
-                    assertTrue(size <= (capacity + BUFFERED_CHUNKS),
-                            // size can be a bit more as we compute it based on internal byte-position
-                            "size: " + size + ", capacity: " + capacity + ", buffer: " + buffer);
-                    break;
-                }
-                case 5:
-                    buffer.full();
-                    break;
-                case 6:
-                    // next can hang in some cases where only close() would leave the wait-loop...
-                    //buffer.next();
-                    break;
-                case 7: {
-                    int available = buffer.bufferedBackward();
-                    assertTrue(available >= 0, "Had: " + available);
-                    assertTrue(available <= buffer.capacity());
-                    break;
-                }
-                case 8: {
-                    int available = buffer.bufferedForward();
-                    assertTrue(available >= 0, "Had: " + available);
-                    assertTrue(available <= buffer.capacity());
-                    break;
-                }
-                case 9: {
-                    int capacity = buffer.capacity();
-                    assertTrue(capacity >= 0);
-                    assertTrue(capacity >= (buffer.size() - BUFFERED_CHUNKS));   // size can be a bit higher
-                    assertTrue(capacity >= buffer.fill());
-                    break;
-                }
-                case 10:
-                    try {
-                        buffer.add(null);
-                    } catch (UnsupportedOperationException e) {
-                        // expected here
+                    case 5:
+                        buffer.full();
+                        break;
+                    case 6:
+                        // next can hang in some cases where only close() would leave the wait-loop...
+                        //buffer.next();
+                        break;
+                    case 7: {
+                        int available = buffer.bufferedBackward();
+                        assertTrue(available >= 0, "Had: " + available);
+                        assertTrue(available <= buffer.capacity());
+                        break;
                     }
-                    break;
-                case 11:
-                    BufferPersistenceDTO dto = buffer.toPersistence(null, true, true);
-                    assertTrue(dto.getNextDownloadPosition() >= 0);
-                    break;
-                case 12:
-                    // from time to time reset to beginning of the file
-                    int seeked = buffer.seek(-999999);
-                    assertTrue(seeked <= 0);
-                    assertTrue(seeked * -1 <= buffer.capacity());
-                    break;
-                case 13: {
-                    int fill = buffer.fill();
-                    assertTrue(fill >= 0);
-                    assertTrue(fill <= buffer.capacity());
-                    break;
-                }
-                case 14: {
-                    // another test of size without synchronized block
-                    int size = buffer.size();
-                    assertTrue(size >= 0, "Having size: " + size);
-                    break;
-                }
-                case 15:
-                    // another test of capacity without synchronized block
-                    int capacity = buffer.capacity();
-                    assertTrue(capacity >= 0, "Having capacity: " + capacity);
-                    break;
-                case 16: {
-                    final int fill;
-                    final int size;
-                    synchronized (buffer) {
-                        fill = buffer.fill();
-                        size = buffer.size();
+                    case 8: {
+                        int available = buffer.bufferedForward();
+                        assertTrue(available >= 0, "Had: " + available);
+                        assertTrue(available <= buffer.capacity());
+                        break;
                     }
-                    assertTrue(fill >= 0);
-                    assertTrue(fill <= buffer.capacity());
-                    assertTrue(fill >= size);
-                    break;
+                    case 9: {
+                        int capacity = buffer.capacity();
+                        assertTrue(capacity >= 0);
+                        assertTrue(capacity >= (buffer.size() - BUFFERED_CHUNKS));   // size can be a bit higher
+                        assertTrue(capacity >= buffer.fill());
+                        break;
+                    }
+                    case 10:
+                        try {
+                            buffer.add(null);
+                        } catch (UnsupportedOperationException e) {
+                            // expected here
+                        }
+                        break;
+                    case 11:
+                        BufferPersistenceDTO dto = buffer.toPersistence(null, true, true, RandomUtils.insecure().randomLong());
+                        assertTrue(dto.getNextDownloadPosition() >= 0);
+                        break;
+                    case 12:
+                        // from time to time reset to beginning of the file
+                        int seeked = buffer.seek(-999999);
+                        assertTrue(seeked <= 0);
+                        assertTrue(seeked * -1 <= buffer.capacity());
+                        break;
+                    case 13: {
+                        int fill = buffer.fill();
+                        assertTrue(fill >= 0);
+                        assertTrue(fill <= buffer.capacity());
+                        break;
+                    }
+                    case 14: {
+                        // another test of size without synchronized block
+                        int size = buffer.size();
+                        assertTrue(size >= 0, "Having size: " + size);
+                        break;
+                    }
+                    case 15:
+                        // another test of capacity without synchronized block
+                        int capacity = buffer.capacity();
+                        assertTrue(capacity >= 0, "Having capacity: " + capacity);
+                        break;
+                    case 16: {
+                        final int fill;
+                        final int size;
+                        synchronized (buffer) {
+                            fill = buffer.fill();
+                            size = buffer.size();
+                        }
+                        assertTrue(fill >= 0);
+                        assertTrue(fill <= buffer.capacity());
+                        assertTrue(fill >= size);
+                        break;
+                    }
                 }
             }
         }
-    }
 
     @Test
     public void testSeekWithFilledBuffer() throws IOException {

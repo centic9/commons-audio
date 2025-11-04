@@ -270,10 +270,12 @@ public class BlockingSeekableRingBuffer implements SeekableRingBuffer<Chunk>, Pe
     }
 
     @Override
-    public synchronized BufferPersistenceDTO toPersistence(Stream stream, boolean playing, boolean downloadWhilePaused) {
+    public synchronized BufferPersistenceDTO toPersistence(Stream stream, boolean playing, boolean downloadWhilePaused,
+            long chunkCount) {
         return BufferPersistenceDTO.builder().
             buffer(buffer, nextGet, nextAdd, fill).
             stream(stream, playing, downloadWhilePaused).
+            chunkCount(chunkCount).
             build();
     }
 

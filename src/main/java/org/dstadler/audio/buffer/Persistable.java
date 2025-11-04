@@ -18,5 +18,5 @@ public interface Persistable {
 	 *                          	downloaded while playing is paused
      * @return A populated instance of {@link BufferPersistenceDTO}
      */
-    BufferPersistenceDTO toPersistence(Stream stream, boolean playing, boolean downloadWhilePaused);
-}
+    BufferPersistenceDTO toPersistence(Stream stream, boolean playing, boolean downloadWhilePaused,
+            long chunkCount);}

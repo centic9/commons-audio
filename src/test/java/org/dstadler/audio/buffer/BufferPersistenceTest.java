@@ -29,7 +29,7 @@ public class BufferPersistenceTest {
             stream.setStreamType(Stream.StreamType.live);
 
             final BlockingSeekableRingBuffer buffer = new BlockingSeekableRingBuffer(10);
-            BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false, false));
+            BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false, false, 2384));
 
             assertTrue(BufferPersistence.hasBufferOnDisk(file));
 
@@ -38,6 +38,7 @@ public class BufferPersistenceTest {
             assertEquals(Stream.StreamType.live, dto.getStream().getStreamType());
 			assertFalse(dto.isPlaying());
 			assertFalse(dto.isDownloadWhilePaused());
+            assertEquals(2384, dto.getChunkCount());
 
             BlockingSeekableRingBuffer  back = BlockingSeekableRingBuffer.fromPersistence(dto);
             assertTrue(BufferPersistence.hasBufferOnDisk(file));
@@ -71,7 +72,7 @@ public class BufferPersistenceTest {
             stream.setUrl("url1");
             stream.setStreamType(Stream.StreamType.download);
 
-            BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, true, true));
+            BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, true, true, 3843));
 
             assertTrue(BufferPersistence.hasBufferOnDisk(file));
 
@@ -80,6 +81,7 @@ public class BufferPersistenceTest {
             assertEquals(Stream.StreamType.download, dto.getStream().getStreamType());
             assertTrue(dto.isPlaying());
 			assertTrue(dto.isDownloadWhilePaused());
+            assertEquals(3843, dto.getChunkCount());
 
             BlockingSeekableRingBuffer back = BlockingSeekableRingBuffer.fromPersistence(dto);
             assertTrue(BufferPersistence.hasBufferOnDisk(file));
@@ -134,7 +136,7 @@ public class BufferPersistenceTest {
                     stream.setStreamType(Stream.StreamType.live);
 
                     long start = System.currentTimeMillis();
-                    BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false, false));
+                    BufferPersistence.writeBufferToDisk(file, buffer.toPersistence(stream, false, false, -3745));
                     log.info("Writing for run " + i + " took " + (System.currentTimeMillis() - start) + "ms");
 
                     assertTrue(BufferPersistence.hasBufferOnDisk(file));
@@ -145,6 +147,7 @@ public class BufferPersistenceTest {
                     assertEquals(Stream.StreamType.live, dto.getStream().getStreamType());
                     assertFalse(dto.isPlaying());
                     assertFalse(dto.isDownloadWhilePaused());
+                    assertEquals(-3745, dto.getChunkCount());
 
                     try (BlockingSeekableRingBuffer back = BlockingSeekableRingBuffer.fromPersistence(dto)) {
                         log.info("Reading for run " + i + " took " + (System.currentTimeMillis() - start) + "ms");
@@ -178,13 +181,14 @@ public class BufferPersistenceTest {
 
                 Stream stream = new Stream();
                 stream.setUrl(url);
-                BufferPersistenceDTO dto = buffer.toPersistence(stream, false, false);
+                BufferPersistenceDTO dto = buffer.toPersistence(stream, false, false, 498785);
                 assertNotNull(dto);
                 BufferPersistence.writeBufferToDisk(tempPersist, dto);
             }
 
             // restore from previous persisted data
             BufferPersistenceDTO dtoBack = BufferPersistence.readBufferFromDisk(tempPersist);
+            assertEquals(498785, dtoBack.getChunkCount());
 
             try (RangeDownloadingBuffer buffer = RangeDownloadingBuffer.fromPersistence(dtoBack, 100, Chunk.CHUNK_SIZE)) {
                 assertEquals(0, buffer.bufferedBackward(), "Zero expected here because we restored the buffer");
@@ -192,7 +196,7 @@ public class BufferPersistenceTest {
                 buffer.next();
 
                 Stream stream = new Stream();
-                BufferPersistenceDTO dto = buffer.toPersistence(stream, false, false);
+                BufferPersistenceDTO dto = buffer.toPersistence(stream, false, false, 0);
                 assertNotNull(dto);
             }
         } finally {

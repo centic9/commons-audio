@@ -58,7 +58,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 			stream.setStreamType(Stream.StreamType.live);
 
 			// get the persistence
-			final BufferPersistenceDTO dto = localBuffer.toPersistence(stream, false, false);
+			final BufferPersistenceDTO dto = localBuffer.toPersistence(stream, false, false, 8736);
 			assertNotNull(dto);
 			assertEquals("url1", dto.getStream().getUrl());
 
@@ -80,6 +80,7 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 			assertEquals(3, dto.getNumberOfDiskFiles());
 			assertEquals(10, dto.getNumberOfDiskChunks());
 			assertNotNull(dto.getDataDir());
+            assertEquals(8736, dto.getChunkCount());
 
 			// then convert the DTO back into a buffer and do a next() as well
 			try (DiskBasedBlockingSeekableRingBuffer back = DiskBasedBlockingSeekableRingBuffer.fromPersistence(dto)) {

@@ -530,7 +530,8 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 	}
 
 	@Override
-	public synchronized BufferPersistenceDTO toPersistence(Stream stream, boolean playing, boolean downloadWhilePaused) {
+	public synchronized BufferPersistenceDTO toPersistence(Stream stream, boolean playing, boolean downloadWhilePaused,
+            long chunkCount) {
 		// make sure any dirty writes are done
 		try {
 			persistBuffer();
@@ -543,6 +544,7 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
             buffer(null, nextGet, nextAdd, fill).
             stream(stream, playing, downloadWhilePaused).
             data(numberOfDiskChunks, numberOfDiskFiles, dataDir).
+            chunkCount(chunkCount).
             build();
 	}
 

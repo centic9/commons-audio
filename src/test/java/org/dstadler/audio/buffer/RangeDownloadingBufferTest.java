@@ -468,12 +468,13 @@ public class RangeDownloadingBufferTest {
         stream.setStartTimestamp(100L);
 
         // get the persistence
-        final BufferPersistenceDTO dto = buffer.toPersistence(stream, false, false);
+        final BufferPersistenceDTO dto = buffer.toPersistence(stream, false, false, 73267);
         assertNotNull(dto);
         assertEquals(sample, dto.getStream().getUrl());
 		assertEquals(0, dto.getNumberOfDiskFiles());
 		assertEquals(0, dto.getNumberOfDiskChunks());
 		assertNull(dto.getDataDir());
+        assertEquals(73267, dto.getChunkCount());
 
         // then convert the DTO back into a buffer and then compare
         RangeDownloadingBuffer back = RangeDownloadingBuffer.fromPersistence(dto, 10, CHUNK_SIZE);
