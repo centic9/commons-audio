@@ -35,7 +35,7 @@ public class FM4StreamTest {
     public void testFM4Stream() throws IOException, ParseException {
         List<FM4Stream> fm4Streams = fm4.fetchStreams(7);
 
-        FM4Stream fm4Stream = fm4Streams.get(0);
+        FM4Stream fm4Stream = fm4Streams.getFirst();
         assertNotNull(fm4Stream.getTitle());
         assertNotNull(fm4Stream.getTime());
         assertNotNull(DATETIME_FORMAT.parse(fm4Stream.getTime()));
@@ -85,7 +85,7 @@ public class FM4StreamTest {
 
         Assumptions.assumeFalse(fm4Streams.isEmpty(), "Should get some streams");
 
-        Set<String> streams = fm4Streams.get(0).getStreams();
+        Set<String> streams = fm4Streams.getFirst().getStreams();
 
         assertNotNull(streams);
         assertFalse(streams.isEmpty());

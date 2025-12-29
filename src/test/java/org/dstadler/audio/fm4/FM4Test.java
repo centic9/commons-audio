@@ -119,7 +119,7 @@ public class FM4Test {
         assertNotNull(ooeStreams);
         assertFalse(ooeStreams.isEmpty());
 
-        FM4Stream stream = ooeStreams.iterator().next();
+        FM4Stream stream = ooeStreams.getFirst();
         assertNotNull(stream.getProgramKey());
         assertNotNull(stream.getStreams());
         assertNotNull(stream.getShortSummary());
@@ -151,7 +151,7 @@ public class FM4Test {
         assertNotNull(fm4Streams);
         assertFalse(fm4Streams.isEmpty());
 
-        fm4.downloadStream(fm4Streams.get(0), new File("/tmp"));
+        fm4.downloadStream(fm4Streams.getFirst(), new File("/tmp"));
     }
 
     // template for the Stream with replace-url
