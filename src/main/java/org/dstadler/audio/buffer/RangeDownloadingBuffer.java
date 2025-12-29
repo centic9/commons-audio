@@ -13,8 +13,7 @@ import org.dstadler.commons.logging.jdk.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -53,10 +52,10 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
      *
      * @param url The URL to fetch data from. Can be a local file-name or a file:// url.
      * @param user The user to use for authentication, can be empty or null to not use authentication
-     * @param pwd The password to use for authenticatoin, can be null if no authentication is necessary
+     * @param pwd The password to use for authentication, can be null if no authentication is necessary
      * @param bufferedChunks The number of "chunks" to buffer. See {@link Chunk}
      * @param chunkSize The size of single "chunks", a common value is provided via {@link Chunk#CHUNK_SIZE}
-     * @param metaDataFun Allows to provide a callback which is invoked for providing additional metdata, it
+     * @param metaDataFun Allows to provide a callback which is invoked for providing additional metadata, it
      *                    is presented with the percentage of the position in the download and should return
      *                    with a pair consisting of a generic metadata-string (e.g. a song title or artist)
      *                    and a timestamp in milliseconds since the epoch.
@@ -72,8 +71,8 @@ public class RangeDownloadingBuffer implements SeekableRingBuffer<Chunk>, Persis
         } else if(url.startsWith("file://")) {
             // files via file://...
 			try {
-				this.download = new RangeDownloadFile(new File(new URL(url).toURI()));
-			} catch (URISyntaxException | IllegalArgumentException e) {
+				this.download = new RangeDownloadFile(new File(URI.create(url)));
+			} catch (IllegalArgumentException e) {
 				throw new IOException("While handling url: " + url, e);
 			}
 		} else if (url.startsWith("/") || url.startsWith("\\") || WINDOWS_DRIVE.matcher(url).matches()) {
