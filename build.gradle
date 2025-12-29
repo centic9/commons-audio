@@ -68,7 +68,7 @@ dependencies {
     implementation fileTree(dir: 'lib', include: ['*.jar'])
 
     // binary serialization of data during shutdown
-    implementation 'de.undercouch:bson4jackson:2.15.1'
+    implementation 'de.undercouch:bson4jackson:2.18.0'
 
     // provide a logging.properties only when running the example, but
     // don't include it in the jar-file
