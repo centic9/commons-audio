@@ -1,7 +1,7 @@
 package org.dstadler.audio.fm4;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.dstadler.commons.http5.HttpClientWrapper5;
@@ -38,11 +38,11 @@ public class FM4Stream {
     private final String streamUrlBase;
 
     public FM4Stream(JsonNode node, String streamUrlBase) {
-        programKey = node.get("programKey").asText();
-        title = node.get("title").asText().trim();
-        subtitle = node.get("subtitle").asText();
-        href = node.get("href").asText();
-        time = node.get("start").asText();
+        programKey = node.get("programKey").asString();
+        title = node.get("title").asString().trim();
+        subtitle = node.get("subtitle").asString();
+        href = node.get("href").asString();
+        time = node.get("start").asString();
         try {
             start = DATETIME_FORMAT.parse(time).getTime();
         } catch (ParseException e) {
@@ -78,7 +78,7 @@ public class FM4Stream {
     /**
      * Returns the duration of this stream in seconds.
      *
-     * @return Duration in millisseconds
+     * @return Duration in milliseconds
      */
     public long getDuration() {
         return duration;
@@ -123,7 +123,7 @@ public class FM4Stream {
 
         SortedSet<String> streams = new TreeSet<>();
         for (JsonNode stream : jsonNode.get("streams")) {
-            streams.add(streamUrlBase + stream.get("loopStreamId").asText());
+            streams.add(streamUrlBase + stream.get("loopStreamId").asString());
         }
 
         log.info("Found " + streams.size() + " streams: " + streams);

@@ -9,13 +9,16 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import static org.dstadler.audio.buffer.Chunk.CHUNK_SIZE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class BufferPersistenceTest {
+class BufferPersistenceTest {
     private final static Logger log = LoggerFactory.make();
 
     @Test
-    public void testWriteReadEmpty() throws IOException {
+    void testWriteReadEmpty() throws IOException {
         assertFalse(BufferPersistence.hasBufferOnDisk(null));
         assertFalse(BufferPersistence.hasBufferOnDisk(new File("not existing")));
 
@@ -55,7 +58,7 @@ public class BufferPersistenceTest {
     }
 
     @Test
-    public void testWriteReadWithData() throws IOException {
+    void testWriteReadWithData() throws IOException {
         assertFalse(BufferPersistence.hasBufferOnDisk(null));
         assertFalse(BufferPersistence.hasBufferOnDisk(new File("not existing")));
 
@@ -109,7 +112,7 @@ public class BufferPersistenceTest {
     }
 
     @Test
-    public void testMicroBenchmark() throws IOException {
+    void testMicroBenchmark() throws IOException {
         assertFalse(BufferPersistence.hasBufferOnDisk(null));
         assertFalse(BufferPersistence.hasBufferOnDisk(new File("not existing")));
 
@@ -168,7 +171,7 @@ public class BufferPersistenceTest {
     }
 
     @Test
-    public void testInvalidStartPosition() throws IOException {
+    void testInvalidStartPosition() throws IOException {
         File tempPersist = File.createTempFile("RangeDownloadingBuffer", ".bin");
         try {
             // first get a "next download position" > 0 persisted
@@ -206,7 +209,7 @@ public class BufferPersistenceTest {
 
     // helper method to get coverage of the unused constructor
     @Test
-    public void testPrivateConstructor() throws Exception {
+    void testPrivateConstructor() throws Exception {
         org.dstadler.commons.testing.PrivateConstructorCoverage.executePrivateConstructor(BufferPersistence.class);
     }
 }

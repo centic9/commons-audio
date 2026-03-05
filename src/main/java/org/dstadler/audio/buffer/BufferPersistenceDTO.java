@@ -19,24 +19,25 @@ import org.dstadler.audio.stream.Stream;
  * Some additional information can be persisted to store
  * additional information across restarts of the application
  */
-@SuppressWarnings("ClassCanBeRecord")
+@SuppressWarnings({"ClassCanBeRecord", "FieldMayBeFinal"})
 public class BufferPersistenceDTO {
-    private final Chunk[] buffer;
-    private final int nextGet;
-    private final int nextAdd;
-    private final int fill;
+    // Note: None of the members should be final for Bson4Jackson to work properly
+    private Chunk[] buffer;
+    private int nextGet;
+    private int nextAdd;
+    private int fill;
 
-    private final long nextDownloadPosition;
+    private long nextDownloadPosition;
 
-    private final Stream stream;
-    private final boolean playing;
-    private final boolean downloadWhilePaused;
+    private Stream stream;
+    private boolean playing;
+    private boolean downloadWhilePaused;
 
-	private final int numberOfDiskChunks;
-	private final int numberOfDiskFiles;
-	private final File dataDir;
+	private int numberOfDiskChunks;
+	private int numberOfDiskFiles;
+	private File dataDir;
 
-    private final long chunkCount;
+    private long chunkCount;
 
     // default constructor for persistence
     @SuppressWarnings("unused")

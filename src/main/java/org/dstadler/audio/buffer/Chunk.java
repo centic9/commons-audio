@@ -13,9 +13,13 @@ import java.util.Arrays;
 public class Chunk {
     public static final int CHUNK_SIZE = 16384;
 
-    private final byte[] data;
-    private final String metaData;
-    private final long timestamp;
+    // Note: Cannot be final for Bson4Jackson to work
+    @SuppressWarnings("FieldMayBeFinal")
+    private byte[] data;
+    @SuppressWarnings("FieldMayBeFinal")
+    private String metaData;
+    @SuppressWarnings("FieldMayBeFinal")
+    private long timestamp;
 
     /**
      * Default constructor only used for serialization

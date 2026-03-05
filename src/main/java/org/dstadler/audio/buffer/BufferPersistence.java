@@ -1,9 +1,10 @@
 package org.dstadler.audio.buffer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import de.undercouch.bson4jackson.BsonFactory;
 import de.undercouch.bson4jackson.BsonGenerator;
 import org.dstadler.commons.logging.jdk.LoggerFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -31,7 +32,7 @@ public class BufferPersistence {
         // simple micro benchmarks were inconclusive
         fac.enable(BsonGenerator.Feature.ENABLE_STREAMING);
     }
-    private static final ObjectMapper mapper = new ObjectMapper(fac);
+    private static final ObjectMapper mapper = JsonMapper.builder(fac).build();
 
     /**
      * write the data out to the given file

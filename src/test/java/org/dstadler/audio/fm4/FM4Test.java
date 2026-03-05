@@ -1,8 +1,7 @@
 package org.dstadler.audio.fm4;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.HexDump;
 import org.apache.commons.io.IOUtils;
@@ -20,6 +19,7 @@ import org.dstadler.commons.net.UrlUtils;
 import org.dstadler.commons.testing.MockRESTServer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -190,7 +190,7 @@ public class FM4Test {
     }
 
     @Test
-    public void testDownloadStreamInvalidURL() throws JsonProcessingException {
+    public void testDownloadStreamInvalidURL() throws JacksonException {
         JsonNode jsonNode = objectMapper.readTree(JSON.replace("$url", "http://invalid/url"));
         assertThrows(UnknownHostException.class, () ->
                 fm4.downloadStream(new FM4Stream(jsonNode, FM4_STREAM_URL_BASE), new File("/tmp")));

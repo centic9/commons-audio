@@ -1,7 +1,7 @@
 package org.dstadler.audio.fm4;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import org.dstadler.commons.testing.MemoryLeakVerifier;
 import org.dstadler.commons.testing.ThreadTestHelper;
 import org.dstadler.commons.util.ExecutorUtil;
