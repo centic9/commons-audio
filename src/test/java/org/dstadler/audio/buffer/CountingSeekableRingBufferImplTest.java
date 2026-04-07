@@ -140,6 +140,22 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
         assertEquals(1, getBuffer().getChunksPerSecond(), 0.01);
     }
 
+    @Test
+    public void testGetChunksWrittenPerSecAllLargeGaps() {
+        assertEquals(0, getBuffer().getChunksWrittenPerSecond(), 0);
+
+        // Every gap between consecutive chunks is 10 000 ms (>= 5000 ms threshold),
+        // so durationAdjust == end - start  →  durationInSec == 0.
+        getBuffer().add(new Chunk(new byte[] { 1 }, "",     0));
+        getBuffer().add(new Chunk(new byte[] { 1 }, "", 10000));
+        getBuffer().add(new Chunk(new byte[] { 1 }, "", 20000));
+        getBuffer().add(new Chunk(new byte[] { 1 }, "", 30000));
+
+        double result = getBuffer().getChunksWrittenPerSecond();
+        assertTrue(Double.isInfinite(result), "Result must be Infinity, but was: " + result);
+        assertFalse(Double.isNaN(result),      "Result must not be NaN, but was: " + result);
+    }
+
     @Override
     @Test
     public void testToString() {

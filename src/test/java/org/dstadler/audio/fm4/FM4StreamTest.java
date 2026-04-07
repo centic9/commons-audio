@@ -4,6 +4,8 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.dstadler.commons.http.NanoHTTPD;
+import org.dstadler.commons.testing.MockRESTServer;
 import org.dstadler.commons.testing.TestHelpers;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 import static org.dstadler.audio.fm4.FM4Stream.DATETIME_FORMAT;
 import static org.dstadler.audio.fm4.FM4Stream.FM4_STREAM_URL_BASE;
@@ -132,5 +135,51 @@ public class FM4StreamTest {
 
         TestHelpers.ToStringTest(fm4);
         TestHelpers.ToStringTest(notEquals);
+    }
+
+    // Helper to create a minimal valid FM4Stream node pointing at a given URL
+    private ObjectNode buildNode(String href) {
+        ObjectNode node = objectMapper.createObjectNode();
+        node.put("programKey", "ABC");
+        node.put("title", "Test Title");
+        node.put("subtitle", "Test Subtitle");
+        node.put("href", href);
+        node.put("start", "2024-05-23T22:43:22.034Z");
+        node.put("duration", 3600000L);
+        return node;
+    }
+
+    // Regression test for bug: jsonNode.get("payload") returned null when the "payload" key was
+    // absent from the API response, causing NPE on the subsequent jsonNode.get("streams") call.
+    @Test
+    public void testGetStreamsWithMissingPayload() throws IOException {
+        try (MockRESTServer server = new MockRESTServer(() ->
+                new NanoHTTPD.Response("200", "application/json", "{\"noPayload\": true}"))) {
+
+            FM4Stream stream = new FM4Stream(buildNode("http://localhost:" + server.getPort() + "/"),
+                    FM4_STREAM_URL_BASE);
+
+            // Before fix: throws NullPointerException; after fix: returns empty set
+            SortedSet<String> streams = stream.getStreams();
+            assertNotNull(streams);
+            assertTrue(streams.isEmpty(), "Expected empty set when 'payload' key is missing");
+        }
+    }
+
+    // Regression test for the same guard: payload exists but "streams" key is absent.
+    @Test
+    public void testGetStreamsWithMissingStreamsField() throws IOException {
+        try (MockRESTServer server = new MockRESTServer(() ->
+                new NanoHTTPD.Response("200", "application/json",
+                        "{\"payload\": {\"noStreams\": true}}"))) {
+
+            FM4Stream stream = new FM4Stream(buildNode("http://localhost:" + server.getPort() + "/"),
+                    FM4_STREAM_URL_BASE);
+
+            // Before fix: throws NullPointerException (or iterates null); after fix: returns empty set
+            SortedSet<String> streams = stream.getStreams();
+            assertNotNull(streams);
+            assertTrue(streams.isEmpty(), "Expected empty set when 'streams' key is missing from payload");
+        }
     }
 }

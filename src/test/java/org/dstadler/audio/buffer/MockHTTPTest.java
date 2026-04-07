@@ -87,7 +87,7 @@ public class MockHTTPTest {
             httpCalls.incrementAndGet();
 
             if(secondCall.get()) {
-                return new NanoHTTPD.Response("200", "audio/mpeg", RandomStringUtils.insecure().next(100));
+                return new NanoHTTPD.Response("200", "audio/mpeg", RandomStringUtils.insecure().next(20_000));
             } else {
                 return acceptRangeResponse();
             }
@@ -102,6 +102,35 @@ public class MockHTTPTest {
 
                 // expect some chunks back
                 assertEquals(2, buffer.fillupBuffer(-1, 50));
+            }
+        }
+
+        assertEquals(1 + 1, httpCalls.get(), "Expecting one call initially and one call to fetch data");
+    }
+
+    @Test
+    public void testDownloadTooLess() throws IOException {
+        AtomicInteger httpCalls = new AtomicInteger();
+        AtomicBoolean secondCall = new AtomicBoolean();
+        try (MockRESTServer server = new MockRESTServer(() -> {
+            httpCalls.incrementAndGet();
+
+            if(secondCall.get()) {
+                return new NanoHTTPD.Response("200", "audio/mpeg", RandomStringUtils.insecure().next(100));
+            } else {
+                return acceptRangeResponse();
+            }
+        })) {
+            try (RangeDownloadingBuffer buffer = new RangeDownloadingBuffer("http://localhost:" + server.getPort(),
+                    "", null, 100, Chunk.CHUNK_SIZE, null)) {
+                // use a very short retry-sleep to speed up this test
+                buffer.RETRY_SLEEP_TIME = 1;
+
+                // make the HTTP server return a failure
+                secondCall.set(true);
+
+                // expect some chunks back, but only 1 here as we cannot read enough data from the server
+                assertEquals(1, buffer.fillupBuffer(-1, 50));
             }
         }
 

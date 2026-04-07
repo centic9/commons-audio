@@ -76,7 +76,7 @@ public class FM4Stream {
     }
 
     /**
-     * Returns the duration of this stream in seconds.
+     * Returns the duration of this stream in milliseconds.
      *
      * @return Duration in milliseconds
      */
@@ -122,6 +122,10 @@ public class FM4Stream {
         JsonNode jsonNode = objectMapper.readTree(json).get("payload");
 
         SortedSet<String> streams = new TreeSet<>();
+        if (jsonNode == null || !jsonNode.has("streams")) {
+            log.warning("No 'payload'/'streams' found in response for " + href);
+            return streams;
+        }
         for (JsonNode stream : jsonNode.get("streams")) {
             streams.add(streamUrlBase + stream.get("loopStreamId").asString());
         }

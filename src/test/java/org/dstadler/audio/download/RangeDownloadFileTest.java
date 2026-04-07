@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -118,6 +119,32 @@ public class RangeDownloadFileTest {
             verifier.addObject(download);
 
             assertThrows(IllegalArgumentException.class, () -> download.readRange(-100, 10));
+        }
+    }
+
+    // Regression test for bug: raf.read(bytes) was used instead of raf.readFully(bytes),
+    // which could silently return fewer bytes than requested and leave the rest as zeros.
+    @Test
+    public void readRangeReturnsAllBytesWithoutZeroPadding() throws IOException {
+        File tempFile = File.createTempFile("test-readFully", ".bin");
+        tempFile.deleteOnExit();
+        try {
+            // Fill with a known pattern where no byte is zero
+            byte[] expected = new byte[512];
+            for (int i = 0; i < expected.length; i++) {
+                expected[i] = (byte) (1 + (i % 255)); // values 1..255, never 0
+            }
+            Files.write(tempFile.toPath(), expected);
+
+            try (RangeDownload download = new RangeDownloadFile(tempFile)) {
+                byte[] actual = download.readRange(0, expected.length);
+                assertArrayEquals(expected, actual,
+                        "readRange must return all requested bytes; zeros indicate a partial read");
+
+                verifier.addObject(download);
+            }
+        } finally {
+            Files.deleteIfExists(tempFile.toPath());
         }
     }
 }

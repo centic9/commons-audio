@@ -150,13 +150,16 @@ public class RangeDownloadHTTP implements RangeDownload {
             try {
                 // The FM4 server returns a text/html response if the show was removed after 7 days
                 // we should detect this and stop the download in this case
-                if (entity.getContentType().startsWith("text/html")) {
+                if (entity.getContentType() != null && entity.getContentType().startsWith("text/html")) {
                     // returning empty signals that no more data can be loaded
                     return new byte[0];
                 }
 
                 byte[] bytes = new byte[size];
-                IOUtils.read(entity.getContent(), bytes);
+                int bytesRead = IOUtils.read(entity.getContent(), bytes);
+                if (bytesRead < size) {
+                    return Arrays.copyOf(bytes, bytesRead);
+                }
                 return bytes;
             } finally {
                 // ensure all content is taken out to free resources

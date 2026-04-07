@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -279,6 +280,62 @@ public class RangeDownloadHTTPTest {
             verifier.addObject(download);
 
             assertThrows(IllegalArgumentException.class, () -> download.readRange(-100, 10));
+        }
+    }
+
+    // Regression test for bug: entity.getContentType() was called without a null check,
+    // causing NPE when the server response includes no Content-Type header.
+    @Test
+    public void readRangeWithNoContentTypeDoesNotThrowNPE() throws IOException {
+        AtomicBoolean firstCall = new AtomicBoolean(true);
+        try (MockRESTServer server = new MockRESTServer(() -> {
+            if (firstCall.getAndSet(false)) {
+                // HEAD response: advertise 10 bytes with range support
+                NanoHTTPD.Response response = new NanoHTTPD.Response("200", "application/binary", "");
+                response.addHeader("Accept-Ranges", "bytes");
+                response.addHeader("Content-Length", "10");
+                return response;
+            } else {
+                // GET response: no Content-Type header (mimeType = null)
+                NanoHTTPD.Response response = new NanoHTTPD.Response("206", null, "0123456789");
+                response.addHeader("Content-Length", "10");
+                return response;
+            }
+        })) {
+            try (RangeDownload download = new RangeDownloadHTTP("http://localhost:" + server.getPort(), "", null)) {
+                // Must not throw NullPointerException when Content-Type is absent
+                byte[] bytes = download.readRange(0, 10);
+                assertNotNull(bytes);
+                verifier.addObject(download);
+            }
+        }
+    }
+
+    // Regression test for bug: return value of IOUtils.read() was ignored; when the server
+    // sent fewer bytes than requested the remaining array slots stayed as zeros (corrupted data).
+    // After the fix the returned array is truncated to the actual number of bytes received.
+    @Test
+    public void readRangeReturnsTruncatedBytesWhenServerSendsLess() throws IOException {
+        AtomicBoolean firstCall = new AtomicBoolean(true);
+        try (MockRESTServer server = new MockRESTServer(() -> {
+            if (firstCall.getAndSet(false)) {
+                // HEAD response: advertise 100 bytes
+                NanoHTTPD.Response response = new NanoHTTPD.Response("200", "application/binary", "");
+                response.addHeader("Accept-Ranges", "bytes");
+                response.addHeader("Content-Length", "100");
+                return response;
+            } else {
+                // GET response: only deliver 50 bytes despite the client requesting 100
+                return new NanoHTTPD.Response("206", "audio/mpeg", StringUtils.repeat('X', 50));
+            }
+        })) {
+            try (RangeDownload download = new RangeDownloadHTTP("http://localhost:" + server.getPort(), "", null)) {
+                byte[] bytes = download.readRange(0, 100);
+                // After fix: array is trimmed to the bytes actually received, not zero-padded to 100
+                assertEquals(50, bytes.length,
+                        "readRange must return only the bytes actually received, not a zero-padded buffer");
+                verifier.addObject(download);
+            }
         }
     }
 }

@@ -61,7 +61,7 @@ public class RangeDownloadFile implements RangeDownload {
         try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             raf.seek(start);
 
-            raf.read(bytes);
+            raf.readFully(bytes);
         }
 
         return bytes;
