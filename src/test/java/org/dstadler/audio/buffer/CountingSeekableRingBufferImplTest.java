@@ -197,6 +197,151 @@ public class CountingSeekableRingBufferImplTest extends AbstractBlockingSeekable
     }
 
     @Test
+    public void testGetChunksPerSecondBothInRange() {
+        // When both written and read CPS are in the valid range [0.5, 5],
+        // getChunksPerSecond() should return the minimum
+        try (CountingSeekableRingBufferImpl lBuffer = new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10)) {
+            @Override
+            public double getChunksWrittenPerSecond() {
+                return 2.0;
+            }
+
+            @Override
+            public double getChunksReadPerSecond() {
+                return 3.0;
+            }
+        }) {
+            assertEquals(2.0, lBuffer.getChunksPerSecond(), 0.01,
+                    "Should return min(written, read) when both are in valid range");
+        }
+    }
+
+    @Test
+    public void testGetChunksPerSecondBothInRangeReadSmaller() {
+        try (CountingSeekableRingBufferImpl lBuffer = new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10)) {
+            @Override
+            public double getChunksWrittenPerSecond() {
+                return 4.0;
+            }
+
+            @Override
+            public double getChunksReadPerSecond() {
+                return 1.5;
+            }
+        }) {
+            assertEquals(1.5, lBuffer.getChunksPerSecond(), 0.01,
+                    "Should return min(written, read) when both are in valid range");
+        }
+    }
+
+    @Test
+    public void testGetChunksPerSecondWrittenValidReadTooHigh() {
+        // Written in range, read out of range → return written
+        try (CountingSeekableRingBufferImpl lBuffer = new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10)) {
+            @Override
+            public double getChunksWrittenPerSecond() {
+                return 2.0;
+            }
+
+            @Override
+            public double getChunksReadPerSecond() {
+                return 10.0;
+            }
+        }) {
+            assertEquals(2.0, lBuffer.getChunksPerSecond(), 0.01,
+                    "Should return written when read is out of range (> 5)");
+        }
+    }
+
+    @Test
+    public void testGetChunksPerSecondReadValidWrittenTooHigh() {
+        // Written out of range, read in range → return read
+        try (CountingSeekableRingBufferImpl lBuffer = new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10)) {
+            @Override
+            public double getChunksWrittenPerSecond() {
+                return 10.0;
+            }
+
+            @Override
+            public double getChunksReadPerSecond() {
+                return 1.5;
+            }
+        }) {
+            assertEquals(1.5, lBuffer.getChunksPerSecond(), 0.01,
+                    "Should return read when written is out of range (> 5)");
+        }
+    }
+
+    @Test
+    public void testGetChunksPerSecondBothOutOfRange() {
+        // Both out of valid range → return DEFAULT
+        try (CountingSeekableRingBufferImpl lBuffer = new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10)) {
+            @Override
+            public double getChunksWrittenPerSecond() {
+                return 10.0;
+            }
+
+            @Override
+            public double getChunksReadPerSecond() {
+                return 0.1;
+            }
+        }) {
+            assertEquals(DEFAULT_CHUNKS_PER_SECOND, lBuffer.getChunksPerSecond(), 0.01,
+                    "Should return DEFAULT when both are out of range");
+        }
+    }
+
+    @Test
+    public void testGetChunksPerSecondBothTooLow() {
+        // Both below 0.5 → return DEFAULT
+        try (CountingSeekableRingBufferImpl lBuffer = new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10)) {
+            @Override
+            public double getChunksWrittenPerSecond() {
+                return 0.2;
+            }
+
+            @Override
+            public double getChunksReadPerSecond() {
+                return 0.3;
+            }
+        }) {
+            assertEquals(DEFAULT_CHUNKS_PER_SECOND, lBuffer.getChunksPerSecond(), 0.01,
+                    "Should return DEFAULT when both are below 0.5");
+        }
+    }
+
+    @Test
+    public void testGetChunksPerSecondBoundaryValues() {
+        // Test at boundaries: 0.5 and 5.0 are in range
+        try (CountingSeekableRingBufferImpl lBuffer = new CountingSeekableRingBufferImpl(new BlockingSeekableRingBuffer(10)) {
+            @Override
+            public double getChunksWrittenPerSecond() {
+                return 0.5;
+            }
+
+            @Override
+            public double getChunksReadPerSecond() {
+                return 5.0;
+            }
+        }) {
+            assertEquals(0.5, lBuffer.getChunksPerSecond(), 0.01,
+                    "Boundary values 0.5 and 5.0 should be in valid range");
+        }
+    }
+
+    @Test
+    public void testPeekDoesNotAdvance() {
+        buffer.add(new Chunk(new byte[]{1, 2}, "meta", System.currentTimeMillis()));
+        Chunk peeked = getBuffer().peek();
+        assertNotNull(peeked);
+
+        Chunk peekedAgain = getBuffer().peek();
+        assertNotNull(peekedAgain);
+        assertArrayEquals(peeked.getData(), peekedAgain.getData(),
+                "peek() should not advance the read position");
+    }
+
+    @Test
     public void testNullDelegate() {
         //noinspection ConstantConditions,resource
         assertThrows(NullPointerException.class, () -> new CountingSeekableRingBufferImpl(null));

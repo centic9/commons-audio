@@ -61,6 +61,7 @@ class BufferPersistenceTest {
     void testWriteReadWithData() throws IOException {
         assertFalse(BufferPersistence.hasBufferOnDisk(null));
         assertFalse(BufferPersistence.hasBufferOnDisk(new File("not existing")));
+        assertFalse(BufferPersistence.hasBufferOnDisk(new File(".")));
 
         File file = File.createTempFile("BufferPersistence", ".bson");
         assertTrue(file.delete());

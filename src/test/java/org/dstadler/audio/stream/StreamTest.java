@@ -103,6 +103,10 @@ public class StreamTest {
 
         stream.setStreamType(Stream.StreamType.favourite);
         assertEquals(Stream.StreamType.favourite, stream.getStreamType());
+
+        stream.setTempo(2.3f);
+        stream.setData("some data");
+        TestHelpers.ToStringTest(stream);
     }
 
     @Test

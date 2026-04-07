@@ -64,6 +64,24 @@ public class FM4Test {
     }
 
     @Test
+    public void testFetchLessDays() throws IOException, ParseException {
+        List<FM4Stream> fm4Streams = fm4.fetchStreams(1);   // < 7 is ignored and set to 7 instead
+
+        assertNotNull(fm4Streams);
+        assertFalse(fm4Streams.isEmpty());
+
+        // check resulting streams are sane
+        for (FM4Stream stream : fm4Streams) {
+            assertTrue(stream.getDuration() > 60_000);
+            assertTrue(stream.getStart() > System.currentTimeMillis() - (35L*24*60*60*1000));
+            assertNotNull(stream.getProgramKey());
+            assertNotNull(stream.getTitle());
+            assertNotNull(stream.getShortTime());
+            assertNotNull(DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(stream.getShortTime()));
+        }
+    }
+
+    @Test
     public void testFetchNoDuplicates() throws IOException {
         List<FM4Stream> fm4Streams = fm4.fetchStreams(14);
         Set<String> seenStreams = new HashSet<>();

@@ -17,4 +17,22 @@ public class ConstantTempoStrategyTest {
         strategy = new ConstantTempoStrategy(0.75f);
         assertEquals(0.75, strategy.calculateTempo(), 0.0001);
     }
+
+    @Test
+    public void testName() {
+        ConstantTempoStrategy strategy = new ConstantTempoStrategy(1.0f);
+        assertEquals(TempoStrategy.CONSTANT, strategy.name());
+    }
+
+    @Test
+    public void testZeroTempo() {
+        ConstantTempoStrategy strategy = new ConstantTempoStrategy(0.0f);
+        assertEquals(0.0, strategy.calculateTempo(), 0.0001);
+    }
+
+    @Test
+    public void testNegativeTempo() {
+        ConstantTempoStrategy strategy = new ConstantTempoStrategy(-1.0f);
+        assertEquals(-1.0, strategy.calculateTempo(), 0.0001);
+    }
 }

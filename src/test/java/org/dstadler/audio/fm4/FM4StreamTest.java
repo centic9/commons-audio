@@ -182,4 +182,19 @@ public class FM4StreamTest {
             assertTrue(streams.isEmpty(), "Expected empty set when 'streams' key is missing from payload");
         }
     }
+
+    @Test
+    void testInvalidDateFormat() {
+        ObjectNode node = objectMapper.createObjectNode();
+        node.put("programKey", "ABC");
+        node.put("title", "");
+        node.put("subtitle", "");
+        node.put("href", "");
+        node.put("start", "202asdl4a-05asd-asd2as3dasTd2asw2asd:asd4asa3da:sd2asd2asd.as0saa3sda4asdZasd");
+        node.put("duration", Long.MAX_VALUE);
+        node.put("end", 1L);
+
+        assertThrows(IllegalStateException.class,
+                () -> new FM4Stream(node, FM4_STREAM_URL_BASE));
+    }
 }

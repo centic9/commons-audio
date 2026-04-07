@@ -1,6 +1,7 @@
 package org.dstadler.audio.buffer;
 
 import org.dstadler.audio.stream.Stream;
+import org.dstadler.commons.testing.TestHelpers;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -38,6 +39,7 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
             assertFalse(localBuffer.empty());
             assertEquals(8, localBuffer.size());
             assertEquals(9, localBuffer.fill());
+            TestHelpers.ToStringTest(localBuffer);
 
             // check the DTO
             assertEquals(6, dto.getNextGet());
@@ -48,17 +50,20 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
             assertEquals(0, dto.getNumberOfDiskChunks());
             assertNull(dto.getDataDir());
             assertEquals(927834, dto.getChunkCount());
+            TestHelpers.ToStringTest(localBuffer);
 
             // then convert the DTO back into a buffer and do a next() as well
             try (BlockingSeekableRingBuffer back = BlockingSeekableRingBuffer.fromPersistence(dto)) {
                 assertEquals(next, back.next());
             }
+            TestHelpers.ToStringTest(localBuffer);
 
             // and finally ensure the state is the same
             assertFalse(localBuffer.full());
             assertFalse(localBuffer.empty());
             assertEquals(8, localBuffer.size());
             assertEquals(9, localBuffer.fill());
+            TestHelpers.ToStringTest(localBuffer);
         }
     }
 
@@ -71,10 +76,12 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
                     "Had: " + localBuffer);
             assertTrue(localBuffer.toString().contains("full=false"),
                     "Had: " + localBuffer);
+            TestHelpers.ToStringTest(localBuffer);
 
             for (byte i = 0; i < 15; i++) {
                 localBuffer.add(new Chunk(new byte[]{i}, "", 0));
             }
+            TestHelpers.ToStringTest(localBuffer);
 
             assertFalse(localBuffer.empty());
             assertTrue(localBuffer.full());
@@ -82,6 +89,8 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
                     "Had: " + localBuffer);
             assertTrue(localBuffer.toString().contains("full=true"),
                     "Had: " + localBuffer);
+
+            TestHelpers.ToStringTest(localBuffer);
         }
     }
 
@@ -91,5 +100,16 @@ public class BlockingSeekableRingBufferTest extends AbstractBlockingSeekableRing
         //noinspection resource
         assertThrows(IOException.class,
                 () -> BlockingSeekableRingBuffer.fromPersistence(dto));
+    }
+
+    @SuppressWarnings("resource")
+    @Test
+    public void testInvalidChunks() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new BlockingSeekableRingBuffer(0));
+        assertThrows(IllegalArgumentException.class,
+                () -> new BlockingSeekableRingBuffer(-1));
+        assertThrows(IllegalArgumentException.class,
+                () -> new BlockingSeekableRingBuffer(Integer.MIN_VALUE));
     }
 }
