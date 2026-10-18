@@ -105,6 +105,8 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 					"Had: " + localBuffer);
 			assertTrue(localBuffer.toString().contains("full=false"),
 					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("fill=0"),
+					"Had: " + localBuffer);
 
 			for (byte i = 0; i < 15; i++) {
 				localBuffer.add(new Chunk(new byte[] { i }, "", 0));
@@ -129,6 +131,8 @@ public class DiskBasedBlockingSeekableRingBufferTest extends AbstractBlockingSee
 			assertTrue(localBuffer.toString().contains("diskBufferWritePosition="),
 					"Had: " + localBuffer);
 			assertTrue(localBuffer.toString().contains("dataDir="),
+					"Had: " + localBuffer);
+			assertTrue(localBuffer.toString().contains("fill=9"),
 					"Had: " + localBuffer);
 		}
 	}

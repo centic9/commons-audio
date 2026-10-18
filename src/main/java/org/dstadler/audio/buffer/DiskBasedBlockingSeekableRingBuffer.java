@@ -521,6 +521,7 @@ public class DiskBasedBlockingSeekableRingBuffer implements SeekableRingBuffer<C
 				", numberOfDiskFiles=" + numberOfDiskFiles +
 				", nextGet=" + nextGet +
 				", nextAdd=" + nextAdd +
+				", fill=" + fill +
 				", stop=" + stop +
 				", capacity=" + capacity() +
 				", size=" + size() +
